@@ -6,6 +6,7 @@ parameters:
 	excludes_analyse:
 		- src/Extension/*
 		- src/Presenters/*
+		- src/Command/InvoicePayCheckCommand.php
 		- install/*
 		- update/*
 	ignoreErrors:
