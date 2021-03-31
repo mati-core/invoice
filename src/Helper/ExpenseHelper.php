@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 
-namespace MatiCore\Expense;
+namespace MatiCore\Invoice;
 
 
 use Baraja\Doctrine\EntityManager;

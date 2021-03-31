@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 
-namespace App\Model;
+namespace MatiCore\Invoice\Command;
 
 
 use Baraja\Doctrine\EntityManager;
@@ -34,7 +34,7 @@ use Tracy\Debugger;
 
 /**
  * Class InvoiceAlertCommand
- * @package App\Model
+ * @package MatiCore\Invoice
  */
 class InvoiceAlertCommand extends Command
 {
