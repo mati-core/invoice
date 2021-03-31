@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Přehled faktury {$dateNow->format('d.m.Y')}</title>
+</head>
+<body>
+
+<div class="text-center">
+	<h3>Přehled faktury {$dateNow->format('d.m.Y')}</h3>
+</div>
+
+<table class="table table-bordered-sm">
+	{include tableHead}
+	<tbody>
+	{foreach $data as $invoiceData}
+	<tr>
+		<td{if $invoiceData['late']} style="color:red;"{/if}>{$invoiceData['number']}</td>
+		<td{if $invoiceData['late']} style="color:red;"{/if}>
+			{$invoiceData['company']}
+			<br>
+			<small>{$invoiceData['ic']}</small>
+		</td>
+		<td{if $invoiceData['late']} style="color:red;"{/if}>{$invoiceData['date']}</td>
+		<td{if $invoiceData['late']} style="color:red;"{/if}>{$invoiceData['dateTax']}</td>
+		<td{if $invoiceData['late']} style="color:red;"{/if}>{$invoiceData['dueDate']}</td>
+		<td{if $invoiceData['late']} style="color:red;"{/if}>{$invoiceData['payDate']}</td>
+		<td style="text-align: right;{if $invoiceData['late']} color:red;{/if}">{$invoiceData['tax']|noescape}</td>
+		<td style="text-align: right;{if $invoiceData['late']} color:red;{/if}">
+			{$invoiceData['price']|noescape}
+			<br>
+			<small>{$invoiceData['priceCZK']|noescape}</small>
+		</td>
+	</tr>
+    {if $iterator->counter%32 === 0}
+	</tbody>
+</table>
+<pagebreak>
+	<div class="text-center">
+		<h3>&nbsp;</h3>
+	</div>
+	<table class="table table-bordered-sm">
+        {include tableHead}
+		<tbody>
+    {/if}
+	{/foreach}
+	<tr>
+		<td colspan="6" style="text-align: right; border: 0;"></td>
+		<td style="text-align: right; font-weight: bold; border: 0;">{$totalTax|noescape}</td>
+		<td style="text-align: right; font-weight: bold; border: 0;">{$totalPrice|noescape}</td>
+	</tr>
+	</tbody>
+</table>
+<p style="font-size: 10px;">Vygenerováno {date('d.m.Y H:i:s')}</p>
+</body>
+</html>
+
+{block tableHead}
+<thead>
+<tr>
+	<th>Číslo</th>
+	<th>Firma</th>
+	<th>Vystaveno</th>
+	<th>Daň plnění</th>
+	<th>Splatnost</th>
+	<th>Uhrazeno</th>
+	<th>DPH</th>
+	<th>Částka</th>
+</tr>
+</thead>
+{/block}

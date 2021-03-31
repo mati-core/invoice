@@ -1,0 +1,158 @@
+{block title}
+    {$company->getName()} - {$stock->getName()}
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Company:default">
+				Firmy
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Company:detail, id => $company->getId()">
+                {$company->getName()}
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Company:detailStock, id => $stock->getId()">
+                {$stock->getName()}
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			Editace pobočky
+		</li>
+	</ol>
+{/block}
+
+{block content}
+	<!-- Main content -->
+	<section class="content" id="app">
+		<div class="container-fluid">
+			<!-- Small boxes (Stat box) -->
+            {snippet flashes}
+				<div n:foreach="$flashes as $msg" class="row">
+					<div class="col-lg-12">
+                        {if $msg->type === 'success'}
+							<div class="alert alert-dismissible alert-success">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
+                                {$msg->message}
+							</div>
+                        {elseif $msg->type === 'warning'}
+							<div class="alert alert-dismissible alert-warning">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-warning"></i> Pozor!</h5>
+                                {$msg->message}
+							</div>
+                        {elseif $msg->type === 'danger' || $msg->type === 'error'}
+							<div class="alert alert-dismissible alert-danger">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
+                                {$msg->message}
+							</div>
+                        {else}
+							<div class="alert alert-dismissible alert-info">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
+                                {$msg->message}
+							</div>
+                        {/if}
+					</div>
+				</div>
+            {/snippet}
+
+			<form n:name="editStockForm">
+
+				<div class="row">
+					<div class="col-12 mb-3 text-right">
+						<a n:href="detailStock, id => $stock->getId()" class="btn btn-sm btn-secondary">
+							<i class="fas fa-reply"></i>&nbsp;Zpět
+						</a>
+						<button n:name="submit" class="btn btn-sm btn-success">
+							<i class="fas fa-save"></i>&nbsp;Uložit
+						</button>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-12">
+
+						<!-- Default box -->
+						<div class="card">
+							<div class="card-header">
+								<h3 class="card-title">{$stock->getName()}</h3>
+							</div>
+							<div class="card-body">
+								<div class="row">
+									<div class="col-lg-6 col-12">
+										<div class="form-group">
+											<label n:name="name">Název</label>
+											<input n:name="name" class="form-control">
+										</div>
+										<div class="form-group">
+											<label n:name="street">Adresa, č.p.</label>
+											<input n:name="street" class="form-control">
+										</div>
+										<div class="form-group">
+											<label n:name="city">Město</label>
+											<input n:name="city" class="form-control">
+										</div>
+										<div class="form-group">
+											<label n:name="zipCode">PSČ</label>
+											<input n:name="zipCode" class="form-control">
+										</div>
+										<div class="form-group">
+											<label n:name="country">Země</label>
+											<select n:name="country" class="form-control"></select>
+										</div>
+									</div>
+									<div class="col-lg-6 col-12">
+										<div class="form-group">
+											<label n:name="travelRateType">Způsob účtování dopravy</label>
+											<select n:name="travelRateType" class="form-control"></select>
+										</div>
+										<div class="form-group">
+											<label n:name="travelPrice">Cena dopravy</label>
+											<div class="input-group">
+												<div class="input-group-prepend">
+													<span class="input-group-text">{$company->getCurrency()->getSymbol()}</span>
+												</div>
+												<input n:name="travelPrice" class="form-control">
+											</div>
+										</div>
+										<div class="form-group">
+											<label n:name="travelDistance">Vzdálenost</label>
+											<div class="input-group">
+												<div class="input-group-prepend">
+													<span class="input-group-text">km</span>
+												</div>
+												<input n:name="travelDistance" class="form-control">
+											</div>
+										</div>
+										<div class="form-group">
+											<label n:name="note">Poznámka</label>
+											<textarea n:name="note" rows="5" class="form-control"></textarea>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- /.card-body -->
+						</div>
+						<!-- /.card -->
+
+					</div>
+				</div>
+				<!-- /.row -->
+
+			</form>
+		</div>
+		<!-- /.container-fluid -->
+	</section>
+	<!-- /.content -->
+{/block}

@@ -1,0 +1,105 @@
+{block title}
+	Dodavatelé - nový
+{/block}
+
+{block pageTitle}
+	Dodavatelé - nový
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Supplier:default">
+				<i class="fas fa-truck"></i> Dodavatelé
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			Nový
+		</li>
+	</ol>
+{/block}
+
+{block content}
+	<div class="container-fluid">
+		<form n:name="createForm" class="ajax">
+
+			<div class="row">
+				<div class="col-12 mb-3 text-right">
+					<a n:href="default" class="btn btn-sm btn-secondary">
+						<i class="fas fa-reply"></i>&nbsp;{_cms.main.back}
+					</a>
+					<button n:name="submit" class="btn btn-sm btn-success">
+						<i class="fas fa-plus"></i>&nbsp;{_cms.main.add}
+					</button>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-12">
+
+					<!-- Default box -->
+					<div class="card">
+						<div class="card-header">
+							<h3 class="card-title">Nový dodavatel</h3>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-lg-6 col-12">
+									<div class="form-group">
+										<label n:name="name">Název</label>
+										<input n:name="name" class="form-control">
+									</div>
+									<div class="form-group">
+										<label n:name="street">Ulice, č.p.</label>
+										<input n:name="street" class="form-control">
+									</div>
+									<div class="form-group">
+										<label n:name="city">Město</label>
+										<input n:name="city" class="form-control">
+									</div>
+									<div class="form-group">
+										<label n:name="zipCode">PSČ</label>
+										<input n:name="zipCode" class="form-control">
+									</div>
+									<div class="form-group">
+										<label n:name="country">Země</label>
+										<select n:name="country" class="form-control"></select>
+									</div>
+									<div class="form-group">
+										<label n:name="ic">IČ</label>
+										<input n:name="ic" class="form-control">
+									</div>
+									<div class="form-group">
+										<label n:name="dic">DIČ</label>
+										<input n:name="dic" class="form-control">
+									</div>
+								</div>
+								<div class="col-lg-6 col-12">
+									<div class="form-group">
+										<label n:name="deliveryCompany">Přepravní společnost</label>
+										<input n:name="deliveryCompany" class="form-control">
+									</div>
+									<div class="form-group">
+										<label n:name="currency">Měna</label>
+										<select n:name="currency" class="form-control"></select>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- /.card-body -->
+					</div>
+					<!-- /.card -->
+
+				</div>
+			</div>
+			<!-- /.row -->
+
+		</form>
+	</div>
+	<!-- /.container-fluid -->
+{/block}

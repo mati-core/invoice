@@ -1,0 +1,502 @@
+{block title}
+    {if $company->isBlackList()}
+        <span class="badge badge-dark mr-3">Black list</span>
+    {elseif $company->getType() === 'typ-smluvni'}
+        <span class="badge badge-primary mr-3">Smluvní</span>
+    {elseif $company->getType() === 'typ-vip'}
+        <span class="badge badge-warning mr-3">VIP</span>
+    {else}
+        <span class="badge badge-light mr-3">Standard</span>
+    {/if}
+    {$company->getName()}
+{/block}
+
+{block breadcrumb}
+    <ol class="breadcrumb float-sm-right">
+        <li class="breadcrumb-item">
+            <a n:href="Homepage:default">
+                <i class="fas fa-tachometer-alt"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a n:href="Company:default">
+                <i class="fas fa-building"></i> Firmy
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            Detail
+        </li>
+    </ol>
+{/block}
+
+{block modals}
+    <div n:if="$presenter->checkUserRight('page__company__blacklist')" class="modal fade" id="confirmBlackListModal">
+        <div class="modal-dialog">
+            <div class="modal-content bg-black">
+                <div class="modal-header">
+                    Black list
+                </div>
+                <div class="modal-body">
+                    <p n:if="!$company->isBlackList()">Opravdu chcete přidat firmu na <b>black list</b>?</p>
+                    <p n:if="$company->isBlackList()">Opravdu chcete odebrat firmu z <b>black list</b>?</p>
+                </div>
+                <div class="modal-footer">
+                    <a n:href="blackList!, id => $company->getId()" class="btn btn-outline-light">
+                        {if $company->isBlackList()}Odebrat{else}Přidat{/if}
+                    </a>
+                    <a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div n:if="$presenter->checkUserRight('page__company__remove')" class="modal fade" id="deleteModal">
+        <div class="modal-dialog">
+            <div class="modal-content bg-danger">
+                <div class="modal-header">
+                    Smazat
+                </div>
+                <div class="modal-body">
+                    <p>Opravdu si přejete smazat firmu {$company->getName()}?</p>
+                </div>
+                <div class="modal-footer">
+                    <a n:href="remove!, id => $company->getId()" class="btn btn-outline-light">
+                        Smazat
+                    </a>
+                    <a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <form n:if="$presenter->checkUserRight('page__company__companyNote')" n:name="companyNoteForm" class="ajax">
+        <div class="modal fade" id="noteModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Poznámka
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <textarea n:name="note" class="form-control" rows="10"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button n:name="submit" class="btn btn-success" id="btn-custom-invoice">
+                            <i class="fas fa-save"></i>&nbsp;Uložit
+                        </button>
+                        <a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </form>
+
+    <form n:if="$presenter->checkUserRight('page__company__cartExport')" n:name="cartPriceReportForm">
+        <div class="modal fade" id="cartPriceReportModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Datum
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <select class="form-control" type="text" n:name="month"></select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input class="form-control" type="text" n:name="year">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button n:name="submit" class="btn btn-success" id="btn-custom-invoice">
+                            <i class="fas fa-save"></i>&nbsp;Exportovat
+                        </button>
+                        <a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </form>
+{/block}
+
+{block content}
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Small boxes (Stat box) -->
+            {snippet flashes}
+                <div n:foreach="$flashes as $msg" class="row">
+                    <div class="col-lg-12">
+                        {if $msg->type === 'success'}
+                            <div class="alert alert-dismissible alert-success">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                <h5><i class="icon fas fa-check"></i> Hotovo!</h5>
+                                {$msg->message|noescape}
+                            </div>
+                        {elseif $msg->type === 'warning'}
+                            <div class="alert alert-dismissible alert-warning">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                <h5><i class="icon fas fa-exclamation"></i> Pozor!</h5>
+                                {$msg->message|noescape}
+                            </div>
+                        {elseif $msg->type === 'danger' || $msg->type === 'error'}
+                            <div class="alert alert-dismissible alert-danger">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                <h5><i class="icon fas fa-ban"></i> Chyba!</h5>
+                                {$msg->message|noescape}
+                            </div>
+                        {else}
+                            <div class="alert alert-dismissible alert-info">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                <h5><i class="icon fas fa-info"></i> Upozornění!</h5>
+                                {$msg->message|noescape}
+                            </div>
+                        {/if}
+                    </div>
+                </div>
+            {/snippet}
+
+            <div class="row">
+                <div class="col-12 mb-3 text-right">
+                    {include smallButtons}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-12">
+
+                    <!-- Default box -->
+                    {var $invoiceAddress = $company->getInvoiceAddress()}
+                    <div class="card" style="height: 93%;">
+                        <div class="card-header">
+                            <h3 class="card-title">{$invoiceAddress->getCompanyName()}</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    {$invoiceAddress->getStreet()}
+                                    <br>
+                                    {$invoiceAddress->getCity()}
+                                    <br>
+                                    {$invoiceAddress->getZipCode()}
+                                    <br>
+                                    {$invoiceAddress->getCountry()->getName()}
+                                </div>
+                                <div class="col">
+                                    IČ: {$invoiceAddress->getIc()}
+                                    <br>
+                                    DIČ: {$invoiceAddress->getDic()}
+                                    <br><br>
+                                    Měna: {$company->getCurrency()->getCode()}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+
+                </div>
+
+                {include infoBlock}
+            </div>
+            <!-- /.row -->
+
+            <div n:if="$presenter->checkUserRight('page__company__statistics')" class="row">
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="info-box bg-gradient-info">
+                        <span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">Celkem</span>
+                            <span class="info-box-number">{$company->getInvoicesPriceFormated()|noescape}</span>
+
+                            <div class="progress">
+                                <div class="progress-bar" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-description">
+			                  Celkem {$company->getInvoicesCount()} faktur.
+			                </span>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="info-box bg-gradient-success">
+                        <span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">Zaplaceno</span>
+                            <span class="info-box-number">{$company->getInvoicesPaidPriceFormated()|noescape}</span>
+
+                            <div class="progress">
+                                <div class="progress-bar" style="width: {$company->getInvoicesPaidPercent()}%"></div>
+                            </div>
+                            <span class="progress-description">
+			                  Celkem {$company->getInvoicesPaidCount()} faktur.
+			                </span>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="info-box bg-gradient-warning">
+                        <span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">Nezaplaceno</span>
+                            <span class="info-box-number">{$company->getInvoicesActivePriceFormated()|noescape}</span>
+
+                            <div class="progress">
+                                <div class="progress-bar" style="width: {$company->getInvoicesActivePercent()}%"></div>
+                            </div>
+                            <span class="progress-description">
+			                  Celkem {$company->getInvoicesActiveCount()} faktur.
+			                </span>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="info-box bg-gradient-danger">
+                        <span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">Po splatnosti</span>
+                            <span class="info-box-number">{$company->getInvoicesOverduePriceFormated()|noescape}</span>
+
+                            <div class="progress">
+                                <div class="progress-bar" style="width: {$company->getInvoicesOverduePercent()}%"></div>
+                            </div>
+                            <span class="progress-description">
+			                  Celkem {$company->getInvoicesOverdueCount()} faktur.
+			                </span>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+            </div>
+
+            {include stocks}
+
+        </div>
+        <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+{/block}
+
+{block infoBlock}
+    <div class="col-12 col-lg-4">
+        <div class="card" style="height: 93%;">
+            <div class="card-body">
+                <b>Poznámka</b>
+                <p>{$company->getNote()}</p>
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card" style="height: 93%;">
+            <div class="card-body">
+                {include bigButtons}
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </div>
+{/block}
+
+{block stocks}
+    <div class="row">
+        <div n:foreach="$company->getStocks() as $stock" class="col-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{$stock->getName()}<br><small>({$stock->getAddress()->getStreet()}
+                            , {$stock->getAddress()->getCity()})</small></h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table m-0">
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-forklift"></i>
+                                    </td>
+                                    <td class="text-right">{$stock->getCartsCount()}</td>
+                                    {if $presenter->checkUserRight('page__company__statitics')}
+                                        <td>
+                                            <i class="fas fa-file-invoice"></i>
+                                        </td>
+                                        <td class="text-right">{$stock->getInvoicesCount()}</td>
+                                    {/if}
+                                </tr>
+                                <tr n:if="$presenter->checkUserRight('page__company__statistics')">
+                                    <td>
+                                        <i class="fas fa-receipt"></i>
+                                    </td>
+                                    <td class="text-right">{$stock->getOrdersCount()}</td>
+                                    <td>
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    </td>
+                                    <td class="text-right">{$stock->getOffersCount()}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a n:href="detailStock, id => $stock->getId()" class="btn btn-outline-dark"><i
+                                class="fas fa-search"></i>&nbsp;Detail</a>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </div>
+
+        <div n:if="count($company->getStocks()) === 0" class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    V seznamu nejsou žádné pobočky
+                </div>
+            </div>
+        </div>
+    </div>
+{/block}
+
+{block bigButtons}
+    <table class="table table-sm">
+        <tr>
+            <td>
+                <a n:href="Company:contact, companyId => $company->getId()">
+                    <i class="fas fa-address-book"></i> Kontakty
+                </a>
+            </td>
+            <td n:if="$presenter->checkUserRight('page__company__statistics')">{$company->getContactCount()}</td>
+            <td style="width: 1%; white-space: nowrap;">
+                <a n:if="$presenter->checkUserRight('page__company__contactCreate')" n:href="createContact, companyId => $company->getId()"
+                        class="btn btn-xs btn-outline-info text-info">
+                    <i class="fas fa-fw fa-plus"></i>
+                </a>
+            </td>
+        </tr>
+        <tr n:if="$presenter->checkUserRight('page__invoice')">
+            <td>
+                <a n:href="Company:invoice, id => $company->getId()">
+                    <i class="fas fa-file-invoice"></i> Faktury
+                </a>
+            </td>
+            <td n:if="$presenter->checkUserRight('page__company__statistics')">{$company->getInvoicesCount()}</td>
+            <td style="width: 1%; white-space: nowrap;">
+                <a n:if="$presenter->checkUserRight('page__company__invoiceCreate')" n:href="Invoice:detail"
+                        class="btn btn-xs btn-outline-info text-info">
+                    <i class="fas fa-fw fa-plus"></i>
+                </a>
+            </td>
+        </tr>
+        <tr n:if="$presenter->checkUserRight('page__order')">
+            <td>
+                <a n:href="Company:order, id => $company->getId()">
+                    <i class="fas fa-receipt"></i> Objednávky
+                </a>
+            </td>
+            <td n:if="$presenter->checkUserRight('page__company__statistics')">{$company->getOrdersCount()}</td>
+            <td style="width: 1%; white-space: nowrap;">
+                <a n:if="$presenter->checkUserRight('page__company__orderCreate')"
+                        class="btn btn-xs btn-outline-info text-info">
+                    <i class="fas fa-fw fa-plus"></i>
+                </a>
+            </td>
+        </tr>
+        <tr n:if="$presenter->checkUserRight('page__offer')">
+            <td>
+                <a n:href="Company:offer, id => $company->getId()">
+                    <i class="fas fa-file-invoice-dollar"></i> Nabídky
+                </a>
+            </td>
+            <td n:if="$presenter->checkUserRight('page__company__statistics')">{$company->getOffersCount()}</td>
+            <td style="width: 1%; white-space: nowrap;">
+                <a n:if="$presenter->checkUserRight('page__company__offerCreate')"
+                        class="btn btn-xs btn-outline-info text-info">
+                    <i class="fas fa-fw fa-plus"></i>
+                </a>
+            </td>
+        </tr>
+    </table>
+{/block}
+
+{block smallButtons}
+    <a n:href="default" class="btn btn-sm btn-secondary">
+        <i class="fas fa-reply"></i>&nbsp;Zpět
+    </a>
+    <div n:if="$presenter->checkUserRight('page__company__cartCreate') || $presenter->checkUserRight('page__company__cartExport') || $presenter->checkUserRight('page__company__stockAdd') || $presenter->checkUserRight('page__company__stockEdit') || $presenter->checkUserRight('page__company__stockRemove') || $presenter->checkUserRight('page__company__invoicedItems') || $presenter->checkUserRight('page__company__priceList')" class="btn-group btn-group-sm" role="group">
+        <button type="button" class="btn btn-xs btn-primary" data-toggle="dropdown">
+            Akce <i class="fas fa-caret-down"></i>
+            <div class="dropdown-menu" role="menu" x-placement="bottom-start"
+                 style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-1px, 37px, 0px);">
+                <a n:if="$presenter->checkUserRight('page__company__blacklist')" href="#" class="dropdown-item"
+                                                                                 onclick="$('#confirmBlackListModal').modal('show');">
+                    <i class="fas fa-address-book fa-fw"></i>&nbsp;Black list
+                </a>
+                <a n:if="$presenter->checkUserRight('page__company__edit')" n:href="edit, id => $company->getId()"
+                        class="dropdown-item" onclick="window.location.href = this.href">
+                    <i class="fas fa-edit fa-fw"></i>&nbsp;Upravit
+                </a>
+                <a n:if="$presenter->checkUserRight('page__company__edit')" href="#"
+                                                                            class="dropdown-item text-danger"
+                                                                            onclick="$('#deleteModal').modal('show');">
+                    <i class="fas fa-trash"></i>&nbsp;Smazat
+                </a>
+                {if $presenter->checkUserRight('page__company__cartExport') || $presenter->checkUserRight('page__company__priceList')}
+                    <div class="dropdown-divider"></div>
+                {/if}
+                {if $presenter->checkUserRight('page__company__cartExport')}
+                    <a href="#"
+                       class="dropdown-item" onclick="$('#cartPriceReportModal').modal('show');">
+                        <i class="fas fa-file-pdf fa-fw"></i>&nbsp;VZV - přehled fakturace
+                    </a>
+                {/if}
+                {if $presenter->checkUserRight('page__company__invoicedItems')}
+                    <a n:href="invoicedItems, id => $company->getId()"
+                       class="dropdown-item" onclick="window.location.href = this.href">
+                        <i class="fas fa-file-invoice-dollar fa-fw"></i>&nbsp;Fakturované položky
+                    </a>
+                {/if}
+                {if $presenter->checkUserRight('page__company__priceList')}
+                    <a n:href="priceList, id => $company->getId()"
+                            class="dropdown-item" onclick="window.location.href = this.href">
+                        <i class="fas fa-dollar-sign fa-fw"></i>&nbsp;Ceník
+                    </a>
+                {/if}
+                <div class="dropdown-divider"></div>
+                <a n:if="$presenter->checkUserRight('page__company__stockAdd')" n:href="createStock, id => $company->getId()"
+                        class="dropdown-item" onclick="window.location.href = this.href">
+                    <i class="fas fa-plus fa-fw"></i>&nbsp;Přidat pobočku
+                </a>
+            </div>
+        </button>
+    </div>
+    <a n:if="$presenter->checkUserRight('page__company__companyNote')" href="#" class="btn btn-outline-info btn-sm"
+                                                                       data-toggle="modal" data-target="#noteModal">
+        <i class="fas fa-file"></i>&nbsp;Poznámka
+    </a>
+{/block}

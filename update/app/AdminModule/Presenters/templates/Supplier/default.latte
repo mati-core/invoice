@@ -1,0 +1,110 @@
+{block title}
+	Dodavatelé
+{/block}
+
+{block pageTitle}
+	Dodavatelé
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			<i class="fas fa-truck"></i> Dodavatelé
+		</li>
+	</ol>
+{/block}
+
+{block vueScripts}
+	<script src="{$basePath}/cms/dist/js/vue/components.js"></script>
+	<script src="{$basePath}/js/initVue.js"></script>
+{/block}
+
+{block content}
+	<div class="container-fluid">
+
+		<div class="row">
+			<div class="col-12 mb-3 text-right">
+				<a n:href=":Admin:Supplier:create" class="btn btn-sm btn-primary">
+					<i class="fas fa-plus"></i>&nbsp;Přidat
+				</a>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+
+				<!-- Default box -->
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Seznam dodavatelů</h3>
+					</div>
+					<div class="card-body p-0" n:snippet="supplier-list">
+						<table class="table table-striped">
+							<thead>
+							<tr>
+								<th>
+									Název
+								</th>
+								<th>
+									Země
+								</th>
+								<th class="text-center">
+									Měna
+								</th>
+								<th>
+									Přepravce
+								</th>
+								<th width="250" class="text-right"></th>
+							</tr>
+							</thead>
+							<tbody>
+							{if count($suppliers) > 0}
+								<tr n:foreach="$suppliers as $supplier">
+									<td>
+										<a n:href="Supplier:detail, id => $supplier->getId()">
+											{$supplier->getName()}
+										</a>
+									</td>
+									<td>
+										{$supplier->getCountry()->getName()} ({$supplier->getCountry()->getIsoCode()})
+									</td>
+									<td class="text-center">
+										{$supplier->getCurrency()->getCode()}
+									</td>
+									<td>
+										{$supplier->getDeliveryCompany()}
+									</td>
+									<td class="project-actions text-right">
+										<a n:class="$supplier->isActive() ? btn-success : btn-outline-danger, btn, btn-xs" n:href="active!, id => $supplier->getId()">
+											{if $supplier->isActive()}&nbsp;Aktivní&nbsp;{else}Neaktivní{/if}
+										</a>
+										<a class="btn btn-info btn-xs" n:href="detail, id => $supplier->getId()">
+											<i class="fas fa-pencil-alt fa-fw"></i> Upravit
+										</a>
+										<btn-delete
+												redirect="{plink 'delete!', 'id' => $supplier->getId()}"></btn-delete>
+									</td>
+								</tr>
+							{else}
+								<tr>
+									<td colspan="6" class="text-center">Žádní dodavatelé v seznamu</td>
+								</tr>
+							{/if}
+							</tbody>
+						</table>
+					</div>
+					<!-- /.card-body -->
+				</div>
+				<!-- /.card -->
+
+			</div>
+		</div>
+		<!-- /.row -->
+	</div>
+	<!-- /.container-fluid -->
+{/block}

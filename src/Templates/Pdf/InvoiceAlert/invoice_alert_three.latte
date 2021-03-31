@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>3. upomínka - Faktura č.: {$invoice->getNumber()}</title>
+</head>
+<body>
+
+<div class="text-center">
+	<h3>3. upomínka - Faktura č.: {$invoice->getNumber()}</h3>
+</div>
+
+<table>
+	<tr>
+		<td class="border-right" style="width:50%; padding-left: 30px;">
+			<img src="{$invoice->getCompanyLogo()}" alt="{$invoice->getCompanyLogo()}" style="width: 250px;">
+		</td>
+		<td class="background-red" style="width:50%; padding: 15px 30px 15px 30px;">
+			<h1 class="text-bold text-white">Faktura č.: {$invoice->getNumber()}</h1>
+			<h3 class="text-white">3. upomínka</h3>
+		</td>
+	</tr>
+</table>
+<table>
+	<tr>
+		<td class="border-right border-bottom" style="width: 50%; padding: 15px 30px 15px 30px;">
+			<h5 class="text-gray">Dodavatel</h5>
+			<br>
+			<p>
+				<b>{$invoice->getCompanyName()}</b>
+				<br>
+                {$invoice->getCompanyAddress()}<br>
+                {$invoice->getCompanyCity()}<br>
+                {$invoice->getCompanyPostalCode()}
+			</p>
+			<br>
+			<table class="text-gray">
+				<tr>
+					<td>IČ</td>
+					<td class="text-right">{$invoice->getCompanyIc()}</td>
+				</tr>
+				<tr>
+					<td>DIČ</td>
+					<td class="text-right">{$invoice->getCompanyDic()}</td>
+				</tr>
+			</table>
+		</td>
+		<td class="p-5 border-bottom" style="padding: 15px 30px 15px 30px;">
+			<h5 class="text-gray">Odběratel</h5>
+			<br>
+			<p>
+				<b>{$invoice->getCustomerName()}</b>
+				<br>
+                {$invoice->getCustomerAddress()}<br>
+                {$invoice->getCustomerCity()}<br>
+                {$invoice->getCustomerPostalCode()}
+			</p>
+			<br>
+			<table class="text-gray">
+				<tr>
+					<td>IČ</td>
+					<td class="text-right">{$invoice->getCustomerIc()}</td>
+				</tr>
+				<tr>
+					<td>DIČ</td>
+					<td class="text-right">{$invoice->getCustomerDic()}</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<p style="padding: 30px 30px 30px 0; font-size: 16px; text-align: right;">
+	V praze dne {date('d.m.Y')}
+</p>
+<p style="padding: 0 30px 30px 30px; font-size: 16px;">
+	Vážení,
+	<br><br>
+	žádáme Vás o bezodkladnou úhradu našich pohledávek. V případě neuhrazení do&nbsp;{$newDueDate->format('d.m.Y')}, budeme nuceni postoupit vymáhání pohledávky specializované firmě.
+</p>
+
+<div style="padding-left: 30px; padding-right: 30px;">
+	<table style="width: 100%; text-align: center; font-size: 16px;">
+		<thead>
+		<tr>
+			<td style="font-weight: bold; text-align: center; padding-bottom: 10px; border-bottom: 1px solid black;">Č. dokladu</td>
+			<td style="font-weight: bold; text-align: center; padding-bottom: 10px; border-bottom: 1px solid black;">Datum</td>
+			<td style="font-weight: bold; text-align: center; padding-bottom: 10px; border-bottom: 1px solid black;">Dat. splat.</td>
+			<td style="font-weight: bold; text-align: center; padding-bottom: 10px; border-bottom: 1px solid black;">Částka</td>
+			<td style="font-weight: bold; text-align: center; padding-bottom: 10px; border-bottom: 1px solid black;">Měna</td>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td style="text-align: center; padding-top: 10px;">{$invoice->getNumber()}</td>
+			<td style="text-align: center; padding-top: 10px;">{$invoice->getDate()->format('d.m.Y')}</td>
+			<td style="text-align: center; padding-top: 10px;">{$invoice->getDueDate()->format('d.m.Y')}</td>
+			<td style="text-align: center; padding-top: 10px;">{App\Model\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|replace:' ','&nbsp;'|noescape}</td>
+			<td style="text-align: center; padding-top: 10px;">{$invoice->getCurrency()->getCode()}</td>
+		</tr>
+		<tr>
+			<td style="text-align: center; padding-top: 60px; font-weight: bold;">Celkem</td>
+			<td style="text-align: center; padding-top: 60px;"></td>
+			<td style="text-align: center; padding-top: 60px;"></td>
+			<td style="text-align: center; padding-top: 60px; font-weight: bold;">{App\Model\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|replace:' ','&nbsp;'|noescape}</td>
+			<td style="text-align: center; padding-top: 60px; font-weight: bold;">{$invoice->getCurrency()->getCode()}</td>
+		</tr>
+		</tbody>
+	</table>
+	<p style="margin-top: 100px; font-size: 16px;">
+		Za MOJE FIRMA, s.r.o.<br>
+		Jméno a příjmení<br>
+		tel.: 000 000 000
+	</p>
+</div>
+<div class="footer">
+	<hr>
+	<p>
+		MOJE FIRMA, s.r.o., IČ: {$invoice->getCompanyIc()}, DIČ: {$invoice->getCompanyDic()}
+		<br>Zápis do obchodního rejstříku dne 1.1.1111 u Městského soudu v&nbsp;Město, oddíl X., vložka 00000.
+		<br>Bankovní spojení: Bank name a.s., Bank Address, bankzip city, č. účtu: {$invoice->getBankAccount()}, kód: {$invoice->getBankCode()}
+	</p>
+</div>

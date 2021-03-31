@@ -1,0 +1,160 @@
+parameters:
+	menu:
+		cmsMainDefault:
+			items:
+				companies:
+					title: company.menu.title
+					icon: 'fas fa-building'
+					route: ':Admin:Company:default'
+					position: 50
+					rights:
+						- page__company
+				invoice:
+					title: invoice.menu.title
+					icon: fas fa-file-invoice
+					route: :Admin:Invoice:default
+					position: 5
+					rights:
+						- page__invoice
+					children:
+						invoiceReleased:
+							title: Vydané
+							icon: fas fa-sign-out-alt
+							route: :Admin:Invoice:default
+							position: 10
+							rights:
+								- page__invoice__released
+						invoiceAccepted:
+							title: Přijaté
+							icon: fas fa-sign-in-alt
+							route: :Admin:Expense:default
+							position: 15
+							rights:
+								- page__invoice__accepted
+						bankMovements:
+							title: Bankovní pohyby
+							icon: fas fa-wallet
+							route: :Admin:Invoice:bankMovements
+							position: 20
+							rights:
+								- page__invoice__bank_movements
+
+	invoice:
+		company:
+			name: 'App Universe'
+			address: 'Your street 1000/1'
+			city: 'Your city'
+			zipCode: '10000'
+			country: 'CZE'
+			in: '00000000'
+			tin: 'CZ00000000'
+			logo: 'https://app-universe/assets/img/logo.png'
+			bank:
+				CZK:
+					bankAccountName: 'Your account name'
+					bankAccount: '000-000000'
+					bankCode: '0000'
+					bankName: 'Bank name'
+					IBAN: 'CZ00 0000 0000 0000 0000 0000'
+					SWIFT: 'XXXX CZ PP'
+				default:
+					bankAccountName: 'Your account name'
+					bankAccount: '000-000000'
+					bankCode: '0000'
+					bankName: 'Bank name'
+					IBAN: 'CZ00 0000 0000 0000 0000 0000'
+					SWIFT: 'XXXX CZ PP'
+		payEmail:
+			server: 'imap.server.com'
+			login: 'bank@your-company.com'
+			password: 'email-password'
+			allowedSenders:
+				- 'notification@yourbank.com'
+		invoiceEmail:
+			name: 'YOUR COMPANY NAME'
+			email: 'invoice@your-company.com'
+			replyTo: null
+			production: false
+			copy:
+				- backup@app-universe.cz
+		alertEmail:
+			name: 'YOUR COMPANY NAME'
+			email: 'invoice@your-company.com'
+			replyTo: null
+			production : false
+			firstAlert:
+				sendAt: '+5 days'
+				dueDate: '+5 days'
+			secondAlert:
+				sendAt: '+10 days'
+				dueDate: '+10 days'
+			thirdAlert:
+				sendAt: '+20 days'
+				dueDate: '+5 days'
+			copy:
+				- info@app-universe.cz
+		export:
+			author: 'App Universe'
+			invoice:
+				filename: 'faktura_'
+				color: '#0000FF'
+				template: null
+				style: null
+			fixInvoice:
+				filename: 'dobropis_'
+				color: '#FF0000'
+				template: null
+				style: null
+			payDocument:
+				filename: 'doklad_k_prijate_platbe_'
+				color: '#CCCCCC'
+				template: null
+				style: null
+			proforma:
+				filename: 'proforma_'
+				color: '#00FF00'
+				template: null
+				style: null
+			alertOne:
+				filename: 'upominka_1_'
+				color: '#FF0000'
+				template: null
+				style: null
+			alertTwo:
+				filename: 'upominka_2_'
+				color: '#FF0000'
+				template: null
+				style: null
+			alertThree:
+				filename: 'upominka_3_'
+				color: '#FF0000'
+				template: null
+				style: null
+			summary:
+				filename: 'prehled_faktur_'
+			intrastat:
+				filename: 'intrastat_'
+				title: 'Your Company - Intrastat '
+
+services:
+	- MatiCore\Invoice\BankMovementCronLog
+	- MatiCore\Invoice\BankMovementCronLogAccessor
+	- MatiCore\Company\CompanyManager
+	- MatiCore\Company\CompanyManagerAccessor
+	- MatiCore\Invoice\ExportManager(%tempDir%, %invoice%.%export%)
+	- MatiCore\Invoice\ExportManagerAccessor
+	- MatiCore\Invoice\InvoiceManager(%invoice%)
+	- MatiCore\Invoice\InvoiceManagerAccessor
+	- MatiCore\Supplier\SupplierManager
+	- MatiCore\Supplier\SupplierManagerAccessor
+	- MatiCore\Invoice\SignatureManager(%wwwDir%)
+	- MatiCore\Invoice\SignatureManagerAccessor
+	- MatiCore\Invoice\Email\InvoiceAlertOneEmail
+	- MatiCore\Invoice\Email\InvoiceAlertTwoEmail
+	- MatiCore\Invoice\Email\InvoiceAlertThreeEmail
+	- MatiCore\Invoice\Email\InvoiceEmail
+	- MatiCore\Invoice\Email\InvoiceFixEmail
+	- MatiCore\Invoice\Email\InvoicePayDocumentEmail
+	- MatiCore\Invoice\Command\InvoicePayCheckCommand(%tempDir%, %invoice%)
+	- MatiCore\Invoice\Command\InvoiceAlertCommand(%tempDir%,  %invoice%)
+	- MatiCore\Invoice\Command\InvoiceTaxListFixCommand

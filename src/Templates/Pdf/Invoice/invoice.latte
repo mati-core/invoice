@@ -1,0 +1,521 @@
+<table>
+	<tr>
+		<td class="border-right" style="width:50%; padding-left: 30px;">
+			<img src="{$invoice->getCompanyLogo()}" alt="Logo" style="width: 250px;">
+		</td>
+		<td class="{if $invoice->isFix()}background-red{elseif $invoice->isPayDocument()}background-indigo{else}background-green{/if}"
+		    style="width:50%; padding: 15px 30px 15px 30px;">
+            {if $invoice->isProforma()}
+				<h1 class="text-bold text-white">PROFORMA {$invoice->getNumber()}</h1>
+				<h3 class="text-white">Zálohová faktura (není daňový doklad)</h3>
+            {elseif $invoice->isPayDocument()}
+				<h1 class="text-bold text-white">PLATBA {$invoice->getNumber()}</h1>
+				<h3 class="text-white">Doklad k přijaté platbě</h3>
+            {elseif $invoice->isFix()}
+				<h1 class="text-bold text-white">DOBROPIS {$invoice->getNumber()}</h1>
+				<h3 class="text-white">Opravný daňový doklad</h3>
+            {else}
+				<h1 class="text-bold text-white">Faktura {$invoice->getNumber()}</h1>
+				<h3 class="text-white">Daňový doklad</h3>
+            {/if}
+		</td>
+	</tr>
+</table>
+<table>
+	<tr>
+		<td class="border-right" style="width: 50%; padding: 15px 30px 15px 30px;">
+			<h5 class="text-gray">Dodavatel</h5>
+			<br>
+			<p>
+				<b>{$invoice->getCompanyName()}</b>
+				<br>
+                {$invoice->getCompanyAddress()}<br>
+                {$invoice->getCompanyCity()}<br>
+                {$invoice->getCompanyPostalCode()}
+			</p>
+			<br>
+			<table class="text-gray">
+				<tr>
+					<td>IČ</td>
+					<td class="text-right">{$invoice->getCompanyIc()}</td>
+				</tr>
+				<tr>
+					<td>DIČ</td>
+					<td class="text-right">{$invoice->getCompanyDic()}</td>
+				</tr>
+			</table>
+		</td>
+		<td class="p-5" style="padding: 15px 30px 15px 30px;">
+			<h5 class="text-gray">Odběratel</h5>
+			<br>
+			<p>
+				<b>{$invoice->getCustomerName()}</b>
+				<br>
+                {$invoice->getCustomerAddress()}<br>
+                {$invoice->getCustomerCity()}<br>
+                {$invoice->getCustomerPostalCode()}
+			</p>
+			<br>
+			<table class="text-gray">
+				<tr>
+					<td>IČ</td>
+					<td class="text-right">{$invoice->getCustomerIc()}</td>
+				</tr>
+				<tr>
+					<td>DIČ</td>
+					<td class="text-right">{$invoice->getCustomerDic()}</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+<table>
+	<tr>
+		<td class="border-right {if $invoice->isFix()}background-red{elseif $invoice->isPayDocument()}background-indigo{else}background-green{/if}"
+		    style="width: 50%; padding: 5px 30px 5px 30px; vertical-align: top;">
+			<table class="text-white">
+				<tr>
+					<td class="line-padding">
+						Bankovní účet
+					</td>
+					<td class="text-right text-bold">
+                        {$invoice->getBankAccount()}/{$invoice->getBankCode()}
+					</td>
+				</tr>
+			</table>
+            {if $invoice->getCurrency()->getCode() !== 'CZK'}
+				<table class="text-white">
+					<tr>
+						<td class="line-padding">
+							Název banky
+						</td>
+						<td class="text-right text-bold">
+                            {$invoice->getBankName()}
+						</td>
+					</tr>
+				</table>
+				<table class="text-white">
+					<tr>
+						<td class="line-padding">
+							IBAN
+						</td>
+						<td class="text-right text-bold">
+                            {$invoice->getIban()}
+						</td>
+					</tr>
+				</table>
+				<table class="text-white">
+					<tr>
+						<td class="line-padding">
+							SWIFT / BIC
+						</td>
+						<td class="text-right text-bold">
+                            {$invoice->getSwift()}
+						</td>
+					</tr>
+				</table>
+            {/if}
+			<table class="text-white">
+				<tr>
+					<td class="line-padding">
+						Variabilní symbol
+					</td>
+					<td class="text-right text-bold">
+                        {$invoice->getVariableSymbol()}
+					</td>
+				</tr>
+			</table>
+			<table class="text-white">
+				<tr>
+					<td class="line-padding">
+						Způsob platby
+					</td>
+					<td class="text-right text-bold">
+                        {if $invoice->getPayMethod() === 'bank'}
+							Bankovní převod
+                        {elseif $invoice->getPayMethod() === 'cash'}
+							Hotově
+                        {elseif $invoice->getPayMethod() === 'card'}
+							Platební karta
+                        {elseif $invoice->getPayMethod() === 'delivery'}
+							Dobírka
+						{elseif $invoice->getPayMethod() === 'deposit'}
+							Zálohou
+                        {/if}
+					</td>
+				</tr>
+			</table>
+		</td>
+		<td style="background-color: #eee; padding: 5px 30px 5px 30px; vertical-align: top;">
+			<table n:if="$invoice->getOrderNumber() !== null" class="text-gray">
+				<tr>
+					<td class="line-padding">
+						Objednávka
+					</td>
+					<td class="text-right text-bold">
+                        {$invoice->getOrderNumber()}
+					</td>
+				</tr>
+			</table>
+			<table n:if="$invoice->getRentNumber() !== null" class="text-gray">
+				<tr>
+					<td class="line-padding">
+						Nájemní smlouva
+					</td>
+					<td class="text-right text-bold">
+                        {$invoice->getRentNumber()}
+					</td>
+				</tr>
+			</table>
+			<table n:if="$invoice->getContractNumber() !== null" class="text-gray">
+				<tr>
+					<td class="line-padding">
+						Dodací list (zakázka)
+					</td>
+					<td class="text-right text-bold">
+                        {$invoice->getContractNumber()}
+					</td>
+				</tr>
+			</table>
+			<table class="text-gray">
+				<tr>
+					<td class="line-padding">
+						Datum vystavení
+					</td>
+					<td class="text-right text-bold">
+                        {$invoice->getDate()->format('d.m.Y')}
+					</td>
+				</tr>
+			</table>
+			<table n:if="$invoice->isProforma() === false && $invoice->isPayDocument() === false" class="text-gray">
+				<tr>
+					<td class="line-padding">
+                        {if $invoice->isFix()}Datum uznání reklamace{else}Datum uskut. plnění{/if}
+					</td>
+					<td class="text-right text-bold">
+                        {$invoice->getTaxDate()->format('d.m.Y')}
+					</td>
+				</tr>
+			</table>
+            {if $invoice->isPayDocument() === true}
+				<table class="text-gray">
+					<tr>
+						<td class="line-padding">
+							Datum přijetí platby
+						</td>
+						<td class="text-right text-bold"
+						    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+                            {$invoice->getInvoice()->getPayDate()->format('d.m.Y')}
+						</td>
+					</tr>
+				</table>
+            {elseif $invoice->isProforma() === true}
+				<table class="text-gray">
+					<tr>
+						<td class="line-padding">
+							Datum splatnosti
+						</td>
+						<td class="text-right text-bold"
+						    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+							{$invoice->getDueDateFormatted()}
+						</td>
+					</tr>
+				</table>
+            {elseif $invoice->isProforma() === false && $invoice->isPayDocument() === false && $invoice->getTotalPrice() !== 0.0}
+				<table class="text-gray">
+					<tr>
+						<td class="line-padding">
+							Datum splatnosti
+						</td>
+						<td class="text-right text-bold"
+						    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+							{$invoice->getDueDateFormatted()}
+						</td>
+					</tr>
+				</table>
+            {/if}
+		</td>
+	</tr>
+</table>
+
+<div n:if="$invoice->getTextBeforeItems() !== null && $invoice->getTextBeforeItems() !== ''"
+		style="padding: 0 30px 0 30px;">
+	<p>{$invoice->getTextBeforeItems()|replace:"\n":'<br>'|noescape}</p>
+    {$pageBreaker->increase($beforeTextPBI)}
+</div>
+
+<table class="table" style="margin-top: 15px;">
+	<thead>
+	<tr>
+		<th style="width: 40px;"></th>
+		<th style="width: 40px;"></th>
+		<th></th>
+		<th n:if="$invoice->isProforma() === false" class="text-gray" style="width: 50px; font-weight: normal;">DPH</th>
+		<th class="text-gray" style="width: 150px; font-weight: normal;">CENA ZA MJ</th>
+		<th n:if="$invoice->isProforma() === false" class="text-gray" style="width: 150px; font-weight: normal;">CELKEM
+			BEZ DPH
+		</th>
+		<th n:if="$invoice->isProforma() === true" class="text-gray" style="width: 150px; font-weight: normal;">CELKEM
+		</th>
+	</tr>
+	</thead>
+	<tbody>
+    {foreach $invoice->getItems() as $item}
+	<tr>
+		<td class="text-right border-top">{$item->getQuantity()}</td>
+		<td class="border-top">{$item->getUnit()->getShortcut()}</td>
+		<td class="border-top">{$item->getDescription()}</td>
+		<td n:if="$invoice->isProforma() === false" class="text-right border-top">{$item->getVat()} %</td>
+        {if $invoice->isProforma() === false}
+			<td class="text-right border-top">
+                {App\Model\Number::formatPrice($item->getPricePerItem(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+			<td class="text-right border-top" style="background-color: #eee;">
+                {App\Model\Number::formatPrice($item->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+        {$pageBreaker->increase(1, $item->getTotalPrice())}
+        {else}
+			<td class="text-right border-top">
+                {App\Model\Number::formatPrice($item->getPricePerItemWithVat(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+			<td class="text-right border-top" style="background-color: #eee;">
+                {App\Model\Number::formatPrice($item->getTotalPriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+            {$pageBreaker->increase(1, $item->getTotalPriceWithVat())}
+        {/if}
+	</tr>
+	<tr n:if="$item->getSale() > 0">
+		<td class="text-right border-top">1</td>
+		<td class="border-top">x</td>
+		<td class="border-top">{$item->getSaleDescription()}</td>
+		<td n:if="$invoice->isProforma() === false" class="text-right border-top">{$item->getVat()} %</td>
+        {if $invoice->isProforma() === false}
+			<td class="text-right border-top">
+                {App\Model\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+			<td class="text-right border-top" style="background-color: #eee;">
+                {App\Model\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+        {$pageBreaker->increase(1, $item->getSalePrice())}
+        {else}
+			<td class="text-right border-top">
+                {App\Model\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+			<td class="text-right border-top" style="background-color: #eee;">
+                {App\Model\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+			</td>
+            {$pageBreaker->increase(1, $item->getSalePriceWithVat())}
+        {/if}
+	</tr>
+    {if $iterator->last === false && $pageBreaker->isNewPage()}
+    {$pageBreaker->nextPage()}
+    {$pageBreaker->setBreakOn(32)}
+	</tbody>
+</table>
+{include pageBreak}
+<table class="table" style="margin-top: 15px;">
+	<thead>
+	<tr>
+		<th style="width: 40px;"></th>
+		<th style="width: 40px;"></th>
+		<th></th>
+		<th n:if="$invoice->isProforma() === false" class="text-gray" style="width: 50px; font-weight: normal;">
+			DPH
+		</th>
+		<th class="text-gray" style="width: 150px; font-weight: normal;">CENA ZA MJ</th>
+		<th n:if="$invoice->isProforma() === false" class="text-gray" style="width: 150px; font-weight: normal;">
+			CELKEM
+			BEZ DPH
+		</th>
+		<th n:if="$invoice->isProforma() === true" class="text-gray" style="width: 150px; font-weight: normal;">
+			CELKEM
+		</th>
+	</tr>
+	</thead>
+	<tbody>
+    {/if}
+    {/foreach}
+	</tbody>
+</table>
+{$pageBreaker->setBreakOn(16)}
+{$pageBreaker->increase($afterTextPBI)}
+{if $pageBreaker->isNewPage()}
+    {$pageBreaker->nextPage()}
+    {$pageBreaker->setBreakOn(30)}
+    {include pageBreak}
+{/if}
+<table style="margin-top: 30px;">
+	<tr>
+		<td style="width: {if $invoice->getCurrency()->getCode() !== 'CZK'}30%{else}50%{/if}; padding-left: 30px;">
+			<div style="width: 180px; height: 180px;">
+				<table n:if="$invoice->getTotalPrice() !== 0.0 && $invoice->isFix() === false" style="width: 110px;">
+					<tr>
+						<td style="border: 1px solid #ccc;">
+							<img src="data:image/svg+xml;base64,{$invoice->getQRCode()}" alt="QR code"
+							     style="width: 100px; height: 100px; margin: 5px;">
+						</td>
+					</tr>
+					<tr>
+						<td class="text-center text-gray">QR platba</td>
+					</tr>
+				</table>
+			</div>
+		</td>
+		<td style="vertical-align: top;">
+            {if $invoice->isProforma() === false && $currency->getCode() !== $invoice->getCurrency()->getCode()}
+				<p style="font-size: 10px;">
+					Přepočet proveden kurzem ČNB ze dne {$invoice->getRateDate()->format('d.m.Y')}
+					({$invoice->getRate()} Kč / {$invoice->getCurrency()->getCode()})
+				</p>
+				<br>
+            {/if}
+			<table class="table m-0">
+				<tr n:if="$invoice->isProforma() === false">
+					<td class="text-gray p-2">Sazba</td>
+					<td class="text-gray text-right p-2">Základ</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" class="text-gray text-right p-2">Základ (CZK)</td>
+					<td class="text-gray text-right p-2">DPH</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" class="text-gray text-right p-2">DPH (CZK)</td>
+				</tr>
+				<tr n:if="$invoice->isProforma() === false" n:foreach="$invoice->getTaxList() as $invoiceTax">
+					<td style="padding: 5px; border-top: 1px solid #eee;">{$invoiceTax->getTax()} %</td>
+					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
+                        {App\Model\Number::formatPrice($invoiceTax->getPrice(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
+					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
+                        {App\Model\Number::formatPrice($invoiceTax->getTaxPrice(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
+				</tr>
+				<tr n:if="$invoice->isPayDocument() === false" n:foreach="$invoice->getDepositInvoices() as $depositInvoice">
+					<td style="font-size: 12px; color: black; padding: 5px;">
+						Záloha {$depositInvoice->getNumber()}
+					</td>
+					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
+						{App\Model\Number::formatPrice(-$depositInvoice->getItemTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
+					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
+						{App\Model\Number::formatPrice(-$depositInvoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
+				</tr>
+				<tr n:if="$invoice->isProforma() === false">
+					<td colspan="2"
+					    style="border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
+                        {App\Model\Number::formatPrice($invoice->getTotalPriceWithoutTax(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
+							style=" border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
+                        {App\Model\Number::formatPrice($invoice->getTotalPriceWithoutTaxCZK(), $currency, 2)|noescape}
+					</td>
+					<td style=" border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
+                        {App\Model\Number::formatPrice($invoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
+							style=" border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
+                        {App\Model\Number::formatPrice($invoice->getTotalTaxCZK(), $currency, 2)|noescape}
+					</td>
+				</tr>
+				<tr n:if="$invoice->getTotalPriceDiff() !== 0.0">
+					<td style="font-size: 12px; color: black; padding: 5px;">
+						Haléřové vyrovnání
+					</td>
+					<td colspan="2" style="font-size: 12px; color: black; text-align: right; padding: 5px;">
+                        {App\Model\Number::formatPrice($invoice->getTotalPriceDiff(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+				</tr>
+				<tr n:if="$invoice->isPayDocument() === true" n:foreach="$invoice->getDepositInvoices() as $depositInvoice">
+					<td style="font-size: 12px; color: black; padding: 5px;">
+						Záloha {$depositInvoice->getNumber()}
+					</td>
+					<td colspan="{if $invoice->getCurrency()->getCode() === 'CZK'}2{else}4{/if}" style="font-size: 12px; color: black; text-align: right; padding: 5px;">
+						{App\Model\Number::formatPrice(-$depositInvoice->getTotalPrice(), $depositInvoice->getCurrency(), 2)|noescape}
+					</td>
+				</tr>
+			</table>
+			<table>
+				<tr>
+					<td style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; font-weight: bold; font-size: 18px; padding: 5px;">
+						Celkem{if $invoice->isPayDocument() === false} k úhradě{/if}
+					</td>
+					<td colspan="2"
+					    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-weight: bold; font-size: 18px; padding: 5px;">
+                        {App\Model\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<table>
+	<tr>
+		<td style="width: 50%; padding: 15px 30px 15px 30px;">
+			<p>{$invoice->getTextAfterItems()|replace:"\n":'<br>'|noescape}</p>
+		</td>
+		<td style="text-align: center; vertical-align: top; padding: 15px 0 0 0">
+			<img n:if="$invoice->getSignImage() !== null" src="{$invoice->getSignImage(true)}"
+			                                              alt="Podpis"
+			                                              style="max-width: 120px;">
+		</td>
+	</tr>
+</table>
+
+<div class="footer">
+	<p n:if="$invoice->isProforma() === true">
+		Výše uvedené ceny jsou včetně DPH.
+	</p>
+	<p n:if="$invoice->isFix() === false && $invoice->isProforma() === false">
+		V případě nezaplacení této faktury v termínu Vám bude za každý den prodlení
+		účtována úhrada ve výši 0,05 % z
+		celkové částky.</p>
+	<br>
+	<p>Zápis do obchodního rejstříku dne 1.1.1111 u Městského soudu v Město, oddíl X., vložka 00000</p>
+	<p>*Dodané zboží, materiály a služby jsou až do úplného zaplacení majetkem firmy MOJE FIRMA, s.r.o.</p>
+	<br>
+	<table style="font-size: 10px;">
+		<tr>
+			<td style="width: 25%;">
+                {if $invoice->isFix()}Vystavil{else}Fakturoval{/if}: {$invoice->getAuthorName()}
+			</td>
+			<td style="width: 25%;">
+				Mob.: +420 000 000 000
+			</td>
+			<td style="width: 25%;">
+				Email: faktury@email.cz
+			</td>
+			<td style="width: 25%; text-align: right;">
+				Vygenerováno: {$invoice->getEditDate()->format('d.m.Y')}
+			</td>
+		</tr>
+	</table>
+</div>
+
+{define pageBreak}
+	<table style="margin-top:30px;">
+		<tr>
+			<td style="width: 50%;"></td>
+			<td>Celkem:</td>
+			<td style="text-align: right;">{App\Model\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
+		</tr>
+		<tr>
+			<td style="width: 50%; padding-top: 20px;"></td>
+			<td style="padding-top: 20px; font-weight: bold; {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+				Převádí se:
+			</td>
+			<td style="text-align: right; padding-top: 20px;">{App\Model\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
+		</tr>
+	</table>
+	<pagebreak>
+	<table style="margin-top:50px;">
+		<tr>
+			<td style="width: 50%; padding-top: 20px;"></td>
+			<td style="padding-top: 20px; font-weight: bold; color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+				Převedeno:
+			</td>
+			<td style="text-align: right; padding-top: 20px;">{App\Model\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
+		</tr>
+	</table>
+{/define}

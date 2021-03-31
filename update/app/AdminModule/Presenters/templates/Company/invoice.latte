@@ -1,0 +1,182 @@
+{block title}
+	{$company->getName()} - Faktury
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Company:default">
+				<i class="fas fa-building"></i> Firmy
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Company:detail, id => $company->getId()">
+				<i class="fas fa-building"></i> {$company->getName()}
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			<i class="fas fa-file-invoice"></i> Faktury
+		</li>
+	</ol>
+{/block}
+
+{block content}
+	<!-- Main content -->
+	<section class="content" id="app">
+		<div class="container-fluid">
+			<!-- Small boxes (Stat box) -->
+            {snippet flashes}
+				<div n:foreach="$flashes as $msg" class="row">
+					<div class="col-lg-12">
+                        {if $msg->type === 'success'}
+							<div class="alert alert-dismissible alert-success">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
+                                {$msg->message}
+							</div>
+                        {elseif $msg->type === 'warning'}
+							<div class="alert alert-dismissible alert-warning">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-warning"></i> Pozor!</h5>
+                                {$msg->message}
+							</div>
+                        {elseif $msg->type === 'danger' || $msg->type === 'error'}
+							<div class="alert alert-dismissible alert-danger">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
+                                {$msg->message}
+							</div>
+                        {else}
+							<div class="alert alert-dismissible alert-info">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+								<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
+                                {$msg->message}
+							</div>
+                        {/if}
+					</div>
+				</div>
+            {/snippet}
+
+			<div class="row">
+				<div class="col-12 mb-3 text-right">
+					<a n:href="Company:detail, id => $company->getId()" class="btn btn-sm btn-secondary">
+						<i class="fas fa-reply"></i>&nbsp;Zpět
+					</a>
+					<a n:href="Invoice:detail" class="btn btn-sm btn-primary">
+						<i class="fas fa-plus"></i>&nbsp;Nová faktura
+					</a>
+				</div>
+			</div>
+
+			<div n:if="$presenter->checkUserRight('page__company__statistics')" class="row">
+				<div class="col-md-3 col-sm-6 col-12">
+					<div class="info-box bg-gradient-info">
+						<span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
+
+						<div class="info-box-content">
+							<span class="info-box-text">Celkem</span>
+							<span class="info-box-number">{$company->getInvoicesPriceFormated()|noescape}</span>
+
+							<div class="progress">
+								<div class="progress-bar" style="width: 100%"></div>
+							</div>
+							<span class="progress-description">
+			                  Celkem {$company->getInvoicesCount()} faktur.
+			                </span>
+						</div>
+						<!-- /.info-box-content -->
+					</div>
+					<!-- /.info-box -->
+				</div>
+				<!-- /.col -->
+				<div class="col-md-3 col-sm-6 col-12">
+					<div class="info-box bg-gradient-success">
+						<span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
+
+						<div class="info-box-content">
+							<span class="info-box-text">Zaplaceno</span>
+							<span class="info-box-number">{$company->getInvoicesPaidPriceFormated()|noescape}</span>
+
+							<div class="progress">
+								<div class="progress-bar" style="width: {$company->getInvoicesPaidPercent()}%"></div>
+							</div>
+							<span class="progress-description">
+			                  Celkem {$company->getInvoicesPaidCount()} faktur.
+			                </span>
+						</div>
+						<!-- /.info-box-content -->
+					</div>
+					<!-- /.info-box -->
+				</div>
+				<!-- /.col -->
+				<div class="col-md-3 col-sm-6 col-12">
+					<div class="info-box bg-gradient-warning">
+						<span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
+
+						<div class="info-box-content">
+							<span class="info-box-text">Nezaplaceno</span>
+							<span class="info-box-number">{$company->getInvoicesActivePriceFormated()|noescape}</span>
+
+							<div class="progress">
+								<div class="progress-bar" style="width: {$company->getInvoicesActivePercent()}%"></div>
+							</div>
+							<span class="progress-description">
+			                  Celkem {$company->getInvoicesActiveCount()} faktur.
+			                </span>
+						</div>
+						<!-- /.info-box-content -->
+					</div>
+					<!-- /.info-box -->
+				</div>
+				<!-- /.col -->
+				<div class="col-md-3 col-sm-6 col-12">
+					<div class="info-box bg-gradient-danger">
+						<span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
+
+						<div class="info-box-content">
+							<span class="info-box-text">Po splatnosti</span>
+							<span class="info-box-number">{$company->getInvoicesOverduePriceFormated()|noescape}</span>
+
+							<div class="progress">
+								<div class="progress-bar" style="width: {$company->getInvoicesOverduePercent()}%"></div>
+							</div>
+							<span class="progress-description">
+			                  Celkem {$company->getInvoicesOverdueCount()} faktur.
+			                </span>
+						</div>
+						<!-- /.info-box-content -->
+					</div>
+					<!-- /.info-box -->
+				</div>
+				<!-- /.col -->
+			</div>
+
+			<div class="row">
+				<div class="col-12">
+
+					<!-- Default box -->
+					<div class="card">
+						<div class="card-header">
+							<h3 class="card-title">Seznam faktur</h3>
+						</div>
+						<div class="card-body p-0">
+                            {control invoiceTable}
+						</div>
+						<!-- /.card-body -->
+					</div>
+					<!-- /.card -->
+
+				</div>
+			</div>
+			<!-- /.row -->
+
+		</div>
+		<!-- /.container-fluid -->
+	</section>
+	<!-- /.content -->
+{/block}

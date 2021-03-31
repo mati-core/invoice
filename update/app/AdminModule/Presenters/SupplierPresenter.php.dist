@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+
+namespace App\AdminModule\Presenters;
+
+/**
+ * Class SupplierPresenter
+ * @package App\AdminModule\Presenters
+ */
+class SupplierPresenter extends SupplierInnerPackagePresenter
+{
+
+}

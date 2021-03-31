@@ -1,0 +1,15 @@
+includes:
+	- vendor/phpstan/phpstan-nette/extension.neon
+	- vendor/phpstan/phpstan-nette/rules.neon
+
+parameters:
+	excludes_analyse:
+		- src/Extension/*
+		- src/Presenters/*
+		- install/*
+		- update/*
+	ignoreErrors:
+		- '#Call to an undefined method [a-zA-Z0-9\\_]+Presenter::checkAccess\(\)#'
+
+	checkGenericClassInNonGenericObjectType: false
+	checkMissingIterableValueType: false

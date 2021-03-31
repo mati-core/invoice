@@ -1,0 +1,96 @@
+{block title}
+	Podpisy
+{/block}
+
+{block pageTitle}
+	Podpisy
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			Podpisy
+		</li>
+	</ol>
+{/block}
+
+{block vueScripts}
+	<script src="{$basePath}/cms/dist/js/vue/components.js"></script>
+	<script src="{$basePath}/js/initVue.js"></script>
+{/block}
+
+{block content}
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12">
+
+				<!-- Default box -->
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Seznam uživatelů</h3>
+					</div>
+					<div class="card-body p-0" n:snippet="user-list">
+						<table class="table table-striped">
+							<thead>
+							<tr>
+								<th>
+									Jméno
+								</th>
+								<th>
+									Skupina
+								</th>
+								<th>
+									Podpis
+								</th>
+								<th class="text-right"></th>
+							</tr>
+							</thead>
+							<tbody>
+							{if count($users) > 0}
+								<tr n:foreach="$users as $u">
+									<td>
+										{$u->getName()}
+									</td>
+									<td>
+										{$u->getGroup()->getName()}
+									</td>
+									<td>
+										{if $presenter->hasSignature($u)}
+											<span class="text-success">
+													<i class="fas fa-check"></i> V pořádku
+												</span>
+										{else}
+											<span class="text-danger">
+													<i class="fas fa-times"></i> Chybí
+												</span>
+										{/if}
+									</td>
+									<td class="project-actions text-right">
+										<a n:href="upload, id => $u->getId()" class="btn btn-xs btn-info">
+											<i class="fas fa-edit"></i> Nahrát
+										</a>
+									</td>
+								</tr>
+							{else}
+								<tr>
+									<td colspan="4" class="text-center">Žádní uživatelé v seznamu</td>
+								</tr>
+							{/if}
+							</tbody>
+						</table>
+					</div>
+					<!-- /.card-body -->
+				</div>
+				<!-- /.card -->
+
+			</div>
+		</div>
+		<!-- /.row -->
+	</div>
+	<!-- /.container-fluid -->
+{/block}
