@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+
+namespace App\AdminModule\Presenters;
+
+/**
+ * Class ExpensePresenter
+ * @package App\AdminModule\Presenters
+ */
+class ExpensePresenter extends BaseAdminPresenter
+{
+
+}
