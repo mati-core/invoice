@@ -2,6 +2,10 @@
 	Opravný daňový doklad
 {/block}
 
+{block pageTitle}
+	Opravný daňový doklad
+{/block}
+
 {block breadcrumb}
 	<ol class="breadcrumb float-sm-right">
 		<li class="breadcrumb-item">
@@ -26,417 +30,416 @@
 {/block}
 
 {block content}
-	<!-- Main content -->
-	<section class="content" id="app" data-invoiceId="{$invoiceId ?? 0}">
-		<div class="container-fluid">
-			<!-- Small boxes (Stat box) -->
-            {snippet flashes}
-				<div n:foreach="$flashes as $msg" class="row">
-					<div class="col-lg-12">
-                        {if $msg->type === 'success'}
-							<div class="alert alert-dismissible alert-success">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
-                                {$msg->message}
-							</div>
-                        {elseif $msg->type === 'warning'}
-							<div class="alert alert-dismissible alert-warning">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-warning"></i> Pozor!</h5>
-                                {$msg->message}
-							</div>
-                        {elseif $msg->type === 'danger' || $msg->type === 'error'}
-							<div class="alert alert-dismissible alert-danger">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
-                                {$msg->message}
-							</div>
-                        {else}
-							<div class="alert alert-dismissible alert-info">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
-                                {$msg->message}
-							</div>
-                        {/if}
-					</div>
-				</div>
-
-				<div v-if="showAlert" class="row">
-					<div class="col-lg-12">
-						<div class="alert alert-dismissible" :class="alertType">
-							<button type="button" class="close" @click="hideAlert">×</button>
-							<h5 v-if="alertType === 'alert-success'"><i class="icon fas fa-check"></i> Hotovo!</h5>
-							<h5 v-if="alertType === 'alert-info'"><i class="icon fas fa-info"></i> Info!</h5>
-							<h5 v-if="alertType === 'alert-warning'"><i class="icon fas fa-warning"></i> Pozor!</h5>
-							<h5 v-if="alertType === 'alert-danger'"><i class="icon fas fa-warning"></i> Chyba!</h5>
-							{{ alertText }}
+	<div class="container-fluid" id="invoice-core" data-invoiceId="{$invoiceId ?? 0}">
+		<!-- Small boxes (Stat box) -->
+		{snippet flashes}
+			<div n:foreach="$flashes as $msg" class="row">
+				<div class="col-lg-12">
+					{if $msg->type === 'success'}
+						<div class="alert alert-dismissible alert-success">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+							<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
+							{$msg->message}
 						</div>
-					</div>
-				</div>
-            {/snippet}
-
-			<div class="row">
-				<div class="col text-right mb-3">
-					<a n:href="Invoice:default" class="btn btn-secondary btn-sm">
-						<i class="fas fa-reply"></i>&nbsp;Zpět
-					</a>
-					<button class="btn btn-info btn-sm"
-					        data-toggle="modal" data-target="#depositModal">
-						<i class="fas fa-cash-register"></i>&nbsp;Odečíst zálohu
-					</button>
-					<button @click="save" class="btn btn-success btn-sm">
-						<i class="fas fa-save"></i>&nbsp;Uložit
-					</button>
+					{elseif $msg->type === 'warning'}
+						<div class="alert alert-dismissible alert-warning">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+							<h5><i class="icon fas fa-warning"></i> Pozor!</h5>
+							{$msg->message}
+						</div>
+					{elseif $msg->type === 'danger' || $msg->type === 'error'}
+						<div class="alert alert-dismissible alert-danger">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+							<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
+							{$msg->message}
+						</div>
+					{else}
+						<div class="alert alert-dismissible alert-info">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+							<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
+							{$msg->message}
+						</div>
+					{/if}
 				</div>
 			</div>
 
-			<div class="row">
-				<div class="col">
-					<div class="card">
-						<div class="card-body">
-							<div class="row">
-								<div class="col-3">
-									<div class="form-group">
-										<label for="">Typ</label>
-										<input type="text" class="form-control" value="Opravný daňový doklad" disabled>
+			<div v-if="showAlert" class="row">
+				<div class="col-lg-12">
+					<div class="alert alert-dismissible" :class="alertType">
+						<button type="button" class="close" @click="hideAlert">×</button>
+						<h5 v-if="alertType === 'alert-success'"><i class="icon fas fa-check"></i> Hotovo!</h5>
+						<h5 v-if="alertType === 'alert-info'"><i class="icon fas fa-info"></i> Info!</h5>
+						<h5 v-if="alertType === 'alert-warning'"><i class="icon fas fa-warning"></i> Pozor!</h5>
+						<h5 v-if="alertType === 'alert-danger'"><i class="icon fas fa-warning"></i> Chyba!</h5>
+						{{ alertText }}
+					</div>
+				</div>
+			</div>
+		{/snippet}
+
+		<div class="row">
+			<div class="col text-right mb-3">
+				<a n:href="Invoice:default" class="btn btn-secondary btn-sm">
+					<i class="fas fa-reply"></i>&nbsp;Zpět
+				</a>
+				<button class="btn btn-info btn-sm"
+						data-toggle="modal" data-target="#depositModal">
+					<i class="fas fa-cash-register"></i>&nbsp;Odečíst zálohu
+				</button>
+				<button @click="save" class="btn btn-success btn-sm">
+					<i class="fas fa-save"></i>&nbsp;Uložit
+				</button>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<div class="card">
+					<div class="card-body">
+						<div class="row">
+							<div class="col-3">
+								<div class="form-group">
+									<label for="">Typ</label>
+									<input type="text" class="form-control" value="Opravný daňový doklad" disabled>
+								</div>
+							</div>
+							<div class="offset-6 col-3">
+								<div class="form-group">
+									<label for="">Opravný daňový doklad k faktuře č.:</label>
+									<input type="text" v-model="invoice.number"
+										   class="form-control form-control-sm" disabled>
+								</div>
+							</div>
+						</div>
+						<div class="row pt-2" style="background-color: #f9f9f9">
+							<div class="col-6">
+								<div class="row">
+									<div class="col-6">
+										<h3>Dodavatel</h3>
 									</div>
 								</div>
-								<div class="offset-6 col-3">
-									<div class="form-group">
-										<label for="">Opravný daňový doklad k faktuře č.:</label>
-										<input type="text" v-model="invoice.number"
-										       class="form-control form-control-sm" disabled>
+								<h5>{{ invoice.company.name }}</h5>
+								<p>
+									{{ invoice.company.address }}
+									<br>{{ invoice.company.city }}
+									<br>{{ invoice.company.zipCode }}
+								</p>
+								<p>
+									IČ: {{ invoice.company.ic }}
+									<br>DIČ: {{ invoice.company.dic }}
+								</p>
+							</div>
+							<div class="col-6">
+								<div class="row">
+									<div class="col-6">
+										<h3>Odběratel</h3>
+									</div>
+								</div>
+								<h5>{{ invoice.customer.name }}</h5>
+								<p>
+									{{ invoice.customer.address }}
+									<br>{{ invoice.customer.city }}
+									<br>{{ invoice.customer.zipCode }}
+								</p>
+								<p>
+									IČ: {{ invoice.customer.ic }}
+									<br>DIČ: {{ invoice.customer.dic }}
+								</p>
+							</div>
+						</div>
+						<div class="row pt-5 pb-2 mb-3" style="background-color: #f9f9f9">
+							<div class="col-6">
+								<div class="row">
+									<div class="col">
+										<div class="form-group">
+											<label for="">Objednávka č.</label>
+											<input type="text" v-model="invoice.orderNumber"
+												   class="form-control form-control-sm">
+										</div>
+									</div>
+									<div class="col">
+										<div class="form-group">
+											<label for="">Nájemní smlouva č.</label>
+											<input type="text" v-model="invoice.rentNumber"
+												   class="form-control form-control-sm">
+										</div>
+									</div>
+									<div class="col">
+										<div class="form-group">
+											<label for="">Zakázka č.</label>
+											<input type="text" v-model="invoice.contractNumber"
+												   class="form-control form-control-sm">
+										</div>
 									</div>
 								</div>
 							</div>
-							<div class="row pt-2" style="background-color: #f9f9f9">
-								<div class="col-6">
-									<div class="row">
-										<div class="col-6">
-											<h3>Dodavatel</h3>
-										</div>
-									</div>
-									<h5>{{ invoice.company.name }}</h5>
-									<p>
-										{{ invoice.company.address }}
-										<br>{{ invoice.company.city }}
-										<br>{{ invoice.company.zipCode }}
-									</p>
-									<p>
-										IČ: {{ invoice.company.ic }}
-										<br>DIČ: {{ invoice.company.dic }}
-									</p>
-								</div>
-								<div class="col-6">
-									<div class="row">
-										<div class="col-6">
-											<h3>Odběratel</h3>
-										</div>
-									</div>
-									<h5>{{ invoice.customer.name }}</h5>
-									<p>
-										{{ invoice.customer.address }}
-										<br>{{ invoice.customer.city }}
-										<br>{{ invoice.customer.zipCode }}
-									</p>
-									<p>
-										IČ: {{ invoice.customer.ic }}
-										<br>DIČ: {{ invoice.customer.dic }}
-									</p>
+						</div>
+						<div class="row">
+							<div class="col-2">
+								<div class="form-group">
+									<label for="">Měna</label>
+									<select v-model="invoice.currency" @change="changeCurrency"
+											class="form-control form-control-sm" disabled>
+										<option n:foreach="$currencyList as $currency"
+												value="{$currency->getCode()}">{$currency->getCode()}</option>
+									</select>
 								</div>
 							</div>
-							<div class="row pt-5 pb-2 mb-3" style="background-color: #f9f9f9">
-								<div class="col-6">
-									<div class="row">
-										<div class="col">
-											<div class="form-group">
-												<label for="">Objednávka č.</label>
-												<input type="text" v-model="invoice.orderNumber"
-												       class="form-control form-control-sm">
-											</div>
-										</div>
-										<div class="col">
-											<div class="form-group">
-												<label for="">Nájemní smlouva č.</label>
-												<input type="text" v-model="invoice.rentNumber"
-												       class="form-control form-control-sm">
-											</div>
-										</div>
-										<div class="col">
-											<div class="form-group">
-												<label for="">Zakázka č.</label>
-												<input type="text" v-model="invoice.contractNumber"
-												       class="form-control form-control-sm">
-											</div>
-										</div>
-									</div>
+							<div class="col-2">
+								<div class="form-group">
+									<label for="">Způsob úhrady</label>
+									<select v-model="invoice.payMethod" class="form-control form-control-sm">
+										<option value="bank">Převodem</option>
+										<option value="cash">Hotově</option>
+										<option value="card">Kartou</option>
+										<option value="delivery">Dobírkou</option>
+										<option value="deposit">Zálohou</option>
+									</select>
 								</div>
 							</div>
-							<div class="row">
-								<div class="col-2">
-									<div class="form-group">
-										<label for="">Měna</label>
-										<select v-model="invoice.currency" @change="changeCurrency"
-										        class="form-control form-control-sm" disabled>
-											<option n:foreach="$currencyList as $currency"
-													value="{$currency->getCode()}">{$currency->getCode()}</option>
-										</select>
-									</div>
-								</div>
-								<div class="col-2">
-									<div class="form-group">
-										<label for="">Způsob úhrady</label>
-										<select v-model="invoice.payMethod" class="form-control form-control-sm">
-											<option value="bank">Převodem</option>
-											<option value="cash">Hotově</option>
-											<option value="card">Kartou</option>
-											<option value="delivery">Dobírkou</option>
-											<option value="deposit">Zálohou</option>
-										</select>
-									</div>
-								</div>
-								<div class="col-2">
-									<div class="form-group">
-										<label for="">Datum vystavení</label>
-										<input type="text" v-model="invoice.date"
-										       onchange="app.updateDateDue(null, this)"
-										       class="form-control form-control-sm datepicker">
-									</div>
-								</div>
-								<div class="col-2">
-									<div v-if="invoice.type !== 'proforma'" class="form-group">
-										<label for="">Datum uznání reklamace</label>
-										<input type="text" :value="invoice.dateTax"
-										       onchange="app.setDateTax(null, this)"
-										       :disabled="invoice.id !== null && invoice.id !== ''"
-										       class="form-control form-control-sm datepicker">
-									</div>
-								</div>
-								<div class="col-2">
-									<div class="form-group">
-										<label for="">Splatnost</label>
-										<select type="text"
-										        v-model="invoice.dateDueSelect"
-										        @change="updateDateDue"
-										        class="form-control form-control-sm">
-											<option value="0">0 dní</option>
-											<option value="7">7 dní</option>
-											<option value="10">10 dní</option>
-											<option value="14">14 dní</option>
-											<option value="30">30 dní</option>
-											<option value="">Jiné</option>
-										</select>
-									</div>
-								</div>
-								<div class="col-2">
-									<div class="form-group">
-										<label for="">Datum splatnosti</label>
-										<input type="text"
-										       :value="invoice.dateDue"
-										       onchange="app.setDateDue(null, this)"
-										       :disabled="invoice.dateDueSelect !== ''"
-										       class="form-control form-control-sm datepicker">
-									</div>
+							<div class="col-2">
+								<div class="form-group">
+									<label for="">Datum vystavení</label>
+									<input type="text" v-model="invoice.date"
+										   onchange="app.updateDateDue(null, this)"
+										   class="form-control form-control-sm datepicker">
 								</div>
 							</div>
-							<hr>
-							<div class="row">
-								<div class="col">
-									<div class="form-group">
+							<div class="col-2">
+								<div v-if="invoice.type !== 'proforma'" class="form-group">
+									<label for="">Datum uznání reklamace</label>
+									<input type="text" :value="invoice.dateTax"
+										   onchange="app.setDateTax(null, this)"
+										   :disabled="invoice.id !== null && invoice.id !== ''"
+										   class="form-control form-control-sm datepicker">
+								</div>
+							</div>
+							<div class="col-2">
+								<div class="form-group">
+									<label for="">Splatnost</label>
+									<select type="text"
+											v-model="invoice.dateDueSelect"
+											@change="updateDateDue"
+											class="form-control form-control-sm">
+										<option value="0">0 dní</option>
+										<option value="7">7 dní</option>
+										<option value="10">10 dní</option>
+										<option value="14">14 dní</option>
+										<option value="30">30 dní</option>
+										<option value="">Jiné</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-2">
+								<div class="form-group">
+									<label for="">Datum splatnosti</label>
+									<input type="text"
+										   :value="invoice.dateDue"
+										   onchange="app.setDateDue(null, this)"
+										   :disabled="invoice.dateDueSelect !== ''"
+										   class="form-control form-control-sm datepicker">
+								</div>
+							</div>
+						</div>
+						<hr>
+						<div class="row">
+							<div class="col">
+								<div class="form-group">
 										<textarea v-model="invoice.textBeforeItems" class="form-control"
-										          placeholder="Text před položkami faktury"
-										          rows="5"></textarea>
-									</div>
+												  placeholder="Text před položkami faktury"
+												  rows="5"></textarea>
 								</div>
 							</div>
-							<hr>
-							<div class="row">
-								<div class="col-12">
-									<table class="table table-hover">
-										<thead>
+						</div>
+						<hr>
+						<div class="row">
+							<div class="col-12">
+								<table class="table table-hover">
+									<thead>
+									<tr>
+										<th width="50">Počet</th>
+										<th width="80">MJ</th>
+										<th>Popis</th>
+										<th width="80">Sleva %</th>
+										<th width="80">DPH %</th>
+										<th width="120">Cena za MJ</th>
+										<th width="120">Cena bez DPH</th>
+									</tr>
+									</thead>
+									<tbody>
+									<template v-for="(item, index) in invoice.items">
 										<tr>
-											<th width="50">Počet</th>
-											<th width="80">MJ</th>
-											<th>Popis</th>
-											<th width="80">Sleva %</th>
-											<th width="80">DPH %</th>
-											<th width="120">Cena za MJ</th>
-											<th width="120">Cena bez DPH</th>
-										</tr>
-										</thead>
-										<tbody>
-										<template v-for="(item, index) in invoice.items">
-											<tr>
-												<td>
-													<input type="text" v-model="item.countString" v-on:keyup="updateData"
-													       class="form-control form-control-sm"
-													       :style="item.count < 0 ? 'border-color: red;' : ''">
-												</td>
-												<td>
-													<select v-model="item.unit" class="form-control form-control-sm" disabled>
-														<option n:foreach="$unitList as $unit"
-																value="{$unit->getId()}">{$unit->getShortcut()}</option>
-													</select>
-												</td>
-												<td>
-													<input type="text" v-model="item.description"
-													       class="form-control form-control-sm"
-													       disabled>
-												</td>
-												<td>
-													<div class="input-group input-group-sm">
-														<input type="text" v-model="item.saleString"
-														       class="form-control form-control-sm" value="0" disabled>
-													</div>
-												</td>
-												<td>
-													<div class="input-group input-group-sm">
-														<input type="text" v-model="item.taxString"
-														       class="form-control form-control-sm" value="21.0"
-														       disabled>
-													</div>
-												</td>
-												<td>
-													<div class="form-group m-0">
-														<div class="input-group input-group-sm">
-															<input type="text" v-model="item.priceString"
-															       class="form-control form-control-sm text-right"
-															       disabled>
-															<div class="input-group-append">
-																<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
-															</div>
-														</div>
-													</div>
-												</td>
-												<td>
-													<div class="form-group m-0">
-														<div class="input-group input-group-sm">
-															<input type="text" v-model="item.totalPriceString"
-															       class="form-control form-control-sm text-right" disabled>
-															<div class="input-group-append">
-																<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
-															</div>
-														</div>
-													</div>
-												</td>
-											</tr>
-											<tr v-if="item.sale > 0">
-												<td class="align-middle text-center">
-													1
-												</td>
-												<td class="align-middle text-center">
-													x
-												</td>
-												<td>
-													<input type="text" v-model="item.saleDescription"
-													       class="form-control form-control-sm"
-													       disabled>
-												</td>
-												<td></td>
-												<td></td>
-												<td>
-													<div class="form-group m-0">
-														<div class="input-group input-group-sm">
-															<input type="text" v-model="item.salePriceString"
-															       class="form-control form-control-sm text-right" disabled>
-															<div class="input-group-append">
-																<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
-															</div>
-														</div>
-													</div>
-												</td>
-												<td>
-													<div class="form-group m-0">
-														<div class="input-group input-group-sm">
-															<input type="text" v-model="item.salePriceString"
-															       class="form-control form-control-sm text-right" disabled>
-															<div class="input-group-append">
-																<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
-															</div>
-														</div>
-													</div>
-												</td>
-											</tr>
-										</template>
-										</tbody>
-									</table>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-6 offset-6">
-									<p v-if="invoice.currency !== 'CZK'">
-										<small>
-											Přepočet proveden kurzem ČNB ze dne {{ invoice.currencyData.rateDate }} ({{
-											invoice.currencyData.rate}} Kč / {{ invoice.currencyData.code }})
-										</small>
-									</p>
-									<table class="table">
-										<thead>
-										<tr>
-											<th>Sazba</th>
-											<th class="text-right">Základ</th>
-											<th class="text-right">DPH</th>
-										</tr>
-										</thead>
-										<tbody>
-										<tr v-for="taxData in invoice.taxList">
-											<td>{{ taxData.tax }}%</td>
-											<td class="text-right">{{ taxData.valueWithoutTaxFormatted }}</td>
-											<td class="text-right">{{ taxData.valueFormatted }}</td>
-										</tr>
-										<tr v-for="(d, index) in invoice.deposit">
 											<td>
-												{{ bText(d.number, 'Záloha ') }}
-												<i @click="removeDeposit(index)" class="pl-3 fas fa-trash text-danger" style="cursor: pointer;"></i>
+												<input type="text" v-model="item.countString" v-on:keyup="updateData"
+													   class="form-control form-control-sm"
+													   :style="item.count < 0 ? 'border-color: red;' : ''">
 											</td>
-											<td class="text-right" v-html="d.itemPriceFormatted"></td>
-											<td class="text-right" v-html="d.taxFormatted"></td>
+											<td>
+												<select v-model="item.unit" class="form-control form-control-sm"
+														disabled>
+													<option n:foreach="$unitList as $unit"
+															value="{$unit->getId()}">{$unit->getShortcut()}</option>
+												</select>
+											</td>
+											<td>
+												<input type="text" v-model="item.description"
+													   class="form-control form-control-sm"
+													   disabled>
+											</td>
+											<td>
+												<div class="input-group input-group-sm">
+													<input type="text" v-model="item.saleString"
+														   class="form-control form-control-sm" value="0" disabled>
+												</div>
+											</td>
+											<td>
+												<div class="input-group input-group-sm">
+													<input type="text" v-model="item.taxString"
+														   class="form-control form-control-sm" value="21.0"
+														   disabled>
+												</div>
+											</td>
+											<td>
+												<div class="form-group m-0">
+													<div class="input-group input-group-sm">
+														<input type="text" v-model="item.priceString"
+															   class="form-control form-control-sm text-right"
+															   disabled>
+														<div class="input-group-append">
+															<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
+														</div>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="form-group m-0">
+													<div class="input-group input-group-sm">
+														<input type="text" v-model="item.totalPriceString"
+															   class="form-control form-control-sm text-right" disabled>
+														<div class="input-group-append">
+															<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
+														</div>
+													</div>
+												</div>
+											</td>
 										</tr>
-										</tbody>
-									</table>
+										<tr v-if="item.sale > 0">
+											<td class="align-middle text-center">
+												1
+											</td>
+											<td class="align-middle text-center">
+												x
+											</td>
+											<td>
+												<input type="text" v-model="item.saleDescription"
+													   class="form-control form-control-sm"
+													   disabled>
+											</td>
+											<td></td>
+											<td></td>
+											<td>
+												<div class="form-group m-0">
+													<div class="input-group input-group-sm">
+														<input type="text" v-model="item.salePriceString"
+															   class="form-control form-control-sm text-right" disabled>
+														<div class="input-group-append">
+															<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
+														</div>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="form-group m-0">
+													<div class="input-group input-group-sm">
+														<input type="text" v-model="item.salePriceString"
+															   class="form-control form-control-sm text-right" disabled>
+														<div class="input-group-append">
+															<span class="input-group-text">{{ invoice.currencyData.symbol }}</span>
+														</div>
+													</div>
+												</div>
+											</td>
+										</tr>
+									</template>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-6 offset-6">
+								<p v-if="invoice.currency !== 'CZK'">
+									<small>
+										Přepočet proveden kurzem ČNB ze dne {{ invoice.currencyData.rateDate }} ({{
+										invoice.currencyData.rate}} Kč / {{ invoice.currencyData.code }})
+									</small>
+								</p>
+								<table class="table">
+									<thead>
+									<tr>
+										<th>Sazba</th>
+										<th class="text-right">Základ</th>
+										<th class="text-right">DPH</th>
+									</tr>
+									</thead>
+									<tbody>
+									<tr v-for="taxData in invoice.taxList">
+										<td>{{ taxData.tax }}%</td>
+										<td class="text-right">{{ taxData.valueWithoutTaxFormatted }}</td>
+										<td class="text-right">{{ taxData.valueFormatted }}</td>
+									</tr>
+									<tr v-for="(d, index) in invoice.deposit">
+										<td>
+											{{ bText(d.number, 'Záloha ') }}
+											<i @click="removeDeposit(index)" class="pl-3 fas fa-trash text-danger"
+											   style="cursor: pointer;"></i>
+										</td>
+										<td class="text-right" v-html="d.itemPriceFormatted"></td>
+										<td class="text-right" v-html="d.taxFormatted"></td>
+									</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-6">
+								<div class="form-group">
+									<label for="">Poznámka</label>
+									<textarea v-model="invoice.textAfterItems" rows="5"
+											  class="form-control"></textarea>
 								</div>
 							</div>
-							<div class="row">
-								<div class="col-6">
-									<div class="form-group">
-										<label for="">Poznámka</label>
-										<textarea v-model="invoice.textAfterItems" rows="5"
-										          class="form-control"></textarea>
+							<div class="col-5 offset-1">
+								<div class="row">
+									<div class="col-6">
+										<h5>Celkem DPH</h5>
+									</div>
+									<div class="col-6 text-right">
+										<h5>{{ invoice.totalTaxFormatted }}</h5>
 									</div>
 								</div>
-								<div class="col-5 offset-1">
-									<div class="row">
-										<div class="col-6">
-											<h5>Celkem DPH</h5>
-										</div>
-										<div class="col-6 text-right">
-											<h5>{{ invoice.totalTaxFormatted }}</h5>
-										</div>
+								<div class="row">
+									<div class="col-6">
+										<h5>Celkem s DPH</h5>
 									</div>
-									<div class="row">
-										<div class="col-6">
-											<h5>Celkem s DPH</h5>
-										</div>
-										<div class="col-6 text-right">
-											<h5>{{ invoice.totalPriceFormatted }}</h5>
-										</div>
+									<div class="col-6 text-right">
+										<h5>{{ invoice.totalPriceFormatted }}</h5>
 									</div>
-									<div v-if="invoice.priceDif != 0" class="row">
-										<div class="col-6">
-											<h5>Haléřové vyrovnání</h5>
-										</div>
-										<div class="col-6 text-right">
-											<h5>{{ invoice.priceDifFormatted }}</h5>
-										</div>
+								</div>
+								<div v-if="invoice.priceDif != 0" class="row">
+									<div class="col-6">
+										<h5>Haléřové vyrovnání</h5>
 									</div>
-									<hr>
-									<div class="row">
-										<div class="col-6">
-											<h3>Celkem</h3>
-										</div>
-										<div class="col-6 text-right">
-											<h3>{{ invoice.totalPriceRoundedFormatted }}</h3>
-										</div>
+									<div class="col-6 text-right">
+										<h5>{{ invoice.priceDifFormatted }}</h5>
+									</div>
+								</div>
+								<hr>
+								<div class="row">
+									<div class="col-6">
+										<h3>Celkem</h3>
+									</div>
+									<div class="col-6 text-right">
+										<h3>{{ invoice.totalPriceRoundedFormatted }}</h3>
 									</div>
 								</div>
 							</div>
@@ -445,34 +448,33 @@
 				</div>
 			</div>
 		</div>
-		<!-- /.container-fluid -->
+	</div>
+	<!-- /.container-fluid -->
 
-		<div class="modal fade" id="depositModal">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h4 class="modal-title">Odečtení zálohy</h4>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">×</span>
-						</button>
-					</div>
-					<div class="modal-body">
-						<div class="form-group">
-							<input v-model="depositNumber" type="text" class="form-control form-control-sm"
-							       placeholder="Číslo faktury">
-						</div>
-					</div>
-					<div class="modal-footer justify-content-between">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Zrušit</button>
-						<button @click="addDeposit" type="button" class="btn btn-info">Odečíst</button>
+	<div class="modal fade" id="depositModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Odečtení zálohy</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input v-model="depositNumber" type="text" class="form-control form-control-sm"
+							   placeholder="Číslo faktury">
 					</div>
 				</div>
-				<!-- /.modal-content -->
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Zrušit</button>
+					<button @click="addDeposit" type="button" class="btn btn-info">Odečíst</button>
+				</div>
 			</div>
-			<!-- /.modal-dialog -->
+			<!-- /.modal-content -->
 		</div>
-	</section>
-	<!-- /.content -->
+		<!-- /.modal-dialog -->
+	</div>
 {/block}
 
 {block scripts}

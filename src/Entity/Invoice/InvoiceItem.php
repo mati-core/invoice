@@ -26,7 +26,7 @@ class InvoiceItem
 
 	/**
 	 * @var InvoiceCore
-	 * @ORM\ManyToOne(targetEntity="\App\Model\InvoiceCore", inversedBy="items")
+	 * @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="items")
 	 */
 	private InvoiceCore $invoice;
 
@@ -75,7 +75,7 @@ class InvoiceItem
 
 	/**
 	 * @var Currency|null
-	 * @ORM\ManyToOne(targetEntity="\App\Model\Currency")
+	 * @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
 	 * @ORM\JoinColumn(name="buy_curreny_id", referencedColumnName="id", nullable=true)
 	 */
 	private Currency|null $buyCurrency;

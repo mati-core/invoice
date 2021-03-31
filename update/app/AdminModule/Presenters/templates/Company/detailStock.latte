@@ -1,4 +1,8 @@
 {block title}
+	{$company->getName()} - {$stock->getName()}
+{/block}
+
+{block pageTitle}
 	{if $company->isBlackList()}
 		<span class="badge badge-dark mr-3">Black list</span>
 	{elseif $company->getType() === 'typ-smluvni'}
@@ -117,187 +121,151 @@
 {/block}
 
 {block content}
-	<!-- Main content -->
-	<section class="content" id="app">
-		<div class="container-fluid">
-			<!-- Small boxes (Stat box) -->
-			{snippet flashes}
-				<div n:foreach="$flashes as $msg" class="row">
-					<div class="col-lg-12">
-						{if $msg->type === 'success'}
-							<div class="alert alert-dismissible alert-success">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
-								{$msg->message|noescape}
-							</div>
-						{elseif $msg->type === 'warning'}
-							<div class="alert alert-dismissible alert-warning">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-exclamation"></i> Pozor!</h5>
-								{$msg->message|noescape}
-							</div>
-						{elseif $msg->type === 'danger' || $msg->type === 'error'}
-							<div class="alert alert-dismissible alert-danger">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
-								{$msg->message|noescape}
-							</div>
-						{else}
-							<div class="alert alert-dismissible alert-info">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
-								{$msg->message|noescape}
-							</div>
-						{/if}
-					</div>
-				</div>
-			{/snippet}
+	<div class="container-fluid">
+		<!-- Small boxes (Stat box) -->
 
-
-			<div class="row">
-				<div class="col-6 pt-2">
-					<h4>{$stock->getAddress()}
-						<a href="http://maps.google.com/?q={$stock->getAddress()}" target="_blank">
-							<i class="fas fa-map-marked-alt ml-3"></i>
-						</a>
-					</h4>
-				</div>
-				<div class="col-6 mb-3 text-right">
-					{include smallButtons}
-				</div>
+		<div class="row">
+			<div class="col-6 pt-2">
+				<h4>{$stock->getAddress()}
+					<a href="http://maps.google.com/?q={$stock->getAddress()}" target="_blank">
+						<i class="fas fa-map-marked-alt ml-3"></i>
+					</a>
+				</h4>
 			</div>
+			<div class="col-6 mb-3 text-right">
+				{include smallButtons}
+			</div>
+		</div>
 
 
-			<div class="row">
-				<div class="col-lg-4 col-12">
+		<div class="row">
+			<div class="col-lg-4 col-12">
 
-					<!-- Default box -->
-					{var $invoiceAddress = $company->getInvoiceAddress()}
-					<div class="card">
-						<div class="card-header">
-							<h3 class="card-title">{$invoiceAddress->getCompanyName()}</h3>
-						</div>
-						<div class="card-body">
-							<div class="row">
-								<div class="col">
-									{$invoiceAddress->getStreet()}
+				<!-- Default box -->
+				{var $invoiceAddress = $company->getInvoiceAddress()}
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">{$invoiceAddress->getCompanyName()}</h3>
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col">
+								{$invoiceAddress->getStreet()}
 									<br>
                                     {$invoiceAddress->getCity()}
 									<br>
                                     {$invoiceAddress->getZipCode()}
 									<br>
                                     {$invoiceAddress->getCountry()->getName()}
-								</div>
-								<div class="col">
-									IČ: {$invoiceAddress->getIc()}
+							</div>
+							<div class="col">
+								IČ: {$invoiceAddress->getIc()}
 									<br>
-									DIČ: {$invoiceAddress->getDic()}
+								DIČ: {$invoiceAddress->getDic()}
 									<br><br>
-									Měna: {$company->getCurrency()->getCode()}
-								</div>
+								Měna: {$company->getCurrency()->getCode()}
 							</div>
 						</div>
-						<!-- /.card-body -->
 					</div>
-					<!-- /.card -->
-
+					<!-- /.card-body -->
 				</div>
-
-				{include infoBlock}
+				<!-- /.card -->
 
 			</div>
+
+			{include infoBlock}
+
+		</div>
 		<!-- /.row -->
 
 
-			<div n:if="$presenter->checkUserRight('page__company__statistics')" class="row">
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-info">
-						<span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
+		<div n:if="$presenter->checkUserRight('page__company__statistics')" class="row">
+			<div class="col-md-3 col-sm-6 col-12">
+				<div class="info-box bg-gradient-info">
+					<span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
 
-						<div class="info-box-content">
-							<span class="info-box-text">Celkem</span>
-							<span class="info-box-number">{$company->getInvoicesPriceFormated()|noescape}</span>
+					<div class="info-box-content">
+						<span class="info-box-text">Celkem</span>
+						<span class="info-box-number">{$company->getInvoicesPriceFormated()|noescape}</span>
 
-							<div class="progress">
-								<div class="progress-bar" style="width: 100%"></div>
-							</div>
-							<span class="progress-description">
+						<div class="progress">
+							<div class="progress-bar" style="width: 100%"></div>
+						</div>
+						<span class="progress-description">
 			                  Celkem {$company->getInvoicesCount()} faktur.
 			                </span>
-						</div>
-						<!-- /.info-box-content -->
 					</div>
-					<!-- /.info-box -->
+					<!-- /.info-box-content -->
 				</div>
-				<!-- /.col -->
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-success">
-						<span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
+				<!-- /.info-box -->
+			</div>
+			<!-- /.col -->
+			<div class="col-md-3 col-sm-6 col-12">
+				<div class="info-box bg-gradient-success">
+					<span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
 
-						<div class="info-box-content">
-							<span class="info-box-text">Zaplaceno</span>
-							<span class="info-box-number">{$company->getInvoicesPaidPriceFormated()|noescape}</span>
+					<div class="info-box-content">
+						<span class="info-box-text">Zaplaceno</span>
+						<span class="info-box-number">{$company->getInvoicesPaidPriceFormated()|noescape}</span>
 
-							<div class="progress">
-								<div class="progress-bar" style="width: {$company->getInvoicesPaidPercent()}%"></div>
-							</div>
-							<span class="progress-description">
+						<div class="progress">
+							<div class="progress-bar" style="width: {$company->getInvoicesPaidPercent()}%"></div>
+						</div>
+						<span class="progress-description">
 			                  Celkem {$company->getInvoicesPaidCount()} faktur.
 			                </span>
-						</div>
-						<!-- /.info-box-content -->
 					</div>
-					<!-- /.info-box -->
+					<!-- /.info-box-content -->
 				</div>
-				<!-- /.col -->
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-warning">
-						<span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
+				<!-- /.info-box -->
+			</div>
+			<!-- /.col -->
+			<div class="col-md-3 col-sm-6 col-12">
+				<div class="info-box bg-gradient-warning">
+					<span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
 
-						<div class="info-box-content">
-							<span class="info-box-text">Nezaplaceno</span>
-							<span class="info-box-number">{$company->getInvoicesActivePriceFormated()|noescape}</span>
+					<div class="info-box-content">
+						<span class="info-box-text">Nezaplaceno</span>
+						<span class="info-box-number">{$company->getInvoicesActivePriceFormated()|noescape}</span>
 
-							<div class="progress">
-								<div class="progress-bar" style="width: {$company->getInvoicesActivePercent()}%"></div>
-							</div>
-							<span class="progress-description">
+						<div class="progress">
+							<div class="progress-bar" style="width: {$company->getInvoicesActivePercent()}%"></div>
+						</div>
+						<span class="progress-description">
 			                  Celkem {$company->getInvoicesActiveCount()} faktur.
 			                </span>
-						</div>
-						<!-- /.info-box-content -->
 					</div>
-					<!-- /.info-box -->
+					<!-- /.info-box-content -->
 				</div>
-				<!-- /.col -->
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-danger">
-						<span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
+				<!-- /.info-box -->
+			</div>
+			<!-- /.col -->
+			<div class="col-md-3 col-sm-6 col-12">
+				<div class="info-box bg-gradient-danger">
+					<span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
 
-						<div class="info-box-content">
-							<span class="info-box-text">Po splatnosti</span>
-							<span class="info-box-number">{$company->getInvoicesOverduePriceFormated()|noescape}</span>
+					<div class="info-box-content">
+						<span class="info-box-text">Po splatnosti</span>
+						<span class="info-box-number">{$company->getInvoicesOverduePriceFormated()|noescape}</span>
 
-							<div class="progress">
-								<div class="progress-bar" style="width: {$company->getInvoicesOverduePercent()}%"></div>
-							</div>
-							<span class="progress-description">
+						<div class="progress">
+							<div class="progress-bar" style="width: {$company->getInvoicesOverduePercent()}%"></div>
+						</div>
+						<span class="progress-description">
 			                  Celkem {$company->getInvoicesOverdueCount()} faktur.
 			                </span>
-						</div>
-						<!-- /.info-box-content -->
 					</div>
-					<!-- /.info-box -->
+					<!-- /.info-box-content -->
 				</div>
-				<!-- /.col -->
+				<!-- /.info-box -->
 			</div>
-
-            {include list}
-
+			<!-- /.col -->
 		</div>
-		<!-- /.container-fluid -->
-	</section>
-	<!-- /.content -->
+
+		{include list}
+
+	</div>
+	<!-- /.container-fluid -->
 {/block}
 
 {block infoBlock}
@@ -491,15 +459,20 @@
 										{if $type === \App\Model\CartCategory::FRONT}
 											<img src="/img/icons/celni.svg" alt="Čelní" style="width: 15px; margin: 0;">
 										{elseif $type === \App\Model\CartCategory::RETRAK}
-											<img src="/img/icons/retrak.svg" alt="Retrak" style="width: 15px; margin: 0;">
+											<img src="/img/icons/retrak.svg" alt="Retrak"
+												 style="width: 15px; margin: 0;">
 										{elseif $type === \App\Model\CartCategory::FORK_LIFT}
-											<img src="/img/icons/vysokozdvih.svg" alt="Vysokozdvih" style="width: 15px; margin: 0;">
+											<img src="/img/icons/vysokozdvih.svg" alt="Vysokozdvih"
+												 style="width: 15px; margin: 0;">
 										{elseif $type === \App\Model\CartCategory::LOW_LIFT}
-											<img src="/img/icons/nizkozdvih.svg" alt="Nízkozdvih" style="width: 15px; margin: 0;">
+											<img src="/img/icons/nizkozdvih.svg" alt="Nízkozdvih"
+												 style="width: 15px; margin: 0;">
 										{elseif $type === \App\Model\CartCategory::PALLET_FORKLIFT}
-											<img src="/img/icons/paletak.svg" alt="Paleťák" style="width: 15px; margin: 0;">
+											<img src="/img/icons/paletak.svg" alt="Paleťák"
+												 style="width: 15px; margin: 0;">
 										{elseif $type === \App\Model\CartCategory::SPECIAL}
-											<img src="/img/icons/special.svg" alt="Speciál" style="width: 15px; margin: 0;">
+											<img src="/img/icons/special.svg" alt="Speciál"
+												 style="width: 15px; margin: 0;">
 										{else}
 											<b>???</b>
 										{/if}
@@ -513,6 +486,7 @@
 									{$cart->getCartType()->getName()}
 								</td>
 								<td>{$cart->getMotor()->getName()}
+
 
 									<br>{$cart->getMotoHours() !== null ? number_format($cart->getMotoHours(), 0, ',', ' ') : '?'}
 									mh

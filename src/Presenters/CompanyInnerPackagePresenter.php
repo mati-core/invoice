@@ -456,7 +456,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 */
 		$form->onValidate[] = function (Form $form, ArrayHash $value): void {
 			try {
-				$this->companyManager->get()->getCompanyByIco($value->ic);
+				$this->companyManager->get()->getCompanyByCIN($value->ic);
 
 				$form->addError('Tato firma je již v systému zavedena.');
 			} catch (NoResultException | NonUniqueResultException) {
@@ -472,7 +472,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			try {
 				$invoiceAddress = new Address($values->street, $values->city);
 				$invoiceAddress->setCompanyName($values->name);
-				$invoiceAddress->setIn($values->ic);
+				$invoiceAddress->setCin($values->ic);
 				$invoiceAddress->setTin($values->dic);
 				$invoiceAddress->setZipCode($values->zipCode);
 				$invoiceAddress->setCountry($this->countryManager->get()->getCountryById($values->country));
@@ -519,7 +519,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			->setRequired('Zadejte název společnosti.');
 
 		$form->addText('ic', 'IČ')
-			->setDefaultValue($this->editedCompany->getInvoiceAddress()->getIn())
+			->setDefaultValue($this->editedCompany->getInvoiceAddress()->getCin())
 			->setRequired('Zadejte IČ společnosti.');
 
 		$form->addText('dic', 'DIČ')
@@ -646,7 +646,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			try {
 				$address = new Address($values->street, $values->city);
 				$address->setCompanyName($this->editedCompany->getInvoiceAddress()->getCompanyName());
-				$address->setIn($this->editedCompany->getInvoiceAddress()->getIn());
+				$address->setCin($this->editedCompany->getInvoiceAddress()->getCin());
 				$address->setTin($this->editedCompany->getInvoiceAddress()->getTin());
 				$address->setZipCode($values->zipCode);
 				$address->setCountry($this->countryManager->get()->getCountryById($values->country));
@@ -735,7 +735,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$address->setStreet($values->street);
 				$address->setCity($values->city);
 				$address->setCompanyName($this->editedCompany->getInvoiceAddress()->getCompanyName());
-				$address->setIn($this->editedCompany->getInvoiceAddress()->getIn());
+				$address->setCin($this->editedCompany->getInvoiceAddress()->getCin());
 				$address->setTin($this->editedCompany->getInvoiceAddress()->getTin());
 				$address->setZipCode($values->zipCode);
 				$address->setCountry($this->countryManager->get()->getCountryById($values->country));

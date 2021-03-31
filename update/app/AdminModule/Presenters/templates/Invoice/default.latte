@@ -2,6 +2,10 @@
 	Faktury
 {/block}
 
+{block pageTitle}
+	Faktury
+{/block}
+
 {block breadcrumb}
 	<ol class="breadcrumb float-sm-right">
 		<li class="breadcrumb-item">
@@ -21,83 +25,48 @@
 {/block}
 
 {block content}
-	<!-- Main content -->
-	<section class="content" id="app">
-		<div class="container-fluid">
-			<!-- Small boxes (Stat box) -->
-            {snippet flashes}
-				<div n:foreach="$flashes as $msg" class="row">
-					<div class="col-lg-12">
-                        {if $msg->type === 'success'}
-							<div class="alert alert-dismissible alert-success">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
-                                {$msg->message}
-							</div>
-                        {elseif $msg->type === 'warning'}
-							<div class="alert alert-dismissible alert-warning">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-warning"></i> Pozor!</h5>
-                                {$msg->message}
-							</div>
-                        {elseif $msg->type === 'danger' || $msg->type === 'error'}
-							<div class="alert alert-dismissible alert-danger">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
-                                {$msg->message}
-							</div>
-                        {else}
-							<div class="alert alert-dismissible alert-info">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
-                                {$msg->message}
-							</div>
-                        {/if}
-					</div>
-				</div>
-            {/snippet}
+	<div class="container-fluid">
+		<!-- Small boxes (Stat box) -->
 
-			<div class="row">
-				<div class="col-12 mb-3 text-right">
-					<a n:href="detail" class="btn btn-sm btn-primary">
-						<i class="fas fa-plus"></i>&nbsp;Nová faktura
-					</a>
-				</div>
+		<div class="row">
+			<div class="col-12 mb-3 text-right">
+				<a n:href="detail" class="btn btn-sm btn-primary">
+					<i class="fas fa-plus"></i>&nbsp;Nová faktura
+				</a>
 			</div>
-
-			<div n:if="$presenter->checkUserRight('page__invoice__showStatistics')" class="row">
-                {cache expire => '10 minutes'}
-                    {include statistics}
-                {/cache}
-			</div>
-
-			<div class="row">
-				<div class="col-12">
-
-					<!-- Default box -->
-					<div class="card">
-						<div class="card-header">
-							<h3 class="card-title">Seznam faktur</h3>
-						</div>
-						<div class="card-body p-0">
-                            {control invoiceTable}
-						</div>
-						<!-- /.card-body -->
-					</div>
-					<!-- /.card -->
-
-				</div>
-			</div>
-			<!-- /.row -->
-
 		</div>
-		<!-- /.container-fluid -->
-	</section>
-	<!-- /.content -->
+
+		<div n:if="$presenter->checkAccess('page__invoice__showStatistics')" class="row">
+			{cache expire => '10 minutes'}
+				{include statistics}
+			{/cache}
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+
+				<!-- Default box -->
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Seznam faktur</h3>
+					</div>
+					<div class="card-body p-0">
+						{control invoiceTable}
+					</div>
+					<!-- /.card-body -->
+				</div>
+				<!-- /.card -->
+
+			</div>
+		</div>
+		<!-- /.row -->
+
+	</div>
+	<!-- /.container-fluid -->
 {/block}
 
 {define statistics}
-    {var $statistics = $presenter->getStatistics()}
+	{var $statistics = $presenter->getStatistics()}
 	<div class="col-md-3 col-sm-6 col-12">
 		<div class="info-box bg-gradient-info">
 			<span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
@@ -105,14 +74,14 @@
 			<div class="info-box-content">
 				<span class="info-box-text">Celkem za {$statistics['monthName']}</span>
 				<span class="info-box-number">
-                                {App\Model\Number::formatPrice($statistics['pricePerMonth'], $statistics['currency'], 2)|noescape}
+                                {MatiCore\Currency\Number::formatPrice($statistics['pricePerMonth'], $statistics['currency'], 2)|noescape}
 							</span>
 
 				<div class="progress">
 					<div class="progress-bar" style="width: 0%"></div>
 				</div>
 				<span class="progress-description">
-			                  Celkem {App\Model\Number::formatPrice($statistics['pricePerYear'], $statistics['currency'], 2)|noescape} za rok.
+			                  Celkem {MatiCore\Currency\Number::formatPrice($statistics['pricePerYear'], $statistics['currency'], 2)|noescape} za rok.
 			                </span>
 			</div>
 			<!-- /.info-box-content -->
@@ -127,14 +96,14 @@
 			<div class="info-box-content">
 				<span class="info-box-text">DPH za {$statistics['monthName']}</span>
 				<span class="info-box-number">
-                                {App\Model\Number::formatPrice($statistics['taxPerMonth'], $statistics['currency'], 2)|noescape}
+                                {MatiCore\Currency\Number::formatPrice($statistics['taxPerMonth'], $statistics['currency'], 2)|noescape}
 							</span>
 
 				<div class="progress">
 					<div class="progress-bar" style="width: 0%"></div>
 				</div>
 				<span class="progress-description">
-			                  Celkem {App\Model\Number::formatPrice($statistics['taxPerYear'], $statistics['currency'], 2)|noescape} za rok.
+			                  Celkem {MatiCore\Currency\Number::formatPrice($statistics['taxPerYear'], $statistics['currency'], 2)|noescape} za rok.
 			                </span>
 			</div>
 			<!-- /.info-box-content -->
@@ -149,7 +118,7 @@
 			<div class="info-box-content">
 				<span class="info-box-text">Nezaplaceno</span>
 				<span class="info-box-number">
-                    {App\Model\Number::formatPrice($statistics['unpaidPrice'], $statistics['currency'], 2)|noescape}
+                    {MatiCore\Currency\Number::formatPrice($statistics['unpaidPrice'], $statistics['currency'], 2)|noescape}
 				</span>
 
 				<div class="progress">
@@ -171,7 +140,7 @@
 			<div class="info-box-content">
 				<span class="info-box-text">Po splatnosti</span>
 				<span class="info-box-number">
-                    {App\Model\Number::formatPrice($statistics['overDatePrice'], $statistics['currency'], 2)|noescape}
+                    {MatiCore\Currency\Number::formatPrice($statistics['overDatePrice'], $statistics['currency'], 2)|noescape}
 				</span>
 
 				<div class="progress">

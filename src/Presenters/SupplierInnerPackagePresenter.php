@@ -165,7 +165,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 				}
 
 				$supplier = $this->supplierManager->get()->createSupplier($values->name, $currency, $values->street ?? '', $values->city ?? '', $country);
-				$supplier->getAddress()->setIn($values->ic === '' ? null : $values->ic);
+				$supplier->getAddress()->setCin($values->ic === '' ? null : $values->ic);
 				$supplier->getAddress()->setTin($values->dic === '' ? null : $values->dic);
 				$supplier->setDeliveryCompany(
 					$values->deliveryCompany === ''
@@ -230,7 +230,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 				->setDefaultValue($this->editedSupplier->getAddress()->getZipCode() ?? '');
 
 			$form->addText('ic', 'IČ')
-				->setDefaultValue($this->editedSupplier->getAddress()->getIn() ?? '');
+				->setDefaultValue($this->editedSupplier->getAddress()->getCin() ?? '');
 
 			$form->addText('dic', 'DIČ')
 				->setDefaultValue($this->editedSupplier->getAddress()->getTin() ?? '');
@@ -267,7 +267,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 				$this->editedSupplier->getAddress()->setStreet($values->street === '' ? null : $values->street);
 				$this->editedSupplier->getAddress()->setCity($values->city === '' ? null : $values->city);
 				$this->editedSupplier->getAddress()->setZipCode($values->zipCode === '' ? null : $values->zipCode);
-				$this->editedSupplier->getAddress()->setIn($values->ic === '' ? null : $values->ic);
+				$this->editedSupplier->getAddress()->setCin($values->ic === '' ? null : $values->ic);
 				$this->editedSupplier->getAddress()->setTin($values->dic === '' ? null : $values->dic);
 				$this->editedSupplier->getAddress()->setCountry($country);
 				$this->editedSupplier->setDeliveryCompany(

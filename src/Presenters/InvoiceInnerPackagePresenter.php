@@ -7,6 +7,7 @@ namespace App\AdminModule\Presenters;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Doctrine\ORM\Query\Expr\Join;
 use MatiCore\Currency\Number;
 use MatiCore\DataGrid\MatiDataGrid;
 use MatiCore\Form\FormFactoryTrait;
@@ -169,8 +170,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$log = $this->bankMovementCronLog->get()->getLog();
 
-		$this->template->lastUpdate = $log['date'];
-		$this->template->lastUpdateStatus = $log['status'];
+		$this->template->lastUpdate = $log['date'] ?? null;
+		$this->template->lastUpdateStatus = $log['status'] ?? null;
 	}
 
 	/**
@@ -895,7 +896,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$grid->addAction('delete', 'Delete')
 			->setRenderer(function (InvoiceCore $invoiceCore) {
-				if ($this->checkUserRight('page__invoice__forceRemove') === false) {
+				if ($this->checkAccess('page__invoice__forceRemove') === false) {
 					return '';
 				}
 
@@ -919,7 +920,18 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$invoiceUserList = [
 			'' => 'Vše',
 		];
-		foreach ($this->userManager->get()->getUsersByRole('faktury') as $user) {
+
+		$invoiceUsers = $this->entityManager->getRepository(BaseUser::class)
+			->createQueryBuilder('u')
+			->select('u')
+			->join(InvoiceCore::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
+			->groupBy('u.id')
+			->orderBy('u.lastName','ASC')
+			->addOrderBy('u.firstName', 'ASC')
+			->getQuery()
+			->getResult() ?? [];
+
+		foreach ($invoiceUsers as $user) {
 			$invoiceUserList[$user->getId()] = $user->getName();
 		}
 		$grid->addFilterSelect('createUser', 'Fakturace:', $invoiceUserList);
@@ -981,7 +993,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$grid->setOuterFilterRendering();
 
 		//Exporty
-		if ($this->checkUserRight('page__invoice__export')) {
+		if ($this->checkAccess('page__invoice__export')) {
 			$grid->addGroupAction('Tisk')
 				->onSelect[] = [$this, 'printInvoices'];
 

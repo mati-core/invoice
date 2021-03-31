@@ -531,8 +531,8 @@ class ExpenseHelper
 			'country' => $supplier->getAddress()->getCountry() !== null
 				? $supplier->getAddress()->getCountry()->getIsoCode()
 				: 'CZE',
-			'ic' => $supplier->getAddress()->getIn() ?? '',
-			'dic' => $supplier->getAddress()->getTin() ?? '',
+			'cin' => $supplier->getAddress()->getCin() ?? '',
+			'tin' => $supplier->getAddress()->getTin() ?? '',
 		];
 	}
 

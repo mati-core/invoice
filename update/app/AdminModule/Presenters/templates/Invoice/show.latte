@@ -10,6 +10,18 @@
 	{/if} {$invoice->getNumber()}
 {/block}
 
+{block pageTitle}
+	{if $invoice->isProforma()}
+		Zálohová faktura
+	{elseif $invoice->isFix()}
+		Opravný daňový doklad
+	{elseif $invoice->isPayDocument()}
+		Doklad o přijetí platby
+	{else}
+		Faktura
+	{/if} {$invoice->getNumber()}
+{/block}
+
 {block head}
 	<style>
 		.badge-indigo {
@@ -239,9 +251,7 @@
 	{elseif $invoice->isPayDocument()}
 		{var $color = 'rgb(75,0,130)'}
 	{/if}
-	<!-- Main content -->
-	<section class="content" id="app">
-		<div class="container-fluid">
+	<div class="container-fluid">
 			<!-- Small boxes (Stat box) -->
 			{snippet flashes}
 				<div n:foreach="$flashes as $msg" class="row">
@@ -364,7 +374,7 @@
 							<i class="fas fa-reply"></i>&nbsp;Zpět
 						</a>
 					{/if}
-                    {if $invoice->isProforma() === true && $invoice->isSubmitted() === true && $invoice->isPaid() && $invoice->getPayDocument() === null && $presenter->checkUserRight('page__invoice__pay')}
+                    {if $invoice->isProforma() === true && $invoice->isSubmitted() === true && $invoice->isPaid() && $invoice->getPayDocument() === null && $presenter->checkAccess('page__invoice__pay')}
 						<a n:if="!$invoice->isSubmitted()" href="#" data-toggle="modal" data-target="#submitModal"
 														   class="btn btn-sm btn-success">
 							<i class="fas fa-upload"></i>&nbsp;Odevzdat
@@ -376,16 +386,16 @@
 						&& ((
 						!$invoice->isSubmitted()
 						|| $invoice->getStatus() === 'denied'
-						|| $presenter->checkUserRight('page__invoice__accept-A')
-						|| $presenter->checkUserRight('page__invoice__accept-B')
+						|| $presenter->checkAccess('page__invoice__accept-A')
+						|| $presenter->checkAccess('page__invoice__accept-B')
 						)
-						|| $presenter->checkUserRight('page__invoice__forceEdit'))" n:href="detail, id => $invoice->getId()"
+						|| $presenter->checkAccess('page__invoice__forceEdit'))" n:href="detail, id => $invoice->getId()"
 							class="btn btn-sm btn-info">
 						<i class="fas fa-edit"></i>&nbsp;Upravit
 					</a>
 					<a n:if="!$invoice->isSubmitted()" href="#" data-toggle="modal" data-target="#submitModal"
 						class="btn btn-sm btn-success">
-					   	{if $presenter->checkUserRight('page__invoice__accept-B')}
+					   	{if $presenter->checkAccess('page__invoice__accept-B')}
 						<i class="fas fa-check"></i>&nbsp;Odevzdat a schválit
 						{else}
 						<i class="fas fa-upload"></i>&nbsp;Odevzdat
@@ -394,7 +404,7 @@
 
 
 
-					<a n:if="$invoice->isReady() && !$invoice->isPaid() && $presenter->checkUserRight('page__invoice__pay')"
+					<a n:if="$invoice->isReady() && !$invoice->isPaid() && $presenter->checkAccess('page__invoice__pay')"
 							href="#" data-toggle="modal" data-target="#payModal"
 							class="btn btn-sm btn-success">
 						<i class="fas fa-cash-register"></i>&nbsp;{if $invoice->isProforma()}Uhrazeno + Doklad{else}Uhrazeno{/if}
@@ -407,7 +417,7 @@
 						<i class="fas fa-file-invoice"></i>&nbsp;Vytvořit fakturu
 					</a>
                     {if $invoice->isSubmitted()}
-						{if $invoice->getAcceptStatus1() === 'waiting' && $presenter->checkUserRight('page__invoice__accept-A')}
+						{if $invoice->getAcceptStatus1() === 'waiting' && $presenter->checkAccess('page__invoice__accept-A')}
 							<a href="#" data-toggle="modal" data-target="#denyAModal"
 							   class="btn btn-sm btn-outline-danger">
 								<i class="fas fa-times"></i>&nbsp;Zamítnout
@@ -417,7 +427,7 @@
 								<i class="fas fa-check"></i>&nbsp;Schválit
 							</a>
 						{/if}
-						{if $invoice->getAcceptStatus1() === 'accepted' && $invoice->getAcceptStatus2() === 'waiting' && $presenter->checkUserRight('page__invoice__accept-B')}
+						{if $invoice->getAcceptStatus1() === 'accepted' && $invoice->getAcceptStatus2() === 'waiting' && $presenter->checkAccess('page__invoice__accept-B')}
 							<a href="#" data-toggle="modal" data-target="#denyBModal"
 							   class="btn btn-sm btn-outline-danger">
 								<i class="fas fa-times"></i>&nbsp;Zamítnout
@@ -427,21 +437,21 @@
 								<i class="fas fa-check"></i>&nbsp;Schválit
 							</a>
 						{/if}
-					{elseif $presenter->checkUserRight('page__invoice__accept-B')}
+					{elseif $presenter->checkAccess('page__invoice__accept-B')}
 						<a href="#" data-toggle="modal" data-target="#denyBModal"
 						   class="btn btn-sm btn-outline-danger">
 							<i class="fas fa-times"></i>&nbsp;Zamítnout
 						</a>
 					{/if}
-					<a n:if="$invoice->isFix() === false && $invoice->isPayDocument() === false && $invoice->isProforma() === false && $invoice->getFixInvoice() === null && $presenter->checkUserRight('page__invoice__fixInvoice')" n:href="Invoice:detailFix, id => $invoice->getId()"
+					<a n:if="$invoice->isFix() === false && $invoice->isPayDocument() === false && $invoice->isProforma() === false && $invoice->getFixInvoice() === null && $presenter->checkAccess('page__invoice__fixInvoice')" n:href="Invoice:detailFix, id => $invoice->getId()"
 							class="btn btn-sm btn-outline-danger">
 						<i class="fas fa-wrench"></i>&nbsp;Oprava
 					</a>
-					<a n:if="$invoice->isFix() === false && $presenter->checkUserRight('page__invoice__invoicedItems')" n:href="Invoice:invoicedItems, id => $invoice->getId()"
+					<a n:if="$invoice->isFix() === false && $presenter->checkAccess('page__invoice__invoicedItems')" n:href="Invoice:invoicedItems, id => $invoice->getId()"
 							class="btn btn-sm btn-outline-dark" target="_blank">
 						<i class="fas fa-file-invoice-dollar"></i>&nbsp;Fakturované položky
 					</a>
-					<a n:if="$invoice->isFix() === false && $invoice->getCompany() !== null && $presenter->checkUserRight('page__company__priceList')" n:href="Company:priceList, id => $invoice->getCompany()->getId()"
+					<a n:if="$invoice->isFix() === false && $invoice->getCompany() !== null && $presenter->checkAccess('page__company__priceList')" n:href="Company:priceList, id => $invoice->getCompany()->getId()"
 							class="btn btn-sm btn-outline-dark" target="_blank">
 						<i class="fas fa-file-invoice-dollar"></i>&nbsp;Ceník
 					</a>
@@ -450,7 +460,7 @@
 												  class="btn btn-sm btn-outline-success">
 						<i class="fas fa-envelope"></i>&nbsp;Odeslat
 					</a>
-					<a n:if="$invoice->isReady() || $presenter->checkUserRight('page__invoice__forceDownload')" n:href="export, id => $invoice->getId()"
+					<a n:if="$invoice->isReady() || $presenter->checkAccess('page__invoice__forceDownload')" n:href="export, id => $invoice->getId()"
 							class="btn btn-sm btn-outline-dark">
 						<i class="fas fa-file-pdf"></i>&nbsp;PDF
 					</a>
@@ -734,7 +744,7 @@
 												<td n:if="$invoice->isProforma() === false" class="text-right"
 																							style=" white-space: nowrap;">
 													{App\Model\Number::formatPrice($item->getPricePerItem(), $invoice->getCurrency(), 2)|noescape}
-													{if $item->getBuyPrice() !== null && $presenter->checkUserRight('page__invoice__showBuyPrice')}
+													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 													<br>
 													<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
@@ -742,7 +752,7 @@
 												<td n:if="$invoice->isProforma() === true" class="text-right"
 																						   style=" white-space: nowrap;">
 													{App\Model\Number::formatPrice($item->getPricePerItemWithVat(), $invoice->getCurrency(), 2)|noescape}
-													{if $item->getBuyPrice() !== null && $presenter->checkUserRight('page__invoice__showBuyPrice')}
+													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 														<br>
 														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
@@ -750,7 +760,7 @@
 												<td n:if="$invoice->isProforma() === false" class="text-right"
 																							style="background-color: #eee; white-space: nowrap;">
 													{App\Model\Number::formatPrice($item->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
-													{if $item->getBuyPrice() !== null && $presenter->checkUserRight('page__invoice__showBuyPrice')}
+													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 														<br>
 														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getTotalBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
@@ -758,7 +768,7 @@
 												<td n:if="$invoice->isProforma() === true" class="text-right"
 																						   style="background-color: #eee; white-space: nowrap;">
 													{App\Model\Number::formatPrice($item->getTotalPriceWithVat(), $invoice->getCurrency(), 2)|noescape}
-													{if $item->getBuyPrice() !== null && $presenter->checkUserRight('page__invoice__showBuyPrice')}
+													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 														<br>
 														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getTotalBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
@@ -1067,7 +1077,7 @@
 						</div>
 					</div>
 				</div>
-				<div n:if="$presenter->checkUserRight('page__invoice__comments')" class="col">
+				<div n:if="$presenter->checkAccess('page__invoice__comments')" class="col">
 					<div class="card card-secondary card-outline">
 						<div class="card-header">
 							<h3 class="card-title">Komentáře / Poznámky</h3>
@@ -1108,8 +1118,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
-	</section>
+	</div>
 {/block}
 
 {block scripts}

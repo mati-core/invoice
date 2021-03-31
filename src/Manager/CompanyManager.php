@@ -81,19 +81,19 @@ class CompanyManager
 	}
 
 	/**
-	 * @param string $ico
+	 * @param string $cin
 	 * @return Company
 	 * @throws NoResultException
 	 * @throws NonUniqueResultException
 	 */
-	public function getCompanyByIco(string $ico): Company
+	public function getCompanyByCIN(string $cin): Company
 	{
 		return $this->entityManager->getRepository(Company::class)
 			->createQueryBuilder('company')
 			->select('company')
 			->join('company.invoiceAddress', 'invoiceAddress')
-			->where('invoiceAddress.ic = :ico')
-			->setParameter('ico', $ico)
+			->where('invoiceAddress.cin = :cin')
+			->setParameter('cin', $cin)
 			->getQuery()
 			->getSingleResult();
 	}

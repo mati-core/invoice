@@ -137,6 +137,12 @@ parameters:
 				filename: 'intrastat_'
 				title: 'Your Company - Intrastat '
 
+orm.annotations:
+	paths:
+		MatiCore\Invoice: %appDir%/../vendor/mati-core/invoice/src/Entity
+		MatiCore\Company: %appDir%/../vendor/mati-core/invoice/src/Entity/Company
+		MatiCore\Supplier: %appDir%/../vendor/mati-core/invoice/src/Entity/Supplier
+
 services:
 	- MatiCore\Company\CompanyManager
 	- MatiCore\Company\CompanyManagerAccessor
