@@ -170,7 +170,6 @@ class InvoiceHelper
 				'items' => [],
 				'deposit' => [],
 				'taxList' => [],
-				'offers' => $invoice->getOffers(),
 			];
 
 			foreach ($invoice->getItems() as $item) {
@@ -349,7 +348,6 @@ class InvoiceHelper
 			],
 			'deposit' => [],
 			'taxList' => [],
-			'offers' => [],
 		];
 	}
 
@@ -430,7 +428,6 @@ class InvoiceHelper
 				'items' => [],
 				'deposit' => [],
 				'taxList' => [],
-				'offers' => [],
 			];
 
 			foreach ($invoice->getItems() as $item) {
@@ -835,12 +832,6 @@ class InvoiceHelper
 			}
 		}
 
-		//nabidky
-		$invoice->setOffers(null);
-		foreach ($invoiceData['offers'] as $offerId) {
-			$invoice->addOffer($offerId);
-		}
-
 		$invoice->setStatus(InvoiceStatus::CREATED);
 		$invoice->setAcceptStatus1(InvoiceStatus::WAITING);
 		$invoice->setAcceptStatus2(InvoiceStatus::WAITING);
@@ -880,11 +871,11 @@ class InvoiceHelper
 	}
 
 	/**
-	 * @param $unitId
+	 * @param string $unitId
 	 * @return Unit
 	 * @throws UnitException
 	 */
-	private function getUnit($unitId): Unit
+	private function getUnit(string $unitId): Unit
 	{
 		static $cache;
 

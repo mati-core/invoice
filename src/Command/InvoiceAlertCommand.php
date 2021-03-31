@@ -104,7 +104,7 @@ class InvoiceAlertCommand extends Command
 		$this->io->newLine(2);
 		$this->io->writeln('Checking unpaid invoices (date: ' . date('Y-m-d') . ')...');
 
-		/** @var Invoice[] $invoices */
+		/** @var InvoiceCore[] $invoices */
 		$invoices = $this->entityManager->getRepository(InvoiceCore::class)
 				->createQueryBuilder('i')
 				->select('i')

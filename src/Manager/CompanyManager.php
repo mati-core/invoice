@@ -225,7 +225,7 @@ class CompanyManager
 
 	/**
 	 * @param Company $company
-	 * @return InvoiceItem[]
+	 * @return array<string, array<string, mixed>>
 	 */
 	public function getInvoicedItems(Company $company): array
 	{

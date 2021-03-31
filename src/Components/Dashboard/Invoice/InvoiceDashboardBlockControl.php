@@ -66,11 +66,17 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 	public function render(): void
 	{
-		/** @var BaseAdminPresenter $presenter */
+		/**
+		 * @var BaseAdminPresenter $presenter
+		 * @phpstan-ignore-next-line
+		 */
 		$presenter = $this->getPresenter();
 
 		$show = false;
 		if ($presenter !== null) {
+			/**
+			 * @phpstan-ignore-next-line
+			 */
 			$show = $presenter->checkAccess('page__dashboard_invoice');
 		}
 

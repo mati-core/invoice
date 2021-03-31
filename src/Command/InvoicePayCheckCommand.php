@@ -129,6 +129,9 @@ class InvoicePayCheckCommand extends Command
 			$output->writeln('');
 			$output->writeln('');
 
+			/**
+			 * @phpstan-ignore-next-line
+			 */
 			$server = '{' . $this->params['payEmail']['server'] . ':993/imap/ssl/novalidate-cert}INBOX';
 
 			if (!is_dir($this->tempDir . '/imap')) {
