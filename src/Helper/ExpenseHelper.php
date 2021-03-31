@@ -11,12 +11,29 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Address\CountryManager;
+use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManager;
+use MatiCore\Invoice\Expense;
+use MatiCore\Invoice\ExpenseCategory;
+use MatiCore\Invoice\ExpenseDeliveryType;
+use MatiCore\Invoice\ExpenseException;
+use MatiCore\Invoice\ExpenseHistory;
+use MatiCore\Invoice\ExpenseInvoice;
+use MatiCore\Invoice\ExpenseInvoiceItem;
+use MatiCore\Invoice\ExpenseManagerAccessor;
+use MatiCore\Invoice\ExpensePayMethod;
+use MatiCore\Supplier\SupplierManagerAccessor;
+use MatiCore\Unit\UnitException;
 use MatiCore\Unit\UnitManager;
+use MatiCore\User\BaseUser;
 use Nette\Security\User;
 use Nette\Utils\DateTime;
 use Tracy\Debugger;
 
+/**
+ * Class ExpenseHelper
+ * @package MatiCore\Expense
+ */
 class ExpenseHelper
 {
 
@@ -36,9 +53,9 @@ class ExpenseHelper
 	private UnitManager $unitManager;
 
 	/**
-	 * @var ExpenseManager
+	 * @var ExpenseManagerAccessor
 	 */
-	private $expenseManager;
+	private ExpenseManagerAccessor $expenseManager;
 
 	/**
 	 * @var CountryManager
@@ -46,9 +63,9 @@ class ExpenseHelper
 	private CountryManager $countryManager;
 
 	/**
-	 * @var SupplierManager
+	 * @var SupplierManagerAccessor
 	 */
-	private $supplierManager;
+	private SupplierManagerAccessor $supplierManager;
 
 	/**
 	 * @var User
@@ -59,12 +76,21 @@ class ExpenseHelper
 	 * ExpenseHelper constructor.
 	 * @param EntityManager $entityManager
 	 * @param UnitManager $unitManager
-	 * @param ExpenseManager $expenseManager
+	 * @param ExpenseManagerAccessor $expenseManager
 	 * @param CurrencyManager $currencyManager
 	 * @param User $user
 	 * @param CountryManager $countryManager
+	 * @param SupplierManagerAccessor $supplierManager
 	 */
-	public function __construct(EntityManager $entityManager, UnitManager $unitManager, ExpenseManager $expenseManager, CurrencyManager $currencyManager, User $user, CountryManager $countryManager, SupplierManager $supplierManager)
+	public function __construct(
+		EntityManager $entityManager,
+		UnitManager $unitManager,
+		ExpenseManagerAccessor $expenseManager,
+		CurrencyManager $currencyManager,
+		User $user,
+		CountryManager $countryManager,
+		SupplierManagerAccessor $supplierManager
+	)
 	{
 		$this->entityManager = $entityManager;
 		$this->unitManager = $unitManager;
@@ -77,15 +103,14 @@ class ExpenseHelper
 
 	/**
 	 * @return array
-	 * @throws UnitException
-	 * @throws EntityManagerException
 	 */
 	public function getNewExpense(): array
 	{
 		try {
 			$unit = $this->unitManager->getDefaultUnit();
 			$defaultUnit = $unit->getId();
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (UnitException $e) {
+			Debugger::log($e);
 			$defaultUnit = '';
 		}
 
@@ -151,21 +176,20 @@ class ExpenseHelper
 	/**
 	 * @param string $id
 	 * @return array
-	 * @throws EntityManagerException
 	 * @throws NoResultException
 	 * @throws NonUniqueResultException
-	 * @throws UnitException
 	 */
 	public function getExpenseById(string $id): array
 	{
 		try {
 			$unit = $this->unitManager->getDefaultUnit();
 			$defaultUnit = $unit->getId();
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (UnitException $e) {
+			Debugger::log($e);
 			$defaultUnit = '';
 		}
 
-		$expense = $this->expenseManager->getExpenseById($id);
+		$expense = $this->expenseManager->get()->getExpenseById($id);
 
 		$items = [];
 		$invoiceNumber = '';
@@ -303,7 +327,6 @@ class ExpenseHelper
 	 * @param array $expenseData
 	 * @return array
 	 * @throws CurrencyException
-	 * @throws EntityManagerException
 	 * @throws ExpenseException
 	 * @throws NoResultException
 	 * @throws NonUniqueResultException
@@ -314,7 +337,7 @@ class ExpenseHelper
 
 		$isNew = false;
 
-		/** @var \MatiCore\User\Entity\User|null $user */
+		/** @var BaseUser|null $user */
 		$user = $this->user->getIdentity();
 
 		try {
@@ -323,22 +346,22 @@ class ExpenseHelper
 			} else {
 				$currency = $this->currencyManager->getCurrencyById($expenseData['currencyData']['id']);
 			}
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException $e) {
 			Debugger::log($e);
 			throw new ExpenseException('Požadovaná měna nebyla nalezena.');
 		}
 
 		if ($expenseData['id'] !== null) {
 			try {
-				$expense = $this->expenseManager->getExpenseById($expenseData['id']);
-			} catch (NoResultException|NonUniqueResultException $e) {
+				$expense = $this->expenseManager->get()->getExpenseById($expenseData['id']);
+			} catch (NoResultException | NonUniqueResultException $e) {
 				Debugger::log($e);
 				throw new ExpenseException('Požadovaný náklad nebyl nalezen.');
 			}
 
 			$expense->setDate($date);
 		} elseif ($expenseData['type'] === 'invoice') {
-			$number = $this->expenseManager->getNextNumber();
+			$number = $this->expenseManager->get()->getNextNumber();
 
 			$expense = new ExpenseInvoice($number, $expenseData['description'], $currency, (float) $expenseData['price'], $date, $expenseData['customer']['name']);
 			$expense->setCategory($expenseData['category']);
@@ -350,7 +373,7 @@ class ExpenseHelper
 
 			$expenseData['id'] = $expense->getId();
 		} else {
-			$number = $this->expenseManager->getNextNumber();
+			$number = $this->expenseManager->get()->getNextNumber();
 
 			$expense = new Expense($number, $expenseData['description'], $currency, (float) $expenseData['price'], $date);
 
@@ -425,13 +448,13 @@ class ExpenseHelper
 			$expense->setSupplierInvoiceNumber($expenseData['invoiceNumber'] === '' ? null : $expenseData['invoiceNumber']);
 			$expense->setVariableSymbol($expenseData['variableSymbol'] === '' ? null : $expenseData['variableSymbol']);
 			$expense->setDeliveryType((int) $expenseData['deliveryType']);
-			$expense->setWeight((float) str_replace(',' , '.', $expenseData['weight']));
+			$expense->setWeight((float) str_replace(',', '.', $expenseData['weight']));
 			$expense->setProductCode($expenseData['productCode'] === '' ? null : $expenseData['productCode']);
 
 			//DODAVATEL
 			try {
 				$country = $this->countryManager->getCountryByIsoCode($expenseData['customer']['country']);
-			} catch (NoResultException|NonUniqueResultException $e) {
+			} catch (NoResultException | NonUniqueResultException) {
 				$country = null;
 			}
 
@@ -498,16 +521,18 @@ class ExpenseHelper
 	 */
 	public function getSupplierData(string $id): array
 	{
-		$supplier = $this->supplierManager->getSupplierById($id);
+		$supplier = $this->supplierManager->get()->getSupplierById($id);
 
 		return [
 			'name' => $supplier->getName(),
-			'address' => $supplier->getStreet() ?? '',
-			'city' => $supplier->getCity() ?? '',
-			'zipCode' => $supplier->getZipCode() ?? '',
-			'country' => $supplier->getCountry()->getIsoCode(),
-			'ic' => $supplier->getIc() ?? '',
-			'dic' => $supplier->getDic() ?? '',
+			'address' => $supplier->getAddress()->getStreet() ?? '',
+			'city' => $supplier->getAddress()->getCity() ?? '',
+			'zipCode' => $supplier->getAddress()->getZipCode() ?? '',
+			'country' => $supplier->getAddress()->getCountry() !== null
+				? $supplier->getAddress()->getCountry()->getIsoCode()
+				: 'CZE',
+			'ic' => $supplier->getAddress()->getIn() ?? '',
+			'dic' => $supplier->getAddress()->getTin() ?? '',
 		];
 	}
 

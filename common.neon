@@ -137,18 +137,22 @@ parameters:
 				title: 'Your Company - Intrastat '
 
 services:
-	- MatiCore\Invoice\BankMovementCronLog
-	- MatiCore\Invoice\BankMovementCronLogAccessor
 	- MatiCore\Company\CompanyManager
 	- MatiCore\Company\CompanyManagerAccessor
+	- MatiCore\Supplier\SupplierManager
+	- MatiCore\Supplier\SupplierManagerAccessor
+	- MatiCore\Invoice\ExpenseManager
+	- MatiCore\Invoice\ExpenseManagerAccessor
+	- MatiCore\Invoice\ExpenseHelper
+	- MatiCore\Invoice\BankMovementCronLog
+	- MatiCore\Invoice\BankMovementCronLogAccessor
 	- MatiCore\Invoice\ExportManager(%tempDir%, %invoice%.%export%)
 	- MatiCore\Invoice\ExportManagerAccessor
 	- MatiCore\Invoice\InvoiceManager(%invoice%)
 	- MatiCore\Invoice\InvoiceManagerAccessor
-	- MatiCore\Supplier\SupplierManager
-	- MatiCore\Supplier\SupplierManagerAccessor
 	- MatiCore\Invoice\SignatureManager(%wwwDir%)
 	- MatiCore\Invoice\SignatureManagerAccessor
+	- MatiCore\Invoice\InvoiceHelper
 	- MatiCore\Invoice\Email\InvoiceAlertOneEmail
 	- MatiCore\Invoice\Email\InvoiceAlertTwoEmail
 	- MatiCore\Invoice\Email\InvoiceAlertThreeEmail

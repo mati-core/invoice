@@ -6,83 +6,89 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use App\Model\History\HistoryManager;
+use Baraja\Doctrine\EntityManager;
+use Baraja\Doctrine\EntityManagerException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use MatiCore\Address\CountryManager;
-use MatiCore\Database\EntityManager;
-use MatiCore\Database\EntityManagerException;
+use MatiCore\Address\CountryManagerAccessor;
+use MatiCore\Company\CompanyManagerAccessor;
+use MatiCore\Currency\CurrencyException;
+use MatiCore\Currency\CurrencyManagerAccessor;
+use MatiCore\Currency\Number;
+use MatiCore\Unit\Unit;
+use MatiCore\Unit\UnitException;
+use MatiCore\Unit\UnitManagerAccessor;
+use MatiCore\User\BaseUser;
+use MatiCore\User\StorageIdentity;
+use MatiCore\User\UserException;
 use Nette\Security\User;
-use MatiCore\User\Entity\User as MUser;
 use Nette\Utils\DateTime;
 
+/**
+ * Class InvoiceHelper
+ * @package MatiCore\Invoice
+ */
 class InvoiceHelper
 {
 
 	/**
 	 * @var array
 	 */
-	private $companyData;
+	private array $companyData;
 
 	/**
-	 * @var CompanyManager
+	 * @var CompanyManagerAccessor
 	 */
-	private $companyManager;
+	private CompanyManagerAccessor $companyManager;
 
 	/**
 	 * @var EntityManager
 	 */
-	private $entityManager;
+	private EntityManager $entityManager;
 
 	/**
-	 * @var InvoiceManager
+	 * @var InvoiceManagerAccessor
 	 */
-	private $invoiceManager;
+	private InvoiceManagerAccessor $invoiceManager;
 
 	/**
-	 * @var CurrencyManager
+	 * @var CurrencyManagerAccessor
 	 */
-	private $currencyManager;
+	private CurrencyManagerAccessor $currencyManager;
 
 	/**
-	 * @var UnitManager
+	 * @var UnitManagerAccessor
 	 */
-	private $unitManager;
+	private UnitManagerAccessor $unitManager;
 
 	/**
-	 * @var CountryManager
+	 * @var CountryManagerAccessor
 	 */
-	private $countryManager;
+	private CountryManagerAccessor $countryManager;
 
 	/**
-	 * @var SignatureManager
+	 * @var SignatureManagerAccessor
 	 */
-	private $signatureManager;
-
-	/**
-	 * @var HistoryManager
-	 */
-	private $historyManager;
+	private SignatureManagerAccessor $signatureManager;
 
 	/**
 	 * @var User
 	 */
-	private $user;
+	private User $user;
 
 	/**
 	 * InvoiceHelper constructor.
 	 * @param array $companyData
-	 * @param CompanyManager $companyManager
+	 * @param CompanyManagerAccessor $companyManager
 	 * @param EntityManager $entityManager
-	 * @param InvoiceManager $invoiceManager
-	 * @param CurrencyManager $currencyManager
-	 * @param UnitManager $unitManager
-	 * @param CountryManager $countryManager
-	 * @param SignatureManager $signatureManager
-	 * @param HistoryManager $historyManager
+	 * @param InvoiceManagerAccessor $invoiceManager
+	 * @param CurrencyManagerAccessor $currencyManager
+	 * @param UnitManagerAccessor $unitManager
+	 * @param CountryManagerAccessor $countryManager
+	 * @param SignatureManagerAccessor $signatureManager
 	 * @param User $user
 	 */
-	public function __construct(array $companyData, CompanyManager $companyManager, EntityManager $entityManager, InvoiceManager $invoiceManager, CurrencyManager $currencyManager, UnitManager $unitManager, CountryManager $countryManager, SignatureManager $signatureManager, HistoryManager $historyManager, User $user)
+	public function __construct(array $companyData, CompanyManagerAccessor $companyManager, EntityManager $entityManager, InvoiceManagerAccessor $invoiceManager, CurrencyManagerAccessor $currencyManager, UnitManagerAccessor $unitManager, CountryManagerAccessor $countryManager, SignatureManagerAccessor $signatureManager, User $user)
 	{
 		$this->companyData = $companyData;
 		$this->companyManager = $companyManager;
@@ -92,7 +98,6 @@ class InvoiceHelper
 		$this->unitManager = $unitManager;
 		$this->countryManager = $countryManager;
 		$this->signatureManager = $signatureManager;
-		$this->historyManager = $historyManager;
 		$this->user = $user;
 	}
 
@@ -100,15 +105,14 @@ class InvoiceHelper
 	 * @param string $id
 	 * @return array
 	 * @throws CurrencyException
-	 * @throws EntityManagerException
 	 * @throws InvoiceException
 	 * @throws UnitException
 	 */
 	public function getInvoiceById(string $id): array
 	{
 		try {
-			$invoice = $this->invoiceManager->getInvoiceById($id);
-			$unit = $this->unitManager->getDefaultUnit();
+			$invoice = $this->invoiceManager->get()->getInvoiceById($id);
+			$unit = $this->unitManager->get()->getDefaultUnit();
 
 			$ret = [
 				'id' => $invoice->getId(),
@@ -221,7 +225,7 @@ class InvoiceHelper
 			}
 
 			return $ret;
-		} catch (NoResultException | NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException) {
 			return $this->getNewInvoice();
 		}
 	}
@@ -248,27 +252,26 @@ class InvoiceHelper
 
 	/**
 	 * @return array
-	 * @throws CurrencyException
 	 * @throws InvoiceException
 	 * @throws UnitException
-	 * @throws EntityManagerException
+	 * @throws CurrencyException
 	 */
 	public function getNewInvoice(): array
 	{
 		$date = DateTime::from('NOW');
 		$dueDate = $date->modifyClone('+14 days');
 
-		$currency = $this->currencyManager->getDefaultCurrency();
-		$unit = $this->unitManager->getDefaultUnit();
+		$currency = $this->currencyManager->get()->getDefaultCurrency();
+		$unit = $this->unitManager->get()->getDefaultUnit();
 
-		$currencyTemp = $this->currencyManager->getCurrencyRateByDate($currency, $date);
+		$currencyTemp = $this->currencyManager->get()->getCurrencyRateByDate($currency, $date);
 		$currencyRate = $currencyTemp->getRate();
 		$currencyDate = $currencyTemp->getLastUpdate()->format('d.m.Y');
 
 		return [
 			'id' => null,
 			'type' => 'invoice',
-			'number' => $this->invoiceManager->getNextInvoiceNumber(),
+			'number' => $this->invoiceManager->get()->getNextInvoiceNumber(),
 			'orderNumber' => '',
 			'rentNumber' => '',
 			'contractNumber' => '',
@@ -353,14 +356,13 @@ class InvoiceHelper
 	/**
 	 * @param string $id
 	 * @return array|null
-	 * @throws EntityManagerException
 	 * @throws UnitException
 	 */
 	public function getFixInvoiceById(string $id): ?array
 	{
 		try {
-			$invoice = $this->invoiceManager->getInvoiceById($id);
-			$unit = $this->unitManager->getDefaultUnit();
+			$invoice = $this->invoiceManager->get()->getInvoiceById($id);
+			$unit = $this->unitManager->get()->getDefaultUnit();
 
 			$date = $invoice instanceof FixInvoice ? $invoice->getDate() : DateTime::from('NOW');
 			$taxDate = $invoice instanceof FixInvoice ? $invoice->getTaxDate() : DateTime::from('NOW');
@@ -509,7 +511,7 @@ class InvoiceHelper
 			}
 
 			return $ret;
-		} catch (NoResultException | NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException) {
 			return null;
 		}
 	}
@@ -532,9 +534,9 @@ class InvoiceHelper
 		$dateTax = DateTime::from($invoiceData['dateTax']);
 
 		if ($type === 'proforma') {
-			$invoiceData['number'] = $this->invoiceManager->getNextInvoiceNumber($date);
+			$invoiceData['number'] = $this->invoiceManager->get()->getNextInvoiceNumber($date);
 		} else {
-			$invoiceData['number'] = $this->invoiceManager->getNextInvoiceNumber($dateTax);
+			$invoiceData['number'] = $this->invoiceManager->get()->getNextInvoiceNumber($dateTax);
 		}
 
 		return $invoiceData;
@@ -542,13 +544,13 @@ class InvoiceHelper
 
 	/**
 	 * @param array $invoiceData
-	 * @param MUser|null $user
+	 * @param BaseUser|null $user
 	 * @return array
 	 * @throws CurrencyException
-	 * @throws EntityManagerException
 	 * @throws UnitException
+	 * @throws UserException
 	 */
-	public function saveInvoice(array $invoiceData, ?MUser $user = null): array
+	public function saveInvoice(array $invoiceData, ?BaseUser $user = null): array
 	{
 		$invoiceId = $invoiceData['id'];
 		$invoiceType = $invoiceData['type'];
@@ -560,9 +562,9 @@ class InvoiceHelper
 		$totalTax = (float) $invoiceData['totalTax'];
 
 		try {
-			$currency = $this->currencyManager->getCurrencyById($invoiceData['currencyData']['id']);
-		} catch (NoResultException | NonUniqueResultException $e) {
-			$currency = $this->currencyManager->getDefaultCurrency();
+			$currency = $this->currencyManager->get()->getCurrencyById($invoiceData['currencyData']['id']);
+		} catch (NoResultException | NonUniqueResultException) {
+			$currency = $this->currencyManager->get()->getDefaultCurrency();
 		}
 
 		$currencyRate = (float) $invoiceData['currencyData']['rate'];
@@ -585,17 +587,19 @@ class InvoiceHelper
 		}
 
 		if ($user === null) {
-			/** @var User $user */
-			$user = $this->user->getIdentity();
+			$identity = $this->user->getIdentity();
+			if ($identity instanceof StorageIdentity && $identity->getUser() !== null) {
+				$user = $identity->getUser();
+			}
 		}
 
 		// Načtení Invoice
 		$invoice = null;
 		try {
 			if ($invoiceId !== null) {
-				$invoice = $this->invoiceManager->getInvoiceById($invoiceId);
+				$invoice = $this->invoiceManager->get()->getInvoiceById($invoiceId);
 			}
-		} catch (NoResultException | NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException) {
 			$invoice = null;
 		}
 
@@ -607,12 +611,12 @@ class InvoiceHelper
 				$parentId = $invoiceData['invoiceId'];
 
 				try {
-					$parent = $this->invoiceManager->getInvoiceById($parentId);
+					$parent = $this->invoiceManager->get()->getInvoiceById($parentId);
 					if ($parent instanceof Invoice) {
 						$invoice->setInvoice($parent);
 						$parent->setFixInvoice($invoice);
 					}
-				} catch (NoResultException | NonUniqueResultException $e) {
+				} catch (NoResultException | NonUniqueResultException) {
 
 				}
 			} else {
@@ -647,40 +651,40 @@ class InvoiceHelper
 		//Nastaveni company z katalogu, pokud existuje
 		if ($customerId !== null) {
 			try {
-				$company = $this->companyManager->getCompanyById($customerId);
+				$company = $this->companyManager->get()->getCompanyById($customerId);
 				$invoice->setCompany($company);
-			} catch (NoResultException | NonUniqueResultException $e) {
+			} catch (NoResultException | NonUniqueResultException) {
 				$customerId = null;
 			}
 		}
 
 		if ($customerId === null) {
 			try {
-				$company = $this->companyManager->getCompanyByIco($customerIc);
+				$company = $this->companyManager->get()->getCompanyByIco($customerIc);
 				$invoice->setCompany($company);
-			} catch (NoResultException | NonUniqueResultException $e) {
+			} catch (NoResultException | NonUniqueResultException) {
 
 			}
 		}
 
 		//Nacteni zeme spolecnosti
 		try {
-			$country = $this->countryManager->getCountryByIsoCode($this->companyData['country']);
-		} catch (NoResultException | NonUniqueResultException $e) {
+			$country = $this->countryManager->get()->getCountryByIsoCode($this->companyData['country']);
+		} catch (NoResultException | NonUniqueResultException) {
 			try {
-				$country = $this->countryManager->getCountryByIsoCode('CZE');
-			} catch (NoResultException | NonUniqueResultException $e) {
+				$country = $this->countryManager->get()->getCountryByIsoCode('CZE');
+			} catch (NoResultException | NonUniqueResultException) {
 				$country = null;
 			}
 		}
 
 		//Nacteni zeme zakaznika
 		try {
-			$customerCountry = $this->countryManager->getCountryByIsoCode($invoiceData['customer']['country']);
-		} catch (NoResultException | NonUniqueResultException $e) {
+			$customerCountry = $this->countryManager->get()->getCountryByIsoCode($invoiceData['customer']['country']);
+		} catch (NoResultException | NonUniqueResultException) {
 			try {
-				$customerCountry = $this->countryManager->getCountryByIsoCode('CZE');
-			} catch (NoResultException | NonUniqueResultException $e) {
+				$customerCountry = $this->countryManager->get()->getCountryByIsoCode('CZE');
+			} catch (NoResultException | NonUniqueResultException) {
 				$customerCountry = null;
 			}
 		}
@@ -743,7 +747,7 @@ class InvoiceHelper
 		$invoice->setPayMethod($invoiceData['payMethod']);
 
 		//Podpis autora faktury
-		$invoice->setSignImage($this->signatureManager->getSignatureLink($invoice->getCreateUser()));
+		$invoice->setSignImage($this->signatureManager->get()->getSignatureLink($invoice->getCreateUser()));
 
 		//Poznamky
 		$invoice->setTextBeforeItems($invoiceData['textBeforeItems']);
@@ -780,9 +784,9 @@ class InvoiceHelper
 
 				if (isset($itemData['buyCurrency']['id']) && $itemData['buyCurrency']['id'] !== null) {
 					try {
-						$buyCurrency = $this->currencyManager->getCurrencyById($itemData['buyCurrency']['id']);
+						$buyCurrency = $this->currencyManager->get()->getCurrencyById($itemData['buyCurrency']['id']);
 						$item->setBuyCurrency($buyCurrency);
-					} catch (NoResultException | NonUniqueResultException $e) {
+					} catch (NoResultException | NonUniqueResultException) {
 						$item->setBuyCurrency(null);
 					}
 				} else {
@@ -819,14 +823,14 @@ class InvoiceHelper
 
 		foreach ($invoiceData['deposit'] as $depositInvoiceData) {
 			try {
-				$depositInvoice = $this->invoiceManager->getInvoiceById($depositInvoiceData['id']);
+				$depositInvoice = $this->invoiceManager->get()->getInvoiceById($depositInvoiceData['id']);
 				$invoice->addDepositInvoice($depositInvoice);
 				$depositInvoice->addDepositingInvoice($invoice);
 
 				if ($depositInvoice instanceof InvoiceProforma && $invoice instanceof Invoice) {
 					$depositInvoice->setInvoice($invoice);
 				}
-			} catch (NoResultException | NonUniqueResultException $e) {
+			} catch (NoResultException | NonUniqueResultException) {
 
 			}
 		}
@@ -858,12 +862,6 @@ class InvoiceHelper
 		//Finalni ulozeni do databaze
 		$this->entityManager->flush();
 
-		$this->historyManager->addHistory(
-			$changeDescription,
-			$changeDescription . ' č.: ' . $invoice->getNumber(),
-			'fas fa-edit', 'bg-warning'
-		);
-
 		$invoiceData['id'] = $invoice->getId();
 
 		return $invoiceData;
@@ -884,7 +882,6 @@ class InvoiceHelper
 	/**
 	 * @param $unitId
 	 * @return Unit
-	 * @throws EntityManagerException
 	 * @throws UnitException
 	 */
 	private function getUnit($unitId): Unit
@@ -892,7 +889,7 @@ class InvoiceHelper
 		static $cache;
 
 		if ($cache === null) {
-			$cache = $this->unitManager->getUnits();
+			$cache = $this->unitManager->get()->getUnits();
 		}
 
 		foreach ($cache as $unit) {
@@ -901,7 +898,7 @@ class InvoiceHelper
 			}
 		}
 
-		return $this->unitManager->getDefaultUnit();
+		return $this->unitManager->get()->getDefaultUnit();
 	}
 
 	/**
@@ -913,7 +910,7 @@ class InvoiceHelper
 	public function addDepositInvoice(array $invoiceData, string $depositNumber): array
 	{
 		try {
-			$depositInvoice = $this->invoiceManager->getInvoiceByCode($depositNumber);
+			$depositInvoice = $this->invoiceManager->get()->getInvoiceByCode($depositNumber);
 
 			if ($invoiceData['customer']['ic'] === '' && $invoiceData['customer']['name'] === '') {
 				$invoiceData['customer'] = [
@@ -950,7 +947,7 @@ class InvoiceHelper
 				'price' => $depositInvoice->getTotalPrice(),
 				'priceFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalPrice(), $depositInvoice->getCurrency())),
 			];
-		} catch (NoResultException | NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException) {
 			throw new InvoiceException('Zálohová faktura s číslem: ' . $depositNumber . ' neexistuje.');
 		}
 
