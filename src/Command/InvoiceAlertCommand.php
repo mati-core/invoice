@@ -18,6 +18,7 @@ use MatiCore\Invoice\Email\InvoiceAlertThreeEmail;
 use MatiCore\Invoice\Email\InvoiceAlertTwoEmail;
 use MatiCore\Invoice\ExportManagerAccessor;
 use MatiCore\Invoice\Invoice;
+use MatiCore\Invoice\InvoiceCore;
 use MatiCore\Invoice\InvoiceHistory;
 use MatiCore\Invoice\InvoiceProforma;
 use MatiCore\Invoice\InvoiceStatus;
@@ -104,7 +105,7 @@ class InvoiceAlertCommand extends Command
 		$this->io->writeln('Checking unpaid invoices (date: ' . date('Y-m-d') . ')...');
 
 		/** @var Invoice[] $invoices */
-		$invoices = $this->entityManager->getRepository(Invoice::class)
+		$invoices = $this->entityManager->getRepository(InvoiceCore::class)
 				->createQueryBuilder('i')
 				->select('i')
 				->where('i.payDate IS NULL')
@@ -115,54 +116,56 @@ class InvoiceAlertCommand extends Command
 		$rows = [];
 
 		foreach ($invoices as $invoice) {
-			$dueDate = $invoice->getDueDate();
-			$nowDate = DateTime::from('NOW');
+			if ($invoice instanceof Invoice || $invoice instanceof InvoiceProforma) {
+				$dueDate = $invoice->getDueDate();
+				$nowDate = DateTime::from('NOW');
 
-			$date1 = $nowDate->modifyClone($this->params['alertEmail']['firstAlert']['sendAt']);
-			$date2 = $nowDate->modifyClone($this->params['alertEmail']['secondAlert']['sendAt']);
-			$date3 = $nowDate->modifyClone($this->params['alertEmail']['thirdAlert']['sendAt']);
+				$date1 = $nowDate->modifyClone($this->params['alertEmail']['firstAlert']['sendAt']);
+				$date2 = $nowDate->modifyClone($this->params['alertEmail']['secondAlert']['sendAt']);
+				$date3 = $nowDate->modifyClone($this->params['alertEmail']['thirdAlert']['sendAt']);
 
-			if ($invoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED && $invoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
-				$payStatus = $invoice->getPayAlertStatus();
-				try {
-					if (
-						$dueDate <= $date1
-						&& (
-							$payStatus === InvoiceStatus::PAY_ALERT_NONE
-							|| $payStatus === ''
-						)
-					) {
-						$this->sendAlertOne($invoice);
-						$status = '1. upomínka';
-					} elseif (
-						$dueDate <= $date2
-						&& $payStatus === InvoiceStatus::PAY_ALERT_ONE
-					) {
-						$this->sendAlertTwo($invoice);
-						$status = '2. upomínka';
-					} elseif (
-						$dueDate <= $date3
-						&& $payStatus === InvoiceStatus::PAY_ALERT_TWO
-					) {
-						$this->sendAlertThree($invoice);
-						$status = '3. upomínka';
-					} else {
-						$status = 'Čeká';
+				if ($invoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED && $invoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
+					$payStatus = $invoice->getPayAlertStatus();
+					try {
+						if (
+							$dueDate <= $date1
+							&& (
+								$payStatus === InvoiceStatus::PAY_ALERT_NONE
+								|| $payStatus === ''
+							)
+						) {
+							$this->sendAlertOne($invoice);
+							$status = '1. upomínka';
+						} elseif (
+							$dueDate <= $date2
+							&& $payStatus === InvoiceStatus::PAY_ALERT_ONE
+						) {
+							$this->sendAlertTwo($invoice);
+							$status = '2. upomínka';
+						} elseif (
+							$dueDate <= $date3
+							&& $payStatus === InvoiceStatus::PAY_ALERT_TWO
+						) {
+							$this->sendAlertThree($invoice);
+							$status = '3. upomínka';
+						} else {
+							$status = 'Čeká';
+						}
+					} catch (ConstantException | EmailException | EntityManagerException $e) {
+						Debugger::log($e);
+						$status = 'Chyba';
 					}
-				} catch (ConstantException | EmailException | EntityManagerException $e) {
-					Debugger::log($e);
-					$status = 'Chyba';
+				} else {
+					$status = 'Neschváleno';
 				}
-			} else {
-				$status = 'Neschváleno';
+
+
+				$rows[] = [
+					$invoice->getNumber(),
+					$invoice->getDueDate()->format('Y-m-d'),
+					$status,
+				];
 			}
-
-
-			$rows[] = [
-				$invoice->getNumber(),
-				$invoice->getDueDate()->format('Y-m-d'),
-				$status,
-			];
 		}
 
 		$table = new Table($output);
@@ -177,11 +180,11 @@ class InvoiceAlertCommand extends Command
 
 	/**
 	 * @param int $numberOfAlert
-	 * @param Invoice $invoice
+	 * @param Invoice|InvoiceProforma $invoice
 	 * @throws ConstantException
 	 * @throws EmailException
 	 */
-	private function sendAlert(int $numberOfAlert, Invoice $invoice): void
+	private function sendAlert(int $numberOfAlert, Invoice|InvoiceProforma $invoice): void
 	{
 		$production = (bool) ($this->params['alertEmail']['production'] ?? false);
 		$sender = $this->params['alertEmail']['email'] ?? 'faktury@app-universe.cz';
@@ -287,31 +290,31 @@ class InvoiceAlertCommand extends Command
 	}
 
 	/**
-	 * @param Invoice $invoice
+	 * @param Invoice|InvoiceProforma $invoice
 	 * @throws ConstantException
 	 * @throws EmailException
 	 */
-	private function sendAlertOne(Invoice $invoice): void
+	private function sendAlertOne(Invoice|InvoiceProforma $invoice): void
 	{
 		$this->sendAlert(1, $invoice);
 	}
 
 	/**
-	 * @param Invoice $invoice
+	 * @param Invoice|InvoiceProforma $invoice
 	 * @throws ConstantException
 	 * @throws EmailException
 	 */
-	private function sendAlertTwo(Invoice $invoice): void
+	private function sendAlertTwo(Invoice|InvoiceProforma $invoice): void
 	{
 		$this->sendAlert(2, $invoice);
 	}
 
 	/**
-	 * @param Invoice $invoice
+	 * @param Invoice|InvoiceProforma $invoice
 	 * @throws ConstantException
 	 * @throws EmailException
 	 */
-	private function sendAlertThree(Invoice $invoice): void
+	private function sendAlertThree(Invoice|InvoiceProforma $invoice): void
 	{
 		$this->sendAlert(3, $invoice);
 	}

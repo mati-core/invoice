@@ -222,7 +222,7 @@ class ExpenseHelper
 			$supplierAddress = $expense->getSupplierStreet() ?? '';
 			$supplierCity = $expense->getSupplierCity() ?? '';
 			$supplierZip = $expense->getSupplierZipCode() ?? '';
-			$supplierCountry = $expense->getSupplierCountry() === null ? 'CZE' : $expense->getSupplierCountry()->getIsoCode();
+			$supplierCountry = $expense->getSupplierCountry()->getIsoCode();
 			$supplierIC = $expense->getSupplierIc() ?? '';
 			$supplierDIC = $expense->getSupplierDic() ?? '';
 

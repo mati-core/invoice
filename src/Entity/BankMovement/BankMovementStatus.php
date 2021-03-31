@@ -11,7 +11,10 @@ namespace MatiCore\Invoice;
  */
 class BankMovementStatus{
 
-	private static $names = [
+	/**
+	 * @var array<string>
+	 */
+	private static array $names = [
 		BankMovement::STATUS_NOT_PROCESSED => 'Nezpracováno',
 		BankMovement::STATUS_SUCCESS => 'Hotovo',
 		BankMovement::STATUS_DONE => 'Vyřešeno',
@@ -23,7 +26,10 @@ class BankMovementStatus{
 		BankMovement::STATUS_SYSTEM_ERROR => 'Chyba',
 	];
 
-	private static $colors = [
+	/**
+	 * @var array<string>
+	 */
+	private static array $colors = [
 		BankMovement::STATUS_NOT_PROCESSED => 'text-warning',
 		BankMovement::STATUS_SUCCESS => 'text-success',
 		BankMovement::STATUS_DONE => 'text-info',

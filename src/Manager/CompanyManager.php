@@ -14,6 +14,7 @@ use h4kuna\Ares\Ares;
 use h4kuna\Ares\Data;
 use h4kuna\Ares\Exceptions\IdentificationNumberNotFoundException;
 use MatiCore\Currency\Number;
+use MatiCore\Invoice\InvoiceCore;
 use MatiCore\Invoice\InvoiceItem;
 use Nette\Localization\Translator;
 
@@ -142,15 +143,15 @@ class CompanyManager
 	}
 
 	/**
-	 * @param string $ic
+	 * @param string $in
 	 * @return Data
 	 * @throws IdentificationNumberNotFoundException
 	 */
-	public function getDataFromAres(string $ic): Data
+	public function getDataFromAres(string $in): Data
 	{
 		$ares = new Ares();
 
-		return $ares->loadData($ic);
+		return $ares->loadData($in);
 	}
 
 	/**
@@ -187,7 +188,7 @@ class CompanyManager
 	{
 		try {
 			$this->entityManager->remove($company)->flush();
-		} catch (EntityManagerException $e) {
+		} catch (EntityManagerException) {
 			CompanyException::isUsed();
 		}
 	}
@@ -200,7 +201,7 @@ class CompanyManager
 	{
 		try {
 			$this->entityManager->remove($companyStock)->flush();
-		} catch (EntityManagerException $e) {
+		} catch (EntityManagerException) {
 			CompanyException::isStockUsed();
 		}
 	}
@@ -230,7 +231,16 @@ class CompanyManager
 	{
 		$list = [];
 
-		foreach ($company->getInvoices() as $invoice) { //TODO reimplement me!!!
+		$invoices = $this->entityManager->getRepository(InvoiceCore::class)
+				->createQueryBuilder('invoice')
+				->select('invoice')
+				->where('invoice.company = :company')
+				->setParameter('company', $company->getId())
+				->orderBy('invoice.date', 'DESC')
+				->getQuery()
+				->getResult() ?? [];
+
+		foreach ($invoices as $invoice) {
 			if ($invoice->isDeleted() === false) {
 				foreach ($invoice->getItems() as $item) {
 					$hash = md5($item->getDescription() . '-' . $item->getPricePerItem());

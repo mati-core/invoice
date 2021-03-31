@@ -673,7 +673,7 @@ class InvoiceManager
 		$invoice->setCompany($proforma->getCompany());
 
 		/** @var BaseUser|null $user */
-		$user = ($this->user !== null ? $this->user->getIdentity() : null);
+		$user = $this->user->getIdentity();
 		$invoice->setCreateUser($user ?? $proforma->getCreateUser());
 		$invoice->setEditUser($user ?? $proforma->getCreateUser());
 		$invoice->setCreateDate(DateTime::from('NOW'));
@@ -829,10 +829,8 @@ class InvoiceManager
 				->select('i.number')
 				->where('i.taxDate >= :dateStart')
 				->andWhere('i.taxDate < :dateStop')
-				->setParameters([
-					'dateStart' => $startDate,
-					'dateStop' => $stopDate,
-				])
+				->setParameter('dateStart', $startDate)
+				->setParameter('dateStop', $stopDate)
 				->getQuery()
 				->getScalarResult() ?? [];
 

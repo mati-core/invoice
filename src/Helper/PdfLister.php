@@ -12,9 +12,9 @@ namespace MatiCore\Invoice;
 class PdfLister
 {
 
-	private static $index = 0;
+	private static int $index = 0;
 
-	public static $list = 'abcdefghijklmnopqrstuvwxyz';
+	public static string $list = 'abcdefghijklmnopqrstuvwxyz';
 
 	/**
 	 * @return string

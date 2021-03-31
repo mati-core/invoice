@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
+use App\AdminModule\Presenters\BaseAdminPresenter;
 use Baraja\Doctrine\EntityManager;
 use MatiCore\Cms\Dashboard\DashboardBlockControl;
 use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManagerAccessor;
+use MatiCore\Currency\Number;
 use MatiCore\DataGrid\MatiDataGrid;
 use Nette\Security\User;
 use Nette\Utils\Strings;
@@ -64,6 +66,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 	public function render(): void
 	{
+		/** @var BaseAdminPresenter $presenter */
 		$presenter = $this->getPresenter();
 
 		$show = false;

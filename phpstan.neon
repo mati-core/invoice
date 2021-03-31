@@ -10,6 +10,7 @@ parameters:
 		- update/*
 	ignoreErrors:
 		- '#Call to an undefined method [a-zA-Z0-9\\_]+Presenter::checkAccess\(\)#'
+		- '#Call to an undefined method [a-zA-Z0-9\\_]+Template::renderToString()\(\)#'
 
 	checkGenericClassInNonGenericObjectType: false
 	checkMissingIterableValueType: false

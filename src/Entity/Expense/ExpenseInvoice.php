@@ -333,17 +333,17 @@ class ExpenseInvoice extends Expense
 	}
 
 	/**
-	 * @return ExpenseInvoiceItem[]|ArrayCollection
+	 * @return ExpenseInvoiceItem[]|Collection
 	 */
-	public function getItems()
+	public function getItems(): array|Collection
 	{
 		return $this->items;
 	}
 
 	/**
-	 * @param ExpenseInvoiceItem[]|ArrayCollection $items
+	 * @param ExpenseInvoiceItem[]|Collection $items
 	 */
-	public function setItems($items): void
+	public function setItems(array|Collection $items): void
 	{
 		$this->items = $items;
 	}
