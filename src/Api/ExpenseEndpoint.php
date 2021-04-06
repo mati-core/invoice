@@ -83,7 +83,7 @@ class ExpenseEndpoint extends BaseEndpoint
 	public function postLoadCurrency(string $code, array $expenseData): void
 	{
 		try {
-			$currency = $this->currencyManager->get()->getCurrencyByIsoCode($isoCode);
+			$currency = $this->currencyManager->get()->getCurrencyByIsoCode($code);
 			$currencyTemp = $this->currencyManager->get()->getCurrencyRateByDate($currency, DateTime::from($expenseData['date'] ?? 'NOW'));
 
 			$this->sendOk([
