@@ -125,6 +125,10 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		try {
 			$this->editedInvoice = $this->invoiceManager->get()->getInvoiceById($id);
 
+			$color = $this->invoiceManager->get()->getColorByInvoiceDocument($this->editedInvoice);
+			
+			$this->template->color = $color;
+			$this->template->templateData = $this->invoiceManager->get()->getInvoiceTemplateData($this->editedInvoice);
 			$this->template->invoice = $this->editedInvoice;
 			$this->template->contacts = $this->invoiceManager->get()->getInvoiceEmails($this->editedInvoice);
 		} catch (NoResultException | NonUniqueResultException $e) {

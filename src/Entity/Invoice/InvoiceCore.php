@@ -53,7 +53,7 @@ class InvoiceCore
 	 * Relace na spolecnost
 	 *
 	 * @var Company|null
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company", inversedBy="invoices")
+	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company")
 	 * @ORM\JoinColumn(name="company_id", referencedColumnName="id", nullable=true)
 	 */
 	protected Company|null $company;
@@ -62,7 +62,7 @@ class InvoiceCore
 	 * Relace na pobocku spolecnosti
 	 *
 	 * @var CompanyStock|null
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock", inversedBy="invoices")
+	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock")
 	 * @ORM\JoinColumn(name="company_stock_id", referencedColumnName="id", nullable=true)
 	 */
 	protected CompanyStock|null $companyStock;
@@ -158,13 +158,13 @@ class InvoiceCore
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $companyIc;
+	protected string|null $companyCin;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $companyDic;
+	protected string|null $companyTin;
 
 	/**
 	 * @var string|null
@@ -207,13 +207,13 @@ class InvoiceCore
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $customerIc;
+	protected string|null $customerCin;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $customerDic;
+	protected string|null $customerTin;
 
 	/**
 	 * Cislo objednavky
@@ -480,19 +480,22 @@ class InvoiceCore
 	 * @ORM\JoinColumn(name="pay_document_id", referencedColumnName="id", nullable=true)
 	 */
 	protected InvoicePayDocument|null $payDocument;
+
 	/**
 	 * @var bool
 	 * @ORM\Column(type="boolean")
 	 */
 	protected bool $disableStatistics = false;
+
 	/**
 	 * Faktury, ktere pouzivaji tuto fakturu jako zalohu
 	 *
 	 * @var InvoiceCore[]|Collection|null
 	 * @ORM\ManyToMany(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="depositInvoices", fetch="EXTRA_LAZY")
-	 * @ORM\JoinTable(name="app__invoice_deposit")
+	 * @ORM\JoinTable(name="invoice__invoice_deposit")
 	 */
 	private array|Collection|null $depositingInvoices;
+
 	/**
 	 * Odecteni zalohy
 	 *
@@ -678,33 +681,33 @@ class InvoiceCore
 	/**
 	 * @return string|null
 	 */
-	public function getCompanyIc(): ?string
+	public function getCompanyCin(): ?string
 	{
-		return $this->companyIc;
+		return $this->companyCin;
 	}
 
 	/**
-	 * @param string|null $companyIc
+	 * @param string|null $companyCin
 	 */
-	public function setCompanyIc(?string $companyIc): void
+	public function setCompanyCin(?string $companyCin): void
 	{
-		$this->companyIc = $companyIc;
+		$this->companyCin = $companyCin;
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getCompanyDic(): ?string
+	public function getCompanyTin(): ?string
 	{
-		return $this->companyDic;
+		return $this->companyTin;
 	}
 
 	/**
-	 * @param string|null $companyDic
+	 * @param string|null $companyTin
 	 */
-	public function setCompanyDic(?string $companyDic): void
+	public function setCompanyTin(?string $companyTin): void
 	{
-		$this->companyDic = $companyDic;
+		$this->companyTin = $companyTin;
 	}
 
 	/**
@@ -806,33 +809,33 @@ class InvoiceCore
 	/**
 	 * @return string|null
 	 */
-	public function getCustomerIc(): ?string
+	public function getCustomerCin(): ?string
 	{
-		return $this->customerIc;
+		return $this->customerCin;
 	}
 
 	/**
-	 * @param string|null $customerIc
+	 * @param string|null $customerCin
 	 */
-	public function setCustomerIc(?string $customerIc): void
+	public function setCustomerCin(?string $customerCin): void
 	{
-		$this->customerIc = $customerIc;
+		$this->customerCin = $customerCin;
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getCustomerDic(): ?string
+	public function getCustomerTin(): ?string
 	{
-		return $this->customerDic;
+		return $this->customerTin;
 	}
 
 	/**
-	 * @param string|null $customerDic
+	 * @param string|null $customerTin
 	 */
-	public function setCustomerDic(?string $customerDic): void
+	public function setCustomerTin(?string $customerTin): void
 	{
-		$this->customerDic = $customerDic;
+		$this->customerTin = $customerTin;
 	}
 
 	/**
@@ -1350,7 +1353,10 @@ class InvoiceCore
 		$f = $user->getFirstName();
 		$s = $user->getLastName();
 
-		return Strings::upper($f[0] . '-' . ($s[0] ?? '') . ($s[1] ?? '') . ($s[2] ?? ''));
+		$str = ($f === null ?: $f[0] . '-');
+		$str .= ($s[0] ?? '') . ($s[1] ?? '') . ($s[2] ?? '');
+
+		return Strings::upper( $str );
 	}
 
 	/**
@@ -1807,6 +1813,8 @@ class InvoiceCore
 	 */
 	public function setEmails(string $emails): void
 	{
+		dump($this->emails);
+		dumpe($emails);
 		$this->emails = $emails;
 	}
 

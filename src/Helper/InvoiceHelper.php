@@ -154,8 +154,8 @@ class InvoiceHelper
 					'city' => $invoice->getCompanyCity(),
 					'zipCode' => $invoice->getCompanyPostalCode(),
 					'country' => $invoice->getCompanyCountry()->getIsoCode(),
-					'ic' => $invoice->getCompanyIc() ?? '',
-					'dic' => $invoice->getCompanyDic() ?? '',
+					'cin' => $invoice->getCompanyCin() ?? '',
+					'tin' => $invoice->getCompanyTin() ?? '',
 				],
 				'customer' => [
 					'id' => null,
@@ -164,8 +164,8 @@ class InvoiceHelper
 					'city' => $invoice->getCustomerCity(),
 					'zipCode' => $invoice->getCustomerPostalCode(),
 					'country' => $invoice->getCustomerCountry()->getIsoCode(),
-					'ic' => $invoice->getCustomerIc() ?? '',
-					'dic' => $invoice->getCustomerDic() ?? '',
+					'cin' => $invoice->getCustomerCin() ?? '',
+					'tin' => $invoice->getCustomerTin() ?? '',
 				],
 				'items' => [],
 				'deposit' => [],
@@ -307,8 +307,8 @@ class InvoiceHelper
 				'city' => $this->companyData['city'],
 				'zipCode' => $this->companyData['zipCode'],
 				'country' => $this->companyData['country'],
-				'ic' => $this->companyData['ic'],
-				'dic' => $this->companyData['dic'],
+				'cin' => $this->companyData['cin'],
+				'tin' => $this->companyData['tin'],
 			],
 			'customer' => [
 				'id' => null,
@@ -317,8 +317,8 @@ class InvoiceHelper
 				'city' => '',
 				'zipCode' => '',
 				'country' => 'CZE',
-				'ic' => '',
-				'dic' => '',
+				'cin' => '',
+				'tin' => '',
 			],
 			'items' => [
 				[
@@ -412,8 +412,8 @@ class InvoiceHelper
 					'city' => $invoice->getCompanyCity(),
 					'zipCode' => $invoice->getCompanyPostalCode(),
 					'country' => $invoice->getCompanyCountry()->getIsoCode(),
-					'ic' => $invoice->getCompanyIc() ?? '',
-					'dic' => $invoice->getCompanyDic() ?? '',
+					'cin' => $invoice->getCompanyCin() ?? '',
+					'tin' => $invoice->getCompanyTin() ?? '',
 				],
 				'customer' => [
 					'id' => null,
@@ -422,8 +422,8 @@ class InvoiceHelper
 					'city' => $invoice->getCustomerCity(),
 					'zipCode' => $invoice->getCustomerPostalCode(),
 					'country' => $invoice->getCustomerCountry()->getIsoCode(),
-					'ic' => $invoice->getCustomerIc() ?? '',
-					'dic' => $invoice->getCustomerDic() ?? '',
+					'cin' => $invoice->getCustomerCin() ?? '',
+					'tin' => $invoice->getCustomerTin() ?? '',
 				],
 				'items' => [],
 				'deposit' => [],
@@ -554,7 +554,7 @@ class InvoiceHelper
 		$invoiceNumber = $invoiceData['number'];
 		$variableSymbol = str_replace('O', '99', $invoiceNumber);
 		$customerId = $invoiceData['customer']['id'];
-		$customerIc = $invoiceData['customer']['ic'];
+		$customerIc = $invoiceData['customer']['cin'];
 		$totalPrice = (float) $invoiceData['totalPriceRounded'];
 		$totalTax = (float) $invoiceData['totalTax'];
 
@@ -694,8 +694,8 @@ class InvoiceHelper
 		if ($country !== null) {
 			$invoice->setCompanyCountry($country);
 		}
-		$invoice->setCompanyIc($invoiceData['company']['ic']);
-		$invoice->setCompanyDic($invoiceData['company']['ic'] === '' || $invoiceData['company']['dic'] === null ? null : $invoiceData['company']['dic']);
+		$invoice->setCompanyCin($invoiceData['company']['cin']);
+		$invoice->setCompanyTin($invoiceData['company']['cin'] === '' || $invoiceData['company']['tin'] === null ? null : $invoiceData['company']['tin']);
 		$invoice->setCompanyLogo($this->companyData['logo']);
 
 		//Nastaveni banky
@@ -719,8 +719,8 @@ class InvoiceHelper
 		if ($customerCountry !== null) {
 			$invoice->setCustomerCountry($customerCountry);
 		}
-		$invoice->setCustomerIc($invoiceData['customer']['ic']);
-		$invoice->setCustomerDic($invoiceData['customer']['ic'] === '' || $invoiceData['customer']['dic'] === null ? null : $invoiceData['customer']['dic']);
+		$invoice->setCustomerCin($invoiceData['customer']['cin']);
+		$invoice->setCustomerTin($invoiceData['customer']['cin'] === '' || $invoiceData['customer']['tin'] === null ? null : $invoiceData['customer']['tin']);
 
 		//cisla
 		$invoice->setOrderNumber($invoiceData['orderNumber'] === '' ? null : $invoiceData['orderNumber']);
@@ -903,7 +903,7 @@ class InvoiceHelper
 		try {
 			$depositInvoice = $this->invoiceManager->get()->getInvoiceByCode($depositNumber);
 
-			if ($invoiceData['customer']['ic'] === '' && $invoiceData['customer']['name'] === '') {
+			if ($invoiceData['customer']['cin'] === '' && $invoiceData['customer']['name'] === '') {
 				$invoiceData['customer'] = [
 					'id' => null,
 					'name' => $depositInvoice->getCustomerName(),
@@ -911,10 +911,10 @@ class InvoiceHelper
 					'city' => $depositInvoice->getCustomerCity(),
 					'zipCode' => $depositInvoice->getCustomerPostalCode(),
 					'country' => $depositInvoice->getCustomerCountry()->getIsoCode(),
-					'ic' => $depositInvoice->getCustomerIc() ?? '',
-					'dic' => $depositInvoice->getCustomerDic() ?? '',
+					'cin' => $depositInvoice->getCustomerCin() ?? '',
+					'tin' => $depositInvoice->getCustomerTin() ?? '',
 				];
-			} elseif ($invoiceData['customer']['ic'] !== $depositInvoice->getCustomerIc()) {
+			} elseif ($invoiceData['customer']['cin'] !== $depositInvoice->getCustomerCin()) {
 				throw new InvoiceException('IČ odběratele na zálohové faktuře se neshoduje s IČ odběratele na upravované faktuře.');
 			}
 

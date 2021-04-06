@@ -47,9 +47,9 @@ parameters:
 			city: 'Your city'
 			zipCode: '10000'
 			country: 'CZE'
-			in: '00000000'
+			cin: '00000000'
 			tin: 'CZ00000000'
-			logo: 'https://app-universe/assets/img/logo.png'
+			logo: 'https://app-universe.cz/assets/img/logo_big.png'
 			bank:
 				CZK:
 					bankAccountName: 'Your account name'
@@ -96,24 +96,36 @@ parameters:
 				- info@app-universe.cz
 		export:
 			author: 'App Universe'
+			logo: 'https://goldenarrows.eu/assets/img/logo_v2.svg'
+			companyDescription: 'Zápis do obchodního rejstříku dne 1.1.1111 u Městského soudu v Město, oddíl X., vložka 00000'
+			phone: +420 000 000 000
+			email: info@app-universe.cz
 			invoice:
+				description: null
+				additionalDescription: '*Dodané zboží, materiály a služby jsou až do úplného zaplacení majetkem firmy Your company s.r.o.'
 				filename: 'faktura_'
-				color: '#0000FF'
+				color: 'rgb(2, 31, 40)'
 				template: null
 				style: null
 			fixInvoice:
+				description: null
+				additionalDescription: null
 				filename: 'dobropis_'
-				color: '#FF0000'
+				color: 'rgb(194,0,61)'
 				template: null
 				style: null
 			payDocument:
+				description: null
+				additionalDescription: null
 				filename: 'doklad_k_prijate_platbe_'
-				color: '#CCCCCC'
+				color: 'rgb(75,0,130)'
 				template: null
 				style: null
 			proforma:
+				description: 'V případě nezaplacení této faktury v termínu Vám bude za každý den prodlení účtována úhrada ve výši 0,05 % z celkové částky.'
+				additionalDescription: '*Dodané zboží, materiály a služby jsou až do úplného zaplacení majetkem firmy Your company s.r.o.'
 				filename: 'proforma_'
-				color: '#00FF00'
+				color: 'rgb(2, 31, 40)'
 				template: null
 				style: null
 			alertOne:

@@ -11,6 +11,7 @@
 {/block}
 
 {block pageTitle}
+	<h1>
 	{if $invoice->isProforma()}
 		Zálohová faktura
 	{elseif $invoice->isFix()}
@@ -20,6 +21,7 @@
 	{else}
 		Faktura
 	{/if} {$invoice->getNumber()}
+	</h1>
 {/block}
 
 {block head}
@@ -245,45 +247,8 @@
 {/block}
 
 {block content}
-	{var $color = 'rgb(74, 164, 50)'}
-	{if $invoice->isFix()}
-		{var $color = 'rgb(194,0,61)'}
-	{elseif $invoice->isPayDocument()}
-		{var $color = 'rgb(75,0,130)'}
-	{/if}
 	<div class="container-fluid">
 			<!-- Small boxes (Stat box) -->
-			{snippet flashes}
-				<div n:foreach="$flashes as $msg" class="row">
-					<div class="col-lg-12">
-						{if $msg->type === 'success'}
-							<div class="alert alert-dismissible alert-success">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
-								{$msg->message}
-							</div>
-						{elseif $msg->type === 'warning'}
-							<div class="alert alert-dismissible alert-warning">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-warning"></i> Pozor!</h5>
-								{$msg->message}
-							</div>
-						{elseif $msg->type === 'danger' || $msg->type === 'error'}
-							<div class="alert alert-dismissible alert-danger">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
-								{$msg->message}
-							</div>
-						{else}
-							<div class="alert alert-dismissible alert-info">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
-								{$msg->message}
-							</div>
-						{/if}
-					</div>
-				</div>
-			{/snippet}
 
 			<div class="row">
 				<div class="col-3">
@@ -350,13 +315,6 @@
 					{elseif $invoice->isProforma() === false && $invoice->isPayDocument() === false && $invoice->getFixInvoice() !== null}
 						<a n:href="Invoice:show, id => $invoice->getFixInvoice()->getId()">
 							<span class="badge badge-pill badge-danger" style="background-color: rgb(194,0,61);">Dobropis {$invoice->getFixInvoice()->getNumber()}</span>
-						</a>
-					{/if}
-                    {if count($cartServices) > 0}
-						<a href="#prilohy">
-							<span class="badge badge-pill badge-info">
-								<i class="fas fa-paperclip"></i>&nbsp;Přílohy
-							</span>
 						</a>
 					{/if}
 				</div>
@@ -466,16 +424,6 @@
 					</a>
 				</div>
 			</div>
-
-			<div n:if="count($offerList) > 0" class="row mb-1">
-				<div class="col">
-					<span class="text-bold">Nabídky:</span>
-					<a n:foreach="$offerList as $offer" n:href="Offer:show, id => $offer->getId()" target="_blank">
-						<span class="badge badge-pill badge-info">{$offer->getNumber()}</span>
-					</a>
-				</div>
-			</div>
-
 			<div class="row">
 				<div class="col">
 					<div class="card">
@@ -520,9 +468,9 @@
 											DIČ
 										</div>
 										<div class="col-6 text-right">
-											{$invoice->getCompanyIc()}
+											{$invoice->getCompanyCin()}
 											<br>
-                                            {$invoice->getCompanyDic()}
+                                            {$invoice->getCompanyTin()}
 										</div>
 									</div>
 								</div>
@@ -548,9 +496,9 @@
 											DIČ
 										</div>
 										<div class="col-6 text-right">
-											{$invoice->getCustomerIc()}
+											{$invoice->getCustomerCin()}
 											<br>
-                                            {$invoice->getCustomerDic()}
+                                            {$invoice->getCustomerTin()}
 										</div>
 									</div>
 								</div>
@@ -743,34 +691,34 @@
 												</td>
 												<td n:if="$invoice->isProforma() === false" class="text-right"
 																							style=" white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getPricePerItem(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getPricePerItem(), $invoice->getCurrency(), 2)|noescape}
 													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 													<br>
-													<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
+													<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{MatiCore\Currency\Number::formatPrice($item->getBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
 												</td>
 												<td n:if="$invoice->isProforma() === true" class="text-right"
 																						   style=" white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getPricePerItemWithVat(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getPricePerItemWithVat(), $invoice->getCurrency(), 2)|noescape}
 													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 														<br>
-														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
+														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{MatiCore\Currency\Number::formatPrice($item->getBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
 												</td>
 												<td n:if="$invoice->isProforma() === false" class="text-right"
 																							style="background-color: #eee; white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
 													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 														<br>
-														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getTotalBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
+														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{MatiCore\Currency\Number::formatPrice($item->getTotalBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
 												</td>
 												<td n:if="$invoice->isProforma() === true" class="text-right"
 																						   style="background-color: #eee; white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getTotalPriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getTotalPriceWithVat(), $invoice->getCurrency(), 2)|noescape}
 													{if $item->getBuyPrice() !== null && $presenter->checkAccess('page__invoice__showBuyPrice')}
 														<br>
-														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{App\Model\Number::formatPrice($item->getTotalBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
+														<small n:class="$item->getBuyCurrency() === null ? text-red : text-blue">{MatiCore\Currency\Number::formatPrice($item->getTotalBuyPriceInCurrency($invoice->getCurrency()), $invoice->getCurrency(), 2)|noescape}</small>
 													{/if}
 												</td>
 											</tr>
@@ -782,19 +730,19 @@
 														style="white-space: nowrap; width: 1%;"></td>
 												<td n:if="$invoice->isProforma() === false" class="text-right"
 																							style=" white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
 												</td>
 												<td n:if="$invoice->isProforma() === true" class="text-right"
 																						   style=" white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
 												</td>
 												<td n:if="$invoice->isProforma() === false" class="text-right"
 																							style="background-color: #eee; white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
 												</td>
 												<td n:if="$invoice->isProforma() === true" class="text-right"
 																						   style="background-color: #eee; white-space: nowrap;">
-													{App\Model\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
 												</td>
 											</tr>
 										{/foreach}
@@ -834,12 +782,12 @@
 										<tr n:foreach="$invoice->getTaxList() as $invoiceTax">
 											<td>{$invoiceTax->getTax()} %</td>
 											<td class="text-right">
-												{App\Model\Number::formatPrice($invoiceTax->getPrice(), $invoice->getCurrency(), 2)|noescape}
+												{MatiCore\Currency\Number::formatPrice($invoiceTax->getPrice(), $invoice->getCurrency(), 2)|noescape}
 											</td>
 											<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
 													class="text-right"></td>
 											<td class="text-right">
-												{App\Model\Number::formatPrice($invoiceTax->getTaxPrice(), $invoice->getCurrency(), 2)|noescape}
+												{MatiCore\Currency\Number::formatPrice($invoiceTax->getTaxPrice(), $invoice->getCurrency(), 2)|noescape}
 											</td>
 											<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
 													class="text-right"></td>
@@ -851,12 +799,12 @@
 													<a n:href="Invoice:show, id => $payDocument->getId()">Záloha {$payDocument->getNumber()}</a>
 												</td>
 												<td class="text-right">
-													{App\Model\Number::formatPrice(-$payDocument->getItemTotalPrice(), $payDocument->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice(-$payDocument->getItemTotalPrice(), $payDocument->getCurrency(), 2)|noescape}
 												</td>
 												<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
 														class="text-right"></td>
 												<td class="text-right">
-													{App\Model\Number::formatPrice(-$payDocument->getTotalTax(), $payDocument->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice(-$payDocument->getTotalTax(), $payDocument->getCurrency(), 2)|noescape}
 												</td>
 												<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
 														class="text-right"></td>
@@ -865,12 +813,12 @@
 													<a n:href="Invoice:show, id => $depositInvoice->getId()">Záloha {$depositInvoice->getNumber()}</a>
 												</td>
 												<td class="text-right">
-													{App\Model\Number::formatPrice(-$depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice(-$depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency(), 2)|noescape}
 												</td>
 												<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
 														class="text-right"></td>
 												<td class="text-right">
-													{App\Model\Number::formatPrice(-$depositInvoice->getTotalTax(), $depositInvoice->getCurrency(), 2)|noescape}
+													{MatiCore\Currency\Number::formatPrice(-$depositInvoice->getTotalTax(), $depositInvoice->getCurrency(), 2)|noescape}
 												</td>
 												<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
 														class="text-right"></td>
@@ -879,16 +827,16 @@
 										<tr style="border-top: 3px solid {$color|noescape};">
 											<td></td>
 											<td class="text-right">
-												{App\Model\Number::formatPrice($invoice->getTotalPriceWithoutTax(), $invoice->getCurrency(), 2)|noescape}
+												{MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceWithoutTax(), $invoice->getCurrency(), 2)|noescape}
 											</td>
 											<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" class="text-right">
-												{App\Model\Number::formatPrice($invoice->getTotalPriceWithoutTaxCZK(), $currency, 2)|noescape}
+												{MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceWithoutTaxCZK(), $currency, 2)|noescape}
 											</td>
 											<td class="text-right">
-												{App\Model\Number::formatPrice($invoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
+												{MatiCore\Currency\Number::formatPrice($invoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
 											</td>
 											<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" class="text-right">
-												{App\Model\Number::formatPrice($invoice->getTotalTaxCZK(), $currency, 2)|noescape}
+												{MatiCore\Currency\Number::formatPrice($invoice->getTotalTaxCZK(), $currency, 2)|noescape}
 											</td>
 										</tr>
 									</table>
@@ -897,7 +845,7 @@
 											Haléřové vyrovnání
 										</div>
 										<div class="col text-right pr-3">
-											{App\Model\Number::formatPrice($invoice->getTotalPriceDiff(), $invoice->getCurrency(), 2)|noescape}
+											{MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceDiff(), $invoice->getCurrency(), 2)|noescape}
 										</div>
 									</div>
 									<div n:if="$invoice->isPayDocument() === true"
@@ -906,7 +854,7 @@
 											<a n:href="Invoice:show, id => $depositInvoice->getId()">Záloha {$depositInvoice->getNumber()}</a>
 										</div>
 										<div class="col text-right pr-3">
-											{App\Model\Number::formatPrice(-$depositInvoice->getTotalPrice(), $depositInvoice->getCurrency(), 2)|noescape}
+											{MatiCore\Currency\Number::formatPrice(-$depositInvoice->getTotalPrice(), $depositInvoice->getCurrency(), 2)|noescape}
 										</div>
 									</div>
 									<div class="row">
@@ -920,7 +868,7 @@
 													</td>
 													<td class="text-right">
 														<h3 style="color: {$color|noescape}; font-weight: bold;">
-															{App\Model\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+															{MatiCore\Currency\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
 														</h3>
 													</td>
 												</tr>
@@ -942,19 +890,18 @@
 									<p>Výše uvedené ceny jsou včetně DPH.</p>
 								</div>
 							</div>
-							<div n:if="$invoice->isFix() === false && $invoice->isProforma() === false" class="row">
+							<div n:if="$templateData['description'] !== null" class="row">
 								<div class="col">
-									<p>V případě nezaplacení této faktury v termínu Vám bude za každý den prodlení
-										účtována úhrada ve výši 0,05 % z celkové částky.</p>
+									<p>{$templateData['description']}</p>
 								</div>
 							</div>
 							<div class="row">
 								<div class="col-8 mt-5">
-									<small>Zápis do obchodního rejstříku dne 1.1.1111 u Městského soudu v Město, oddíl
-										X., vložka 00000</small>
+									<small>{$templateData['companyDescription']}</small>
+									{if $templateData['additionalDescription'] !== null}
 									<br>
-									<small>*Dodané zboží, materiály a služby jsou až do úplného zaplacení majetkem firmy
-										Your company s.r.o.</small>
+									<small>{$templateData['additionalDescription']}</small>
+									{/if}
 								</div>
 							</div>
 							<div class="row">
@@ -965,13 +912,13 @@
 									<small>Vystavil: {$invoice->getAuthorName()}</small>
 								</div>
 								<div class="col">
-									<small>Mob.: +420 000 000 000</small>
+									<small n:if="$templateData['footerPhone'] !== null">Mob.: {$templateData['footerPhone']}</small>
 								</div>
 								<div class="col">
 									<small>Vygenerováno: {$invoice->getEditDate()->format('d.m.Y')}</small>
 								</div>
 								<div class="col text-right">
-									<small>Email: faktury@your-company.cz</small>
+									<small n:if="$templateData['footerEmail'] !== null">Email: {$templateData['footerEmail']}</small>
 								</div>
 							</div>
 						</div>
@@ -987,27 +934,9 @@
 						</div>
 						<div class="card-body">
 							<div class="row">
-								{if count($cartServices) > 0}
-									<div class="col">
-										{foreach $cartServices as $cartService}
-											<a n:href="Company:detailCartService, id => $cartService->getId(), ret => 2"
-													class="btn btn-outline-info btn-sm">
-												<i class="fas fa-file-pdf"></i> SZ {$cartService->getServiceNumber()}
-											</a>
-											{if $cartService->isTechnicalCheckProtocol()}
-												<a n:href="Company:detailCartService, id => $cartService->getId(), ret => 2"
-														class="btn btn-outline-danger btn-sm">
-													<i class="fas fa-file-pdf"></i>
-													TK {$cartService->getTechnicalCheckProtocol()->getNumber()}
-												</a>
-											{/if}
-										{/foreach}
-									</div>
-								{else}
-									<div class="col text-center">
-										Žádné přílohy
-									</div>
-								{/if}
+								<div class="col text-center">
+									Žádné přílohy
+								</div>
 							</div>
 						</div>
 					</div>

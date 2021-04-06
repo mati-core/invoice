@@ -3,7 +3,7 @@
 		<td class="border-right" style="width:50%; padding-left: 30px;">
 			<img src="{$invoice->getCompanyLogo()}" alt="Logo" style="width: 250px;">
 		</td>
-		<td class="{if $invoice->isFix()}background-red{elseif $invoice->isPayDocument()}background-indigo{else}background-green{/if}"
+		<td class="background-color"
 		    style="width:50%; padding: 15px 30px 15px 30px;">
             {if $invoice->isProforma()}
 				<h1 class="text-bold text-white">PROFORMA {$invoice->getNumber()}</h1>
@@ -71,7 +71,7 @@
 </table>
 <table>
 	<tr>
-		<td class="border-right {if $invoice->isFix()}background-red{elseif $invoice->isPayDocument()}background-indigo{else}background-green{/if}"
+		<td class="border-right background-color"
 		    style="width: 50%; padding: 5px 30px 5px 30px; vertical-align: top;">
 			<table class="text-white">
 				<tr>
@@ -268,18 +268,18 @@
 		<td n:if="$invoice->isProforma() === false" class="text-right border-top">{$item->getVat()} %</td>
         {if $invoice->isProforma() === false}
 			<td class="text-right border-top">
-                {App\Model\Number::formatPrice($item->getPricePerItem(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getPricePerItem(), $invoice->getCurrency(), 2)|noescape}
 			</td>
 			<td class="text-right border-top" style="background-color: #eee;">
-                {App\Model\Number::formatPrice($item->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
 			</td>
         {$pageBreaker->increase(1, $item->getTotalPrice())}
         {else}
 			<td class="text-right border-top">
-                {App\Model\Number::formatPrice($item->getPricePerItemWithVat(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getPricePerItemWithVat(), $invoice->getCurrency(), 2)|noescape}
 			</td>
 			<td class="text-right border-top" style="background-color: #eee;">
-                {App\Model\Number::formatPrice($item->getTotalPriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getTotalPriceWithVat(), $invoice->getCurrency(), 2)|noescape}
 			</td>
             {$pageBreaker->increase(1, $item->getTotalPriceWithVat())}
         {/if}
@@ -291,18 +291,18 @@
 		<td n:if="$invoice->isProforma() === false" class="text-right border-top">{$item->getVat()} %</td>
         {if $invoice->isProforma() === false}
 			<td class="text-right border-top">
-                {App\Model\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
 			</td>
 			<td class="text-right border-top" style="background-color: #eee;">
-                {App\Model\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getSalePrice(), $invoice->getCurrency(), 2)|noescape}
 			</td>
         {$pageBreaker->increase(1, $item->getSalePrice())}
         {else}
 			<td class="text-right border-top">
-                {App\Model\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
 			</td>
 			<td class="text-right border-top" style="background-color: #eee;">
-                {App\Model\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
+                {MatiCore\Currency\Number::formatPrice($item->getSalePriceWithVat(), $invoice->getCurrency(), 2)|noescape}
 			</td>
             {$pageBreaker->increase(1, $item->getSalePriceWithVat())}
         {/if}
@@ -380,11 +380,11 @@
 				<tr n:if="$invoice->isProforma() === false" n:foreach="$invoice->getTaxList() as $invoiceTax">
 					<td style="padding: 5px; border-top: 1px solid #eee;">{$invoiceTax->getTax()} %</td>
 					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
-                        {App\Model\Number::formatPrice($invoiceTax->getPrice(), $invoice->getCurrency(), 2)|noescape}
+                        {MatiCore\Currency\Number::formatPrice($invoiceTax->getPrice(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
 					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
-                        {App\Model\Number::formatPrice($invoiceTax->getTaxPrice(), $invoice->getCurrency(), 2)|noescape}
+                        {MatiCore\Currency\Number::formatPrice($invoiceTax->getTaxPrice(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
 				</tr>
@@ -393,29 +393,29 @@
 						Záloha {$depositInvoice->getNumber()}
 					</td>
 					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
-						{App\Model\Number::formatPrice(-$depositInvoice->getItemTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+						{MatiCore\Currency\Number::formatPrice(-$depositInvoice->getItemTotalPrice(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
 					<td style="padding: 5px; border-top: 1px solid #eee; text-align: right;">
-						{App\Model\Number::formatPrice(-$depositInvoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
+						{MatiCore\Currency\Number::formatPrice(-$depositInvoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'" style="padding: 5px; border-top: 1px solid #eee; text-align: right;"></td>
 				</tr>
 				<tr n:if="$invoice->isProforma() === false">
 					<td colspan="2"
-					    style="border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
-                        {App\Model\Number::formatPrice($invoice->getTotalPriceWithoutTax(), $invoice->getCurrency(), 2)|noescape}
+					    style="border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+                        {MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceWithoutTax(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
-							style=" border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
-                        {App\Model\Number::formatPrice($invoice->getTotalPriceWithoutTaxCZK(), $currency, 2)|noescape}
+							style=" border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+                        {MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceWithoutTaxCZK(), $currency, 2)|noescape}
 					</td>
-					<td style=" border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
-                        {App\Model\Number::formatPrice($invoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
+					<td style=" border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+                        {MatiCore\Currency\Number::formatPrice($invoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
-							style=" border-top: 2px solid {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-size: 12px; padding: 5px;">
-                        {App\Model\Number::formatPrice($invoice->getTotalTaxCZK(), $currency, 2)|noescape}
+							style=" border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+                        {MatiCore\Currency\Number::formatPrice($invoice->getTotalTaxCZK(), $currency, 2)|noescape}
 					</td>
 				</tr>
 				<tr n:if="$invoice->getTotalPriceDiff() !== 0.0">
@@ -423,7 +423,7 @@
 						Haléřové vyrovnání
 					</td>
 					<td colspan="2" style="font-size: 12px; color: black; text-align: right; padding: 5px;">
-                        {App\Model\Number::formatPrice($invoice->getTotalPriceDiff(), $invoice->getCurrency(), 2)|noescape}
+                        {MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceDiff(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 				</tr>
 				<tr n:if="$invoice->isPayDocument() === true" n:foreach="$invoice->getDepositInvoices() as $depositInvoice">
@@ -431,18 +431,18 @@
 						Záloha {$depositInvoice->getNumber()}
 					</td>
 					<td colspan="{if $invoice->getCurrency()->getCode() === 'CZK'}2{else}4{/if}" style="font-size: 12px; color: black; text-align: right; padding: 5px;">
-						{App\Model\Number::formatPrice(-$depositInvoice->getTotalPrice(), $depositInvoice->getCurrency(), 2)|noescape}
+						{MatiCore\Currency\Number::formatPrice(-$depositInvoice->getTotalPrice(), $depositInvoice->getCurrency(), 2)|noescape}
 					</td>
 				</tr>
 			</table>
 			<table>
 				<tr>
-					<td style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; font-weight: bold; font-size: 18px; padding: 5px;">
+					<td style="color: {$color}; font-weight: bold; font-size: 18px; padding: 5px;">
 						Celkem{if $invoice->isPayDocument() === false} k úhradě{/if}
 					</td>
 					<td colspan="2"
-					    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if}; text-align: right; font-weight: bold; font-size: 18px; padding: 5px;">
-                        {App\Model\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
+					    style="color: {$color}; text-align: right; font-weight: bold; font-size: 18px; padding: 5px;">
+                        {MatiCore\Currency\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 				</tr>
 			</table>
@@ -498,24 +498,24 @@
 		<tr>
 			<td style="width: 50%;"></td>
 			<td>Celkem:</td>
-			<td style="text-align: right;">{App\Model\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
+			<td style="text-align: right;">{MatiCore\Currency\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
 		</tr>
 		<tr>
 			<td style="width: 50%; padding-top: 20px;"></td>
 			<td style="padding-top: 20px; font-weight: bold; {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
 				Převádí se:
 			</td>
-			<td style="text-align: right; padding-top: 20px;">{App\Model\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
+			<td style="text-align: right; padding-top: 20px;">{MatiCore\Currency\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
 		</tr>
 	</table>
 	<pagebreak>
 	<table style="margin-top:50px;">
 		<tr>
 			<td style="width: 50%; padding-top: 20px;"></td>
-			<td style="padding-top: 20px; font-weight: bold; color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+			<td style="padding-top: 20px; font-weight: bold; color: {$color};">
 				Převedeno:
 			</td>
-			<td style="text-align: right; padding-top: 20px;">{App\Model\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
+			<td style="text-align: right; padding-top: 20px;">{MatiCore\Currency\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>
 		</tr>
 	</table>
 {/define}

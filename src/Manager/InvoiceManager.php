@@ -74,9 +74,9 @@ class InvoiceManager
 	private EmailerAccessor $emailEngine;
 
 	/**
-	 * @var ExportManager
+	 * @var ExportManagerAccessor
 	 */
-	private ExportManager $exportManager;
+	private ExportManagerAccessor $exportManager;
 
 	/**
 	 * InvoiceManager constructor.
@@ -88,9 +88,19 @@ class InvoiceManager
 	 * @param SignatureManager $signatureManager
 	 * @param LinkGenerator $linkGenerator
 	 * @param EmailerAccessor $emailEngine
-	 * @param ExportManager $exportManager
+	 * @param ExportManagerAccessor $exportManager
 	 */
-	public function __construct(string $tempDir, array $params, EntityManager $entityManager, User $user, CurrencyManager $currencyManager, SignatureManager $signatureManager, LinkGenerator $linkGenerator, EmailerAccessor $emailEngine, ExportManager $exportManager)
+	public function __construct(
+		string $tempDir,
+		array $params,
+		EntityManager $entityManager,
+		User $user,
+		CurrencyManager $currencyManager,
+		SignatureManager $signatureManager,
+		LinkGenerator $linkGenerator,
+		EmailerAccessor $emailEngine,
+		ExportManagerAccessor $exportManager
+	)
 	{
 		$this->tempDir = $tempDir;
 		$this->params = $params;
@@ -527,11 +537,11 @@ class InvoiceManager
 		$attachments = [];
 
 		// Faktura do prilohy
-		$name = $this->exportManager->getExportInvoiceFileName($invoice);
+		$name = $this->exportManager->get()->getExportInvoiceFileName($invoice);
 
 		try {
 			$tmp = $this->tempDir . '/' . $name;
-			$this->exportManager->exportInvoiceToPDF($invoice, Destination::FILE, $tmp);
+			$this->exportManager->get()->exportInvoiceToPDF($invoice, Destination::FILE, $tmp);
 			$attachments[] = [
 				'file' => $tmp,
 				'name' => $name,
@@ -547,11 +557,11 @@ class InvoiceManager
 				$files[] = $file['file'];
 			}
 
-			$name = $this->exportManager->getExportInvoiceFileName($invoice);
+			$name = $this->exportManager->get()->getExportInvoiceFileName($invoice);
 
 			$tmp = $this->tempDir . '/' . $name;
 			try {
-				$this->exportManager->mergePDF($files, Destination::FILE, $tmp);
+				$this->exportManager->get()->mergePDF($files, Destination::FILE, $tmp);
 
 				foreach ($attachments as $attachment) {
 					if ($attachment['file'] !== $tmp && is_file($attachment['file'])) {
@@ -873,6 +883,30 @@ class InvoiceManager
 			->setParameter('number', $number)
 			->getQuery()
 			->getSingleResult();
+	}
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @return string
+	 */
+	public function getColorByInvoiceDocument(InvoiceCore $invoice): string
+	{
+		return $this->exportManager->get()->getColorByInvoiceDocument($invoice);
+	}
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @return array<string|null>
+	 */
+	public function getInvoiceTemplateData(InvoiceCore $invoice): array
+	{
+		return [
+			'companyDescription' => $this->exportManager->get()->getCompanyDescription(),
+			'description' => $this->exportManager->get()->getDescription($invoice),
+			'additionalDescription' => $this->exportManager->get()->getAdditionalDescription($invoice),
+			'footerEmail' => $this->exportManager->get()->getFooterEmail(),
+			'footerPhone' => $this->exportManager->get()->getFooterPhone(),
+		];
 	}
 
 }

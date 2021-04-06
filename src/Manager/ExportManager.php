@@ -137,6 +137,7 @@ class ExportManager
 		$name = $this->getExportInvoiceFileName($invoice);
 
 		$template = $this->templateFactory->createTemplate();
+		$template->color = $this->getColorByInvoiceDocument($invoice);
 		$template->invoice = $invoice;
 		$template->currency = $this->currencyManager->getDefaultCurrency();
 		$pageBreaker = new PdfPageBreaker($invoice->getCurrency(), 23);
@@ -159,20 +160,33 @@ class ExportManager
 		$template->beforeTextPBI = $this->getTextPBI($invoice->getTextBeforeItems());
 		$template->afterTextPBI = $this->getTextPBI($invoice->getTextAfterItems(), 45, 2);
 
-		$templateFile = $this->config['invoice']['template'];
-		if($templateFile === null || $templateFile === ''){
+		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['template'])) {
+			$templateFile = $this->config['fixInvoice']['template'];
+			$styleFile = $this->config['fixInvoice']['style'] ?? null;
+		} elseif ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['template'])) {
+			$templateFile = $this->config['payDocument']['template'];
+			$styleFile = $this->config['payDocument']['style'] ?? null;
+		} elseif ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['template'])) {
+			$templateFile = $this->config['proforma']['template'];
+			$styleFile = $this->config['proforma']['style'] ?? null;
+		} else {
+			$templateFile = $this->config['invoice']['template'];
+			$styleFile = $this->config['invoice']['style'] ?? null;
+		}
+
+		if ($templateFile === null || $templateFile === '') {
 			$templateFile = __DIR__ . '/../Templates/Pdf/Invoice/invoice.latte';
 		}
 
 		$template->setFile($templateFile);
 		$html = $template->renderToString();
 
-		$styleFile = $this->config['invoice']['style'];
-		if($styleFile === null || $styleFile === ''){
+		if ($styleFile === null || $styleFile === '') {
 			$styleFile = __DIR__ . '/../Templates/Pdf/Invoice/invoice.css';
 		}
 
 		$style = FileSystem::read($styleFile);
+		$style = str_replace('__COLOR__', $template->color);
 
 		$pdf = new Mpdf();
 		$pdf->SetAuthor($this->config['author']);
@@ -280,21 +294,21 @@ class ExportManager
 		$template->invoice = $invoice;
 		$template->newDueDate = $newDueDate;
 
-		if($alertNumber === 3){
+		if ($alertNumber === 3) {
 			$name = $this->config['alertThree']['filename'] . $invoice->getNumber() . '.pdf';
-		}elseif($alertNumber === 2){
+		} elseif ($alertNumber === 2) {
 			$name = $this->config['alertTWoo']['filename'] . $invoice->getNumber() . '.pdf';
-		}else{
+		} else {
 			$name = $this->config['alertOne']['filename'] . $invoice->getNumber() . '.pdf';
 		}
 
 		$templateFile = $this->config['alertOne']['template'];
-		if($templateFile === null || $templateFile === ''){
-			if($alertNumber === 3){
+		if ($templateFile === null || $templateFile === '') {
+			if ($alertNumber === 3) {
 				$templateFile = __DIR__ . '/../Templates/Pdf/InvoiceAlert/invoice_alert_three.latte';
-			}elseif($alertNumber === 2){
+			} elseif ($alertNumber === 2) {
 				$templateFile = __DIR__ . '/../Templates/Pdf/InvoiceAlert/invoice_alert_two.latte';
-			}else{
+			} else {
 				$templateFile = __DIR__ . '/../Templates/Pdf/InvoiceAlert/invoice_alert_one.latte';
 			}
 		}
@@ -303,12 +317,12 @@ class ExportManager
 		$html = $template->renderToString();
 
 		$styleFile = $this->config['alertOne']['style'];
-		if($styleFile === null || $styleFile === ''){
-			if($alertNumber === 3){
+		if ($styleFile === null || $styleFile === '') {
+			if ($alertNumber === 3) {
 				$styleFile = __DIR__ . '/../Templates/Pdf/InvoiceAlert/invoice_alert_three.css';
-			}elseif($alertNumber === 2){
+			} elseif ($alertNumber === 2) {
 				$styleFile = __DIR__ . '/../Templates/Pdf/InvoiceAlert/invoice_alert_two.css';
-			}else{
+			} else {
 				$styleFile = __DIR__ . '/../Templates/Pdf/InvoiceAlert/invoice_alert_one.css';
 			}
 		}
@@ -415,7 +429,7 @@ class ExportManager
 		$template->dateNow = DateTime::from('NOW');
 
 		$templateFile = $this->config['summary']['template'];
-		if($templateFile === null || $templateFile === ''){
+		if ($templateFile === null || $templateFile === '') {
 			$templateFile = __DIR__ . '/../Templates/Pdf/InvoiceSummary/invoiceSummary.latte';
 		}
 
@@ -423,7 +437,7 @@ class ExportManager
 		$html = $template->renderToString();
 
 		$styleFile = $this->config['summary']['style'];
-		if($styleFile === null || $styleFile === ''){
+		if ($styleFile === null || $styleFile === '') {
 			$styleFile = __DIR__ . '/../Templates/Pdf/InvoiceSummary/invoiceSummary.css';
 		}
 
@@ -476,43 +490,43 @@ class ExportManager
 			->setTitle($this->config['intrastat']['title'] . $startDate->format('Y-m'));
 
 		$sheet = $spreadsheet->getActiveSheet();
-		if($sheet->getColumnDimension('B') !== null){
+		if ($sheet->getColumnDimension('B') !== null) {
 			$sheet->getColumnDimension('B')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('C') !== null){
+		if ($sheet->getColumnDimension('C') !== null) {
 			$sheet->getColumnDimension('C')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('D') !== null){
+		if ($sheet->getColumnDimension('D') !== null) {
 			$sheet->getColumnDimension('D')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('E') !== null){
+		if ($sheet->getColumnDimension('E') !== null) {
 			$sheet->getColumnDimension('E')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('F') !== null){
+		if ($sheet->getColumnDimension('F') !== null) {
 			$sheet->getColumnDimension('F')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('G') !== null){
+		if ($sheet->getColumnDimension('G') !== null) {
 			$sheet->getColumnDimension('G')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('H') !== null){
+		if ($sheet->getColumnDimension('H') !== null) {
 			$sheet->getColumnDimension('H')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('I') !== null){
+		if ($sheet->getColumnDimension('I') !== null) {
 			$sheet->getColumnDimension('I')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('J') !== null){
+		if ($sheet->getColumnDimension('J') !== null) {
 			$sheet->getColumnDimension('J')->setAutoSize(true);
 		}
 
-		if($sheet->getColumnDimension('K') !== null){
+		if ($sheet->getColumnDimension('K') !== null) {
 			$sheet->getColumnDimension('K')->setAutoSize(true);
 		}
 
@@ -585,5 +599,92 @@ class ExportManager
 		$writer->save('php://output');
 
 		die;
+	}
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @return string
+	 */
+	public function getColorByInvoiceDocument(InvoiceCore $invoice): string
+	{
+		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['color'])) {
+			return $this->config['fixInvoice']['color'];
+		}
+
+		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['color'])) {
+			return $this->config['payDocument']['color'];
+		}
+
+		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['color'])) {
+			return $this->config['proforma']['color'];
+		}
+
+		return $this->config['invoice']['color'] ?? 'rgb(74, 164, 50)';
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getFooterEmail(): ?string
+	{
+		return $this->config['email'] ?? null;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getFooterPhone(): ?string
+	{
+		return $this->config['phone'] ?? null;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getCompanyDescription(): ?string
+	{
+		return $this->config['companyDescription'] ?? null;
+	}
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @return string|null
+	 */
+	public function getDescription(InvoiceCore $invoice): ?string
+	{
+		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['description'])) {
+			return $this->config['fixInvoice']['description'];
+		}
+
+		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['description'])) {
+			return $this->config['payDocument']['description'];
+		}
+
+		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['description'])) {
+			return $this->config['proforma']['description'];
+		}
+
+		return $this->config['invoice']['description'] ?? null;
+	}
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @return string|null
+	 */
+	public function getAdditionalDescription(InvoiceCore $invoice): ?string
+	{
+		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['additionalDescription'])) {
+			return $this->config['fixInvoice']['additionalDescription'];
+		}
+
+		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['additionalDescription'])) {
+			return $this->config['payDocument']['additionalDescription'];
+		}
+
+		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['additionalDescription'])) {
+			return $this->config['proforma']['additionalDescription'];
+		}
+
+		return $this->config['invoice']['additionalDescription'] ?? null;
 	}
 }

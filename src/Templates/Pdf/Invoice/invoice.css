@@ -332,16 +332,8 @@
 		padding: 5px;
 	}
 
-	.background-green{
-		background-color: rgb(74, 164, 50);
-	}
-
-	.background-red{
-		background-color: rgb(194, 0, 64);
-	}
-
-	.background-indigo{
-		background-color: rgb(75, 0, 130);
+	.background-color{
+		background-color: __COLOR__;
 	}
 
 	.text-center {

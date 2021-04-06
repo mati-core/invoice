@@ -25,12 +25,12 @@
 {/block}
 
 {block vueScripts}
-	<script src="{$basePath}/cms/dist/js/vue/components.js"></script>
-	<script src="{$basePath}/js/invoiceVue.js?v18"></script>
+	<script src="{$basePath}/assets/cms/js/vue/components.js"></script>
+	<script src="{$basePath}/assets/cms/js/vue/invoiceVue.js?v1"></script>
 {/block}
 
 {block content}
-	<div class="container-fluid">
+	<div class="container-fluid" id="app-data" data-invoiceId="{$invoiceId}">
 		<!-- Small boxes (Stat box) -->
 
 		<div class="row">
@@ -85,8 +85,8 @@
 									<br>{{ invoice.company.zipCode }}
 								</p>
 								<p>
-									IČ: {{ invoice.company.ic }}
-									<br>DIČ: {{ invoice.company.dic }}
+									IČ: {{ invoice.company.cin }}
+									<br>DIČ: {{ invoice.company.tin }}
 								</p>
 							</div>
 							<div class="col-6">
@@ -152,7 +152,7 @@
 										<div class="form-group">
 											<label for="ic">IČ</label>
 											<div class="input-group">
-												<input id="ic" type="text" v-model="invoice.customer.ic"
+												<input id="ic" type="text" v-model="invoice.customer.cin"
 													   placeholder="IČ"
 													   class="form-control form-control-sm">
 												<span class="input-group-append">
@@ -166,7 +166,7 @@
 									<div class="col">
 										<div class="form-group">
 											<label for="dic">DIČ</label>
-											<input id="dic" type="text" v-model="invoice.customer.dic"
+											<input id="dic" type="text" v-model="invoice.customer.tin"
 												   placeholder="DIČ"
 												   class="form-control form-control-sm">
 										</div>
