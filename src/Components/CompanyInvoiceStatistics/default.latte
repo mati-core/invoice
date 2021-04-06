@@ -1,0 +1,80 @@
+<div class="col-md-3 col-sm-6 col-12">
+    <div class="info-box bg-gradient-info">
+        <span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
+
+        <div class="info-box-content">
+            <span class="info-box-text">Celkem</span>
+            <span class="info-box-number">{$invoiceData['invoicesPrice']|noescape}</span>
+
+            <div class="progress">
+                <div class="progress-bar" style="width: 100%"></div>
+            </div>
+            <span class="progress-description">
+              Celkem {$invoiceData['invoicesCount']|noescape} faktur.
+            </span>
+        </div>
+        <!-- /.info-box-content -->
+    </div>
+    <!-- /.info-box -->
+</div>
+<!-- /.col -->
+<div class="col-md-3 col-sm-6 col-12">
+    <div class="info-box bg-gradient-success">
+        <span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
+
+        <div class="info-box-content">
+            <span class="info-box-text">Zaplaceno</span>
+            <span class="info-box-number">{$invoiceData['invoicesPaidPrice']|noescape}</span>
+
+            <div class="progress">
+                <div class="progress-bar" style="width: {$invoiceData['invoicesPaidCount']}%"></div>
+            </div>
+            <span class="progress-description">
+                Celkem {$invoiceData['invoicesPaidPercent']} faktur.
+            </span>
+        </div>
+        <!-- /.info-box-content -->
+    </div>
+    <!-- /.info-box -->
+</div>
+<!-- /.col -->
+<div class="col-md-3 col-sm-6 col-12">
+    <div class="info-box bg-gradient-warning">
+        <span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
+
+        <div class="info-box-content">
+            <span class="info-box-text">Nezaplaceno</span>
+            <span class="info-box-number">{$invoiceData['invoicesActivePrice']|noescape}</span>
+
+            <div class="progress">
+                <div class="progress-bar" style="width: {$invoiceData['invoicesActiveCount']}%"></div>
+            </div>
+            <span class="progress-description">
+                Celkem {$invoiceData['invoicesActivePercent']} faktur.
+            </span>
+        </div>
+        <!-- /.info-box-content -->
+    </div>
+    <!-- /.info-box -->
+</div>
+<!-- /.col -->
+<div class="col-md-3 col-sm-6 col-12">
+    <div class="info-box bg-gradient-danger">
+        <span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
+
+        <div class="info-box-content">
+            <span class="info-box-text">Po splatnosti</span>
+            <span class="info-box-number">{$invoiceData['invoicesOverduePrice']|noescape}</span>
+
+            <div class="progress">
+                <div class="progress-bar" style="width: {$invoiceData['invoicesOverdueCount']}%"></div>
+            </div>
+            <span class="progress-description">
+                Celkem {$invoiceData['invoicesOverduePercent']} faktur.
+            </span>
+        </div>
+        <!-- /.info-box-content -->
+    </div>
+    <!-- /.info-box -->
+</div>
+<!-- /.col -->

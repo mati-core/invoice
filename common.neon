@@ -7,14 +7,14 @@ parameters:
 					title: company.menu.title
 					icon: 'fas fa-building'
 					route: ':Admin:Company:default'
-					position: 50
+					position: 51
 					rights:
 						- page__company
 				invoice:
 					title: invoice.menu.title
 					icon: fas fa-file-invoice
 					route: :Admin:Invoice:default
-					position: 5
+					position: 50
 					rights:
 						- page__invoice
 					children:
@@ -168,6 +168,7 @@ orm.annotations:
 services:
 	- MatiCore\Company\CompanyManager
 	- MatiCore\Company\CompanyManagerAccessor
+	- MatiCore\Company\CompanyInvoiceStatisticsControl
 	- MatiCore\Supplier\SupplierManager
 	- MatiCore\Supplier\SupplierManagerAccessor
 	- MatiCore\Invoice\ExpenseManager

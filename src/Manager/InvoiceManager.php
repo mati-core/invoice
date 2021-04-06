@@ -7,8 +7,10 @@ namespace MatiCore\Invoice;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use MatiCore\Company\Company;
 use MatiCore\Constant\Exception\ConstantException;
 use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManager;
@@ -901,6 +903,23 @@ class InvoiceManager
 	public function getInvoiceTemplateData(InvoiceCore $invoice): array
 	{
 		return $this->exportManager->get()->getInvoiceTemplateData($invoice);
+	}
+
+	/**
+	 * @param Company $company
+	 * @return array<Invoice|InvoiceProforma|InvoicePayDocument|FixInvoice>|Collection
+	 */
+	public function getInvoicesByCompany(Company $company): array|Collection
+	{
+		return $this->entityManager->getRepository(InvoiceCore::class)
+				->createQueryBuilder('ic')
+				->select('ic')
+				->where('ic.company = :companyId')
+				->setParameter('companyId', $company->getId())
+				->andWhere('ic.deleted = :f')
+				->setParameter('f', false)
+				->getQuery()
+				->getResult() ?? [];
 	}
 
 }

@@ -16,6 +16,7 @@ use MatiCore\Address\Entity\Address;
 use MatiCore\Company\Company;
 use MatiCore\Company\CompanyContact;
 use MatiCore\Company\CompanyException;
+use MatiCore\Company\CompanyInvoiceStatisticsControl;
 use MatiCore\Company\CompanyManagerAccessor;
 use MatiCore\Company\CompanyStock;
 use MatiCore\Currency\CurrencyException;
@@ -74,6 +75,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	 * @inject
 	 */
 	public InvoiceManagerAccessor $invoiceManager;
+
+	/**
+	 * @var CompanyInvoiceStatisticsControl
+	 * @inject
+	 */
+	public CompanyInvoiceStatisticsControl $invoiceStatisticsControl;
 
 	/**
 	 * @var Data|null
@@ -518,11 +525,11 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			->setDefaultValue($this->editedCompany->getName())
 			->setRequired('Zadejte název společnosti.');
 
-		$form->addText('ic', 'IČ')
+		$form->addText('cin', 'IČ')
 			->setDefaultValue($this->editedCompany->getInvoiceAddress()->getCin())
 			->setRequired('Zadejte IČ společnosti.');
 
-		$form->addText('dic', 'DIČ')
+		$form->addText('tin', 'DIČ')
 			->setDefaultValue($this->editedCompany->getInvoiceAddress()->getTin() ?? '');
 
 		$form->addText('street', 'Ulice, č.p.')
@@ -575,8 +582,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$invoiceAddress->setStreet($values->street);
 				$invoiceAddress->setCity($values->city);
 				$invoiceAddress->setCompanyName($values->name);
-				$invoiceAddress->setIc($values->ic);
-				$invoiceAddress->setDic($values->dic);
+				$invoiceAddress->setCin($values->cin);
+				$invoiceAddress->setTin($values->tin);
 				$invoiceAddress->setZipCode($values->zipCode);
 				$invoiceAddress->setCountry($this->countryManager->get()->getCountryById($values->country));
 
@@ -715,8 +722,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		$form->addSelect('country', 'Země', $this->countryManager->get()->getCountriesForForm())
 			->setDefaultValue(
 				$this->editedStock->getAddress()->getCountry() !== null
-				? $this->editedStock->getAddress()->getCountry()->getId()
-				: null
+					? $this->editedStock->getAddress()->getCountry()->getId()
+					: null
 			)
 			->setRequired('Vyberte zemi');
 
@@ -1314,6 +1321,14 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		$grid->setOuterFilterRendering();
 
 		return $grid;
+	}
+
+	/**
+	 * @return CompanyInvoiceStatisticsControl
+	 */
+	public function createComponentInvoiceStatistics(): CompanyInvoiceStatisticsControl
+	{
+		return $this->invoiceStatisticsControl;
 	}
 
 }
