@@ -405,7 +405,7 @@ class ExportManager
 			$data[] = [
 				'number' => $invoice->getNumber(),
 				'company' => Strings::truncate($invoice->getCustomerName(), 40),
-				'ic' => $invoice->getCustomerIc(),
+				'ic' => $invoice->getCustomerCin(),
 				'date' => $invoice->getDate()->format('d.m.Y'),
 				'dateTax' => ($invoice instanceof InvoiceProforma ? '' : $invoice->getTaxDate()->format('d.m.Y')),
 				'dueDate' => $invoice->getDueDate()->format('d.m.Y'),

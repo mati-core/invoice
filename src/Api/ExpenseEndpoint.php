@@ -6,15 +6,20 @@ namespace App\Api;
 
 
 use Baraja\Doctrine\DatabaseException;
+use Baraja\Doctrine\EntityManagerException;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use h4kuna\Ares\Exceptions\IdentificationNumberNotFoundException;
 use MatiCore\Company\CompanyManagerAccessor;
+use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManagerAccessor;
+use MatiCore\Invoice\ExpenseException;
 use MatiCore\Invoice\ExpenseHelper;
 use MatiCore\Invoice\InvoiceException;
 use MatiCore\Invoice\InvoiceHelper;
 use Nette\Application\LinkGenerator;
+use Nette\Application\UI\InvalidLinkException;
 use Nette\Security\User;
 use Nette\Utils\DateTime;
 
@@ -161,8 +166,7 @@ class ExpenseEndpoint extends BaseEndpoint
 	}
 
 	/**
-	 * @param array|null $data
-	 * @return ResponseInterface
+	 * @param array|null $expenseData
 	 */
 	public function postSave(?array $expenseData): void
 	{

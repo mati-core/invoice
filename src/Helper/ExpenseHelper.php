@@ -337,7 +337,10 @@ class ExpenseHelper
 
 		$isNew = false;
 
-		/** @var BaseUser|null $user */
+		/**
+		 * @var BaseUser|null $user
+		 * @phpstan-ignore-next-line
+		 */
 		$user = $this->user->getIdentity()->getUser();
 
 		try {

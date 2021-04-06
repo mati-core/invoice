@@ -531,7 +531,10 @@ class InvoiceManager
 			];
 		}
 
-		/** @var BaseUser $user */
+		/**
+		 * @var BaseUser $user
+		 * @phpstan-ignore-next-line  
+		 */
 		$user = $this->user->getIdentity()->getUser();
 
 		$status = true;
