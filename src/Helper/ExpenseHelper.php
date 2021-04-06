@@ -338,7 +338,7 @@ class ExpenseHelper
 		$isNew = false;
 
 		/** @var BaseUser|null $user */
-		$user = $this->user->getIdentity();
+		$user = $this->user->getIdentity()->getUser();
 
 		try {
 			if ($expenseData['currencyData']['id'] === null) {

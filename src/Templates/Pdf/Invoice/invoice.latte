@@ -7,16 +7,16 @@
 		    style="width:50%; padding: 15px 30px 15px 30px;">
             {if $invoice->isProforma()}
 				<h1 class="text-bold text-white">PROFORMA {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Zálohová faktura (není daňový doklad)</h3>
+				<h3 class="text-white">Zálohová faktura (není daňový doklad) - VZOR</h3>
             {elseif $invoice->isPayDocument()}
 				<h1 class="text-bold text-white">PLATBA {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Doklad k přijaté platbě</h3>
+				<h3 class="text-white">Doklad k přijaté platbě - VZOR</h3>
             {elseif $invoice->isFix()}
 				<h1 class="text-bold text-white">DOBROPIS {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Opravný daňový doklad</h3>
+				<h3 class="text-white">Opravný daňový doklad - VZOR</h3>
             {else}
 				<h1 class="text-bold text-white">Faktura {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Daňový doklad</h3>
+				<h3 class="text-white">Daňový doklad - VZOR</h3>
             {/if}
 		</td>
 	</tr>
@@ -37,11 +37,11 @@
 			<table class="text-gray">
 				<tr>
 					<td>IČ</td>
-					<td class="text-right">{$invoice->getCompanyIc()}</td>
+					<td class="text-right">{$invoice->getCompanyCin()}</td>
 				</tr>
 				<tr>
 					<td>DIČ</td>
-					<td class="text-right">{$invoice->getCompanyDic()}</td>
+					<td class="text-right">{$invoice->getCompanyTin()}</td>
 				</tr>
 			</table>
 		</td>
@@ -59,11 +59,11 @@
 			<table class="text-gray">
 				<tr>
 					<td>IČ</td>
-					<td class="text-right">{$invoice->getCustomerIc()}</td>
+					<td class="text-right">{$invoice->getCustomerCin()}</td>
 				</tr>
 				<tr>
 					<td>DIČ</td>
-					<td class="text-right">{$invoice->getCustomerDic()}</td>
+					<td class="text-right">{$invoice->getCustomerTin()}</td>
 				</tr>
 			</table>
 		</td>
@@ -204,7 +204,7 @@
 							Datum přijetí platby
 						</td>
 						<td class="text-right text-bold"
-						    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+						    style="color: {$color|noescape};">
                             {$invoice->getInvoice()->getPayDate()->format('d.m.Y')}
 						</td>
 					</tr>
@@ -216,7 +216,7 @@
 							Datum splatnosti
 						</td>
 						<td class="text-right text-bold"
-						    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+						    style="color: {$color|noescape};">
 							{$invoice->getDueDateFormatted()}
 						</td>
 					</tr>
@@ -228,7 +228,7 @@
 							Datum splatnosti
 						</td>
 						<td class="text-right text-bold"
-						    style="color: {if $invoice->isFix()}rgb(194, 0, 64){elseif $invoice->isPayDocument()}rgb(75,0,130){else}rgb(74, 164, 50){/if};">
+						    style="color: {$color|noescape};">
 							{$invoice->getDueDateFormatted()}
 						</td>
 					</tr>
@@ -403,18 +403,18 @@
 				</tr>
 				<tr n:if="$invoice->isProforma() === false">
 					<td colspan="2"
-					    style="border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+					    style="border-top: 2px solid {$color|noescape}; text-align: right; font-size: 12px; padding: 5px;">
                         {MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceWithoutTax(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
-							style=" border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+							style=" border-top: 2px solid {$color|noescape}; text-align: right; font-size: 12px; padding: 5px;">
                         {MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceWithoutTaxCZK(), $currency, 2)|noescape}
 					</td>
-					<td style=" border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+					<td style=" border-top: 2px solid {$color|noescape}; text-align: right; font-size: 12px; padding: 5px;">
                         {MatiCore\Currency\Number::formatPrice($invoice->getTotalTax(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 					<td n:if="$invoice->getCurrency()->getCode() !== 'CZK'"
-							style=" border-top: 2px solid {$color}; text-align: right; font-size: 12px; padding: 5px;">
+							style=" border-top: 2px solid {$color|noescape}; text-align: right; font-size: 12px; padding: 5px;">
                         {MatiCore\Currency\Number::formatPrice($invoice->getTotalTaxCZK(), $currency, 2)|noescape}
 					</td>
 				</tr>
@@ -437,11 +437,11 @@
 			</table>
 			<table>
 				<tr>
-					<td style="color: {$color}; font-weight: bold; font-size: 18px; padding: 5px;">
+					<td style="color: {$color|noescape}; font-weight: bold; font-size: 18px; padding: 5px;">
 						Celkem{if $invoice->isPayDocument() === false} k úhradě{/if}
 					</td>
 					<td colspan="2"
-					    style="color: {$color}; text-align: right; font-weight: bold; font-size: 18px; padding: 5px;">
+					    style="color: {$color|noescape}; text-align: right; font-weight: bold; font-size: 18px; padding: 5px;">
                         {MatiCore\Currency\Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)|noescape}
 					</td>
 				</tr>
@@ -467,13 +467,10 @@
 	<p n:if="$invoice->isProforma() === true">
 		Výše uvedené ceny jsou včetně DPH.
 	</p>
-	<p n:if="$invoice->isFix() === false && $invoice->isProforma() === false">
-		V případě nezaplacení této faktury v termínu Vám bude za každý den prodlení
-		účtována úhrada ve výši 0,05 % z
-		celkové částky.</p>
+	<p n:if="$templateData['description'] !== null">{$templateData['description']}</p>
 	<br>
-	<p>Zápis do obchodního rejstříku dne 1.1.1111 u Městského soudu v Město, oddíl X., vložka 00000</p>
-	<p>*Dodané zboží, materiály a služby jsou až do úplného zaplacení majetkem firmy MOJE FIRMA, s.r.o.</p>
+	<p>{$templateData['companyDescription']}</p>
+	<p n:if="$templateData['additionalDescription'] !== null">{$templateData['additionalDescription']}</p>
 	<br>
 	<table style="font-size: 10px;">
 		<tr>
@@ -481,10 +478,10 @@
                 {if $invoice->isFix()}Vystavil{else}Fakturoval{/if}: {$invoice->getAuthorName()}
 			</td>
 			<td style="width: 25%;">
-				Mob.: +420 000 000 000
+				{if $templateData['footerPhone'] !== null}Mob.: {$templateData['footerPhone']}{/if}
 			</td>
 			<td style="width: 25%;">
-				Email: faktury@email.cz
+				{if $templateData['footerEmail'] !== null}Email: {$templateData['footerEmail']}{/if}
 			</td>
 			<td style="width: 25%; text-align: right;">
 				Vygenerováno: {$invoice->getEditDate()->format('d.m.Y')}
@@ -512,7 +509,7 @@
 	<table style="margin-top:50px;">
 		<tr>
 			<td style="width: 50%; padding-top: 20px;"></td>
-			<td style="padding-top: 20px; font-weight: bold; color: {$color};">
+			<td style="padding-top: 20px; font-weight: bold; color: {$color|noescape};">
 				Převedeno:
 			</td>
 			<td style="text-align: right; padding-top: 20px;">{MatiCore\Currency\Number::formatPrice($pageBreaker->getTotalPrice(), $pageBreaker->getCurrency(), 2)|noescape}</td>

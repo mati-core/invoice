@@ -404,7 +404,7 @@ let app = new Vue({
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						invoice: this.invoice,
+						invoiceData: this.invoice,
 						depositNumber: this.depositNumber,
 					}
 				)

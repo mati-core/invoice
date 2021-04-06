@@ -657,7 +657,7 @@ class InvoiceHelper
 
 		if ($customerId === null) {
 			try {
-				$company = $this->companyManager->get()->getCompanyByIco($customerIc);
+				$company = $this->companyManager->get()->getCompanyByCIN($customerIc);
 				$invoice->setCompany($company);
 			} catch (NoResultException | NonUniqueResultException) {
 

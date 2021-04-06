@@ -138,6 +138,7 @@ class ExportManager
 
 		$template = $this->templateFactory->createTemplate();
 		$template->color = $this->getColorByInvoiceDocument($invoice);
+		$template->templateData = $this->getInvoiceTemplateData($invoice);
 		$template->invoice = $invoice;
 		$template->currency = $this->currencyManager->getDefaultCurrency();
 		$pageBreaker = new PdfPageBreaker($invoice->getCurrency(), 23);
@@ -186,7 +187,7 @@ class ExportManager
 		}
 
 		$style = FileSystem::read($styleFile);
-		$style = str_replace('__COLOR__', $template->color);
+		$style = str_replace('__COLOR__', $template->color, $style);
 
 		$pdf = new Mpdf();
 		$pdf->SetAuthor($this->config['author']);
@@ -686,5 +687,20 @@ class ExportManager
 		}
 
 		return $this->config['invoice']['additionalDescription'] ?? null;
+	}
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @return array<string|null>
+	 */
+	public function getInvoiceTemplateData(InvoiceCore $invoice): array
+	{
+		return [
+			'companyDescription' => $this->getCompanyDescription(),
+			'description' => $this->getDescription($invoice),
+			'additionalDescription' => $this->getAdditionalDescription($invoice),
+			'footerEmail' => $this->getFooterEmail(),
+			'footerPhone' => $this->getFooterPhone(),
+		];
 	}
 }

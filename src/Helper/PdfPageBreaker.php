@@ -33,12 +33,12 @@ class PdfPageBreaker
 	/**
 	 * @var int
 	 */
-	private int $breakIndex;
+	private int $breakIndex = 0;
 
 	/**
 	 * @var int
 	 */
-	private int $breakOn;
+	private int $breakOn = 0;
 
 	/**
 	 * PdfPageBreaker constructor.

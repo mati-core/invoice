@@ -324,8 +324,8 @@ class InvoiceManager
 		$pd->setCompanyCity($invoice->getCompanyCity());
 		$pd->setCompanyPostalCode($invoice->getCompanyPostalCode());
 		$pd->setCompanyCountry($invoice->getCompanyCountry());
-		$pd->setCompanyIc($invoice->getCompanyIc());
-		$pd->setCompanyDic($invoice->getCompanyDic());
+		$pd->setCompanyCin($invoice->getCompanyCin());
+		$pd->setCompanyTin($invoice->getCompanyTin());
 		$pd->setCompanyLogo($invoice->getCompanyLogo());
 
 		//Nastaveni banky
@@ -346,8 +346,8 @@ class InvoiceManager
 		$pd->setCustomerCity($invoice->getCustomerCity());
 		$pd->setCustomerPostalCode($invoice->getCustomerPostalCode());
 		$pd->setCustomerCountry($invoice->getCustomerCountry());
-		$pd->setCustomerIc($invoice->getCustomerIc());
-		$pd->setCustomerDic($invoice->getCustomerDic());
+		$pd->setCustomerCin($invoice->getCustomerCin());
+		$pd->setCustomerTin($invoice->getCustomerTin());
 
 		//cisla
 		$pd->setOrderNumber($invoice->getOrderNumber());
@@ -530,7 +530,7 @@ class InvoiceManager
 		}
 
 		/** @var BaseUser $user */
-		$user = $this->user->getIdentity();
+		$user = $this->user->getIdentity()->getUser();
 
 		$status = true;
 
@@ -592,7 +592,7 @@ class InvoiceManager
 
 				if ($invoice instanceof FixInvoice) {
 					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceFixEmail::class, [
-						'from' => $this->params['invoiceEmail']['name'] ?? 'APP Universe' . ' <' . $sender . '>',
+						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
 						'to' => $recipient,
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Opravný daňový doklad č.: ' . $invoice->getNumber(),
@@ -600,7 +600,7 @@ class InvoiceManager
 					]);
 				} elseif ($invoice instanceof InvoicePayDocument) {
 					$email = $this->emailEngine->get()->getEmailServiceByType(InvoicePayDocumentEmail::class, [
-						'from' => $this->params['invoiceEmail']['name'] ?? 'APP Universe' . ' <' . $sender . '>',
+						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
 						'to' => $recipient,
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Doklad o přijetí platby č.: ' . $invoice->getNumber(),
@@ -608,7 +608,7 @@ class InvoiceManager
 					]);
 				} else {
 					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceFixEmail::class, [
-						'from' => $this->params['invoiceEmail']['name'] ?? 'APP Universe' . ' <' . $sender . '>',
+						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
 						'to' => $recipient,
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Faktura č.: ' . $invoice->getNumber(),
@@ -695,8 +695,8 @@ class InvoiceManager
 		$invoice->setCompanyCity($proforma->getCompanyCity());
 		$invoice->setCompanyPostalCode($proforma->getCompanyPostalCode());
 		$invoice->setCompanyCountry($proforma->getCompanyCountry());
-		$invoice->setCompanyIc($proforma->getCompanyIc());
-		$invoice->setCompanyDic($proforma->getCompanyDic());
+		$invoice->setCompanyCin($proforma->getCompanyCin());
+		$invoice->setCompanyTin($proforma->getCompanyTin());
 		$invoice->setCompanyLogo($proforma->getCompanyLogo());
 
 		//Nastaveni banky
@@ -722,8 +722,8 @@ class InvoiceManager
 		$invoice->setCustomerCity($proforma->getCustomerCity());
 		$invoice->setCustomerPostalCode($proforma->getCustomerPostalCode());
 		$invoice->setCustomerCountry($proforma->getCustomerCountry());
-		$invoice->setCustomerIc($proforma->getCustomerIc());
-		$invoice->setCustomerDic($proforma->getCustomerDic());
+		$invoice->setCustomerCin($proforma->getCustomerCin());
+		$invoice->setCustomerTin($proforma->getCustomerTin());
 
 		//cisla
 		$invoice->setOrderNumber($proforma->getOrderNumber());
@@ -900,13 +900,7 @@ class InvoiceManager
 	 */
 	public function getInvoiceTemplateData(InvoiceCore $invoice): array
 	{
-		return [
-			'companyDescription' => $this->exportManager->get()->getCompanyDescription(),
-			'description' => $this->exportManager->get()->getDescription($invoice),
-			'additionalDescription' => $this->exportManager->get()->getAdditionalDescription($invoice),
-			'footerEmail' => $this->exportManager->get()->getFooterEmail(),
-			'footerPhone' => $this->exportManager->get()->getFooterPhone(),
-		];
+		return $this->exportManager->get()->getInvoiceTemplateData($invoice);
 	}
 
 }

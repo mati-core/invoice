@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	Opravný daňový doklad
+	<h1>Opravný daňový doklad</h1>
 {/block}
 
 {block breadcrumb}
@@ -25,57 +25,26 @@
 {/block}
 
 {block vueScripts}
-	<script src="{$basePath}/cms/dist/js/vue/components.js"></script>
-	<script src="{$basePath}/js/fixInvoiceVue.js?v4"></script>
+	<script src="{$basePath}/assets/cms/js/vue/components.js"></script>
+	<script src="{$basePath}/assets/cms/js/vue/fixInvoiceVue.js?v1"></script>
 {/block}
 
 {block content}
-	<div class="container-fluid" id="invoice-core" data-invoiceId="{$invoiceId ?? 0}">
+	<div class="container-fluid" id="app-data" data-invoiceId="{$invoiceId ?? 0}">
 		<!-- Small boxes (Stat box) -->
-		{snippet flashes}
-			<div n:foreach="$flashes as $msg" class="row">
-				<div class="col-lg-12">
-					{if $msg->type === 'success'}
-						<div class="alert alert-dismissible alert-success">
-							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-							<h5><i class="icon fas fa-check"></i> Hotovo!</h5>
-							{$msg->message}
-						</div>
-					{elseif $msg->type === 'warning'}
-						<div class="alert alert-dismissible alert-warning">
-							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-							<h5><i class="icon fas fa-warning"></i> Pozor!</h5>
-							{$msg->message}
-						</div>
-					{elseif $msg->type === 'danger' || $msg->type === 'error'}
-						<div class="alert alert-dismissible alert-danger">
-							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-							<h5><i class="icon fas fa-ban"></i> Chyba!</h5>
-							{$msg->message}
-						</div>
-					{else}
-						<div class="alert alert-dismissible alert-info">
-							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-							<h5><i class="icon fas fa-info"></i> Upozornění!</h5>
-							{$msg->message}
-						</div>
-					{/if}
-				</div>
-			</div>
 
-			<div v-if="showAlert" class="row">
-				<div class="col-lg-12">
-					<div class="alert alert-dismissible" :class="alertType">
-						<button type="button" class="close" @click="hideAlert">×</button>
-						<h5 v-if="alertType === 'alert-success'"><i class="icon fas fa-check"></i> Hotovo!</h5>
-						<h5 v-if="alertType === 'alert-info'"><i class="icon fas fa-info"></i> Info!</h5>
-						<h5 v-if="alertType === 'alert-warning'"><i class="icon fas fa-warning"></i> Pozor!</h5>
-						<h5 v-if="alertType === 'alert-danger'"><i class="icon fas fa-warning"></i> Chyba!</h5>
-						{{ alertText }}
-					</div>
+		<div v-if="showAlert" class="row">
+			<div class="col-lg-12">
+				<div class="alert alert-dismissible" :class="alertType">
+					<button type="button" class="close" @click="hideAlert">×</button>
+					<h5 v-if="alertType === 'alert-success'"><i class="icon fas fa-check"></i> Hotovo!</h5>
+					<h5 v-if="alertType === 'alert-info'"><i class="icon fas fa-info"></i> Info!</h5>
+					<h5 v-if="alertType === 'alert-warning'"><i class="icon fas fa-warning"></i> Pozor!</h5>
+					<h5 v-if="alertType === 'alert-danger'"><i class="icon fas fa-warning"></i> Chyba!</h5>
+					{{ alertText }}
 				</div>
 			</div>
-		{/snippet}
+		</div>
 
 		<div class="row">
 			<div class="col text-right mb-3">

@@ -1,0 +1,719 @@
+{block title}
+    Výdaj
+{/block}
+
+{block pageTitle}
+    <h1>Výdaj</h1>
+{/block}
+
+{block breadcrumb}
+    <ol class="breadcrumb float-sm-right">
+        <li class="breadcrumb-item">
+            <a n:href="Homepage:default">
+                <i class="fas fa-tachometer-alt"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a n:href="Expense:default">
+                <i class="fas fa-file-invoice-dollar"></i> Výdaje
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            Detail
+        </li>
+    </ol>
+{/block}
+
+{block vueScripts}
+    <script src="{$basePath}/assets/cms/js/vue/components.js"></script>
+    <script src="{$basePath}/assets/cms/js/vue/expenseVue.js?v1"></script>
+{/block}
+
+{block content}
+    <!-- Main content -->
+    <div class="container-fluid" id="app-data" data-expenseId="{$expenseId}" data-admin="{$adminAccess}">
+        <!-- Small boxes (Stat box) -->
+        <div v-if="showAlert" class="row">
+            <div class="col-lg-12">
+                <div class="alert alert-dismissible" :class="alertType">
+                    <button type="button" class="close" @click="hideAlert">×</button>
+                    <h5 v-if="alertType === 'alert-success'"><i class="icon fas fa-check"></i> Hotovo!</h5>
+                    <h5 v-if="alertType === 'alert-info'"><i class="icon fas fa-info"></i> Info!</h5>
+                    <h5 v-if="alertType === 'alert-warning'"><i class="icon fas fa-warning"></i> Pozor!</h5>
+                    <h5 v-if="alertType === 'alert-danger'"><i class="icon fas fa-warning"></i> Chyba!</h5>
+                    {{ alertText }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col text-right mb-3">
+                <a n:href="Expense:default" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-reply"></i>&nbsp;{_cms.main.back}
+                </a>
+                <button @click="save" class="btn btn-success btn-sm">
+                    <i class="fas fa-save"></i>&nbsp;{_cms.main.save}
+                </button>
+            </div>
+        </div>
+
+       <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-3" v-if="adminAccess">
+                                <div class="form-group">
+                                    <label for="type">Typ dokladu</label>
+                                    <select v-model="expense.type" name="type" id="type" class="form-control"
+                                            :disabled="adminAccess === false">
+                                        <option value="invoice">Přijatá faktura</option>
+                                        <option value="tax">DPH</option>
+                                        <option value="state">Odvod státu</option>
+                                        <option value="wage">Mzdový náklad</option>
+                                        <option value="default">Jiné</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div v-if="expense.type === 'invoice' || expense.type === 'default'" class="form-group">
+                                    <label for="category">Kategorie</label>
+                                    <select v-model="expense.category" name="category" id="category"
+                                            class="form-control">
+                                        {if $adminAccess === 1}
+                                            <option n:foreach="\MatiCore\Invoice\ExpenseCategory::getAdminList() as $id => $name"
+                                                    value="{$id}">{$name}</option>
+                                        {else}
+                                            <option n:foreach="\MatiCore\Invoice\ExpenseCategory::getList() as $id => $name"
+                                                    value="{$id}">{$name}</option>
+                                        {/if}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="description">Popis <small>({{ expense.description.length }}/80
+                                            znaků)</small></label>
+                                    <input type="text" v-model="expense.description" name="description" id="description"
+                                           class="form-control" maxlength="80">
+                                </div>
+                            </div>
+                        </div>
+
+                        <template v-if="expense.type === 'invoice'">
+                            <hr>
+                            <div class="row">
+                                <div class="col-4">
+                                    <h5>Dodavatel</h5>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input v-model="expense.customer.name" type="text"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Název dodavatele">
+                                            <span class="input-group-append">
+                                                <button type="button"
+                                                        data-toggle="modal"
+                                                        data-target="#supplierModal"
+                                                        class="btn btn-sm btn-info">
+                                                    Vybrat
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <input v-model="expense.customer.address" type="text"
+                                               class="form-control form-control-sm" placeholder="Adresa">
+                                    </div>
+                                    <div class="form-group">
+                                        <input v-model="expense.customer.city" type="text"
+                                               class="form-control form-control-sm" placeholder="Město">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <input v-model="expense.customer.zipCode" type="text"
+                                                       class="form-control form-control-sm" placeholder="PSČ">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <select v-model="expense.customer.country" type="text"
+                                                        class="form-control form-control-sm">
+                                                    <option n:foreach="$countries as $country"
+                                                            value="{$country->getIsoCode()}">{$country->getName()}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="ic">IČ</label>
+                                                <div class="input-group">
+                                                    <input id="ic" type="text" v-model="expense.customer.cin"
+                                                           placeholder="IČ"
+                                                           class="form-control form-control-sm">
+                                                    <span class="input-group-append">
+														<button type="button"
+                                                                class="btn btn-sm btn-info"
+                                                                @click="loadCompanyByIc">Načíst</button>
+													</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="dic">DIČ</label>
+                                                <input type="text" v-model="expense.customer.tin"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="DIČ">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-8">
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="invoice-number">Č.d. dodavatele</label>
+                                                <input id="invoice-number" type="text"
+                                                       class="form-control form-control-sm"
+                                                       v-model="expense.invoiceNumber"
+                                                       placeholder="Číslo dokladu dodavatele">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="vs">Variabilní symbol</label>
+                                                <input id="vs" type="text" class="form-control form-control-sm"
+                                                       :class="{'is-warning' : expense.variableSymbolError === 2, 'is-valid' : expense.variableSymbolError === 1}"
+                                                       @keyup="checkVariableSymbol"
+                                                       v-model="expense.variableSymbol"
+                                                       placeholder="VS">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="vs">Váha</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input id="vs" type="text" class="form-control form-control-sm"
+                                                           v-model="expense.weight"
+                                                           placeholder="V kilogramech">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">Kg</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="vs">Doprava</label>
+                                                <select id="vs" type="text" class="form-control form-control-sm"
+                                                        v-model="expense.deliveryType">
+                                                    <option value="{\MatiCore\Invoice\ExpenseDeliveryType::ROAD}">
+                                                        Silniční
+                                                    </option>
+                                                    <option value="{\MatiCore\Invoice\ExpenseDeliveryType::AIRPLANE}">
+                                                        Letecká
+                                                    </option>
+                                                    <option value="{\MatiCore\Invoice\ExpenseDeliveryType::ROAD_AND_AIRPLANE}">
+                                                        Silniční, letecká
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="vs">Kód zboží</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input id="vs" type="text" class="form-control form-control-sm"
+                                                           v-model="expense.productCode">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-sm btn-info" data-toggle="modal"
+                                                                data-target="#intrastatCodes">Vybrat
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="currency">Měna</label>
+                                                <select name="currency" v-model="expense.currency"
+                                                        @change="changeCurrency"
+                                                        class="form-control form-control-sm">
+                                                    <option n:foreach="$currencyList as $currency"
+                                                            value="{$currency->getCode()}">{$currency->getCode()}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="rate">
+                                                            Kurz
+                                                        </label>
+                                                        <input
+                                                                v-model="expense.currencyData.rateString"
+                                                                name="rate"
+                                                                type="text"
+                                                                class="form-control form-control-sm"
+                                                                @keyup="updateRate"
+                                                                :class="{ 'is-invalid' : expense.currencyData.rate !== expense.currencyData.rateReal }"
+                                                                placeholder="Kurz">
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="rate2">Kurz (ČNB)</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-prepend">
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-info"
+                                                                        @click="setCNBRate">
+                                                                    <i class="fas fa-arrow-left"></i>
+                                                                </button>
+                                                            </span>
+                                                            <input v-model="expense.currencyData.rateRealString"
+                                                                   name="rate2" type="text"
+                                                                   class="form-control form-control-sm"
+                                                                   placeholder="Reálný kurz" disabled>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="currency">Způsob úhrady</label>
+                                                <select name="currency" v-model="expense.payMethod"
+                                                        class="form-control form-control-sm">
+                                                    <option n:foreach="\MatiCore\Invoice\ExpensePayMethod::getList() as $index => $name"
+                                                            value="{$index}">{$name}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="dup">SUMA bez DPH</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control form-control-sm text-right"
+                                                           v-model="expense.priceNoVatFormatted"
+                                                           :style="expense.price == 0 ? 'border-color: red;' : ''"
+                                                           placeholder="Cena celkem">
+                                                    <div class="input-group-append">
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-info"
+                                                                title="Dopočítat cenu s DPH"
+                                                                @click="calculatePriceWithVat">
+                                                            <i class="fas fa-arrow-right"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="dup">SUMA s DPH</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control form-control-sm text-right"
+                                                           v-model="expense.priceFormatted"
+                                                           @keyup="updateData"
+                                                           :style="expense.price == 0 ? 'border-color: red;' : ''"
+                                                           placeholder="Cena celkem">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">{{ expense.currencyData.symbol }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="tax">DPH celkem</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input id="tax" type="text"
+                                                           class="form-control form-control-sm text-right"
+                                                           v-model="expense.taxFormatted"
+                                                           @keyup="updateData"
+                                                           placeholder="DPH celkem">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">{{ expense.currencyData.symbol }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col" v-if="adminAccess === true">
+                                            <div class="form-group">
+                                                <label for="hide">Viditelnost</label>
+                                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                                    <input v-model="expense.hidden" id="hide" type="checkbox"
+                                                           class="custom-control-input">
+                                                    <label for="hide" class="custom-control-label">
+                                                        {{ expense.hidden === true ? 'Skryté' : 'Viditelné' }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="dup">Datum vystavení</label>
+                                                <input type="text" class="form-control form-control-sm"
+                                                       @keyup="validatePrintDate()"
+                                                       :class="{ 'is-invalid' : expense.datePrintError }"
+                                                       v-model="expense.datePrint">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="dup">Datum daň. uskut.</label>
+                                                <input v-model="expense.date" @change="changeDUP" type="text"
+                                                       :class="{ 'is-invalid' : expense.dateError }"
+                                                       class="form-control form-control-sm" placeholder="DUP">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="dup">Datum splatnosti</label>
+                                                <input type="text" class="form-control form-control-sm"
+                                                       @keyup="validateDueDate()"
+                                                       :class="{ 'is-invalid' : expense.dateDueError }"
+                                                       v-model="expense.dateDue">
+                                            </div>
+                                        </div>
+                                        <div class="col" v-if="adminAccess">
+                                            <div class="form-group">
+                                                <label for="dueDate">Datum úhrady</label>
+                                                <input type="text" class="form-control form-control-sm"
+                                                       @keyup="validatePayDate()"
+                                                       :class="{ 'is-invalid' : expense.datePayError }"
+                                                       v-model="expense.datePay" placeholder="Neuhrazeno">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-12">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 1%; white-space: nowrap;"></th>
+                                            <th width="50">Počet</th>
+                                            <th width="80">MJ</th>
+                                            <th>Popis</th>
+                                            <th width="80">DPH %</th>
+                                            <th width="150">Cena za MJ</th>
+                                            <th width="150">Cena bez DPH</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-for="(item, index) in expense.items">
+                                            <tr>
+                                                <td style="width: 1%; white-space: nowrap;">
+                                                    <button v-on:click="removeItem(index)"
+                                                            class="btn btn-xs btn-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                    <button v-on:click="setItemPosition(index, index + 1)"
+                                                            :disabled="(index + 1) >= expense.items.length"
+                                                            class="btn btn-xs btn-outline-dark"><i
+                                                                class="fas fa-fw fa-chevron-down"></i></button>
+                                                    <button v-on:click="setItemPosition(index, index - 1)"
+                                                            :disabled="index === 0" class="btn btn-xs btn-outline-dark">
+                                                        <i
+                                                                class="fas fa-fw fa-chevron-up"></i></button>
+                                                </td>
+                                                <td>
+                                                    <input type="text" v-model="item.countString"
+                                                           v-on:keyup="updateData"
+                                                           class="form-control form-control-sm"
+                                                           :style="item.count <= 0 ? 'border-color: red;' : ''">
+                                                </td>
+                                                <td>
+                                                    <select v-model="item.unit" class="form-control form-control-sm">
+                                                        <option n:foreach="$unitList as $unit"
+                                                                value="{$unit->getId()}">{$unit->getShortcut()}</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="text" v-model="item.description"
+                                                           class="form-control form-control-sm"
+                                                           :style="item.description.length < 1 ? 'border-color: red;' : ''">
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" v-model="item.taxString"
+                                                               v-on:keyup="updateData"
+                                                               class="form-control form-control-sm" value="21.0"
+                                                               :style="item.tax < 0 || item.tax.length < 1 ? 'border-color: red;' : ''">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-group m-0">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" v-model="item.priceString"
+                                                                   v-on:keyup="updateData"
+                                                                   class="form-control form-control-sm text-right"
+                                                                   :style="item.price <= 0 ? 'border-color: red;' : ''">
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text">{{ expense.currencyData.symbol }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-group m-0">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" v-model="item.totalPriceString"
+                                                                   class="form-control form-control-sm text-right"
+                                                                   disabled>
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text">{{ expense.currencyData.symbol }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <a href="#" @click="addItem" onclick="return false;">
+                                        <i class="fas fa-plus-circle"></i> Přidat položku
+                                    </a>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-if="expense.type !== 'invoice'">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Datum</label>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-control" @change="changeDate"
+                                                        v-model="expense.dateData.month">
+                                                    <option value="1">leden</option>
+                                                    <option value="2">únor</option>
+                                                    <option value="3">březen</option>
+                                                    <option value="4">duben</option>
+                                                    <option value="5">květen</option>
+                                                    <option value="6">červen</option>
+                                                    <option value="7">červenec</option>
+                                                    <option value="8">srpen</option>
+                                                    <option value="9">září</option>
+                                                    <option value="10">říjen</option>
+                                                    <option value="11">listopad</option>
+                                                    <option value="12">prosinec</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="text" class="form-control" @change="changeDate"
+                                                       v-model="expense.dateData.year">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="currency">Měna</label>
+                                        <select name="currency" v-model="expense.currency"
+                                                @change="changeCurrency"
+                                                class="form-control">
+                                            <option n:foreach="$currencyList as $currency"
+                                                    value="{$currency->getCode()}">{$currency->getCode()}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="rate">Kurz</label>
+                                        <input
+                                                v-model="expense.currencyData.rateString"
+                                                id="rate"
+                                                type="text"
+                                                class="form-control"
+                                                @keyup="updateRate"
+                                                :class="{ 'is-invalid' : ((expense.currency !== 'CZK' && expense.currencyData.rate == 1) || (expense.currency === 'CZK' && expense.currencyData.rate != 1)) }"
+                                                placeholder="Kurz">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="price">Částka</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control text-right"
+                                                   @change="updatePrice"
+                                                   v-model="expense.priceFormatted">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">{{ expense.currencyData.symbol }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="dueDate">Datum splatnosti</label>
+                                        <input type="text" class="form-control"
+                                               @keyup="validateDueDate()"
+                                               :class="{ 'is-invalid' : expense.dateDueError }"
+                                               v-model="expense.dateDue">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="dueDate">Datum úhrady</label>
+                                        <input type="text" class="form-control"
+                                               @keyup="validatePayDate()"
+                                               :class="{ 'is-invalid' : expense.datePayError }"
+                                               v-model="expense.datePay" placeholder="Neuhrazeno">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="currency">Způsob úhrady</label>
+                                        <select name="currency" v-model="expense.payMethod"
+                                                class="form-control">
+                                            <option n:foreach="\MatiCore\Invoice\ExpensePayMethod::getList() as $index => $name"
+                                                    value="{$index}">{$name}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="hide">Viditelnost</label>
+                                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                            <input v-model="expense.hidden" id="hide" type="checkbox"
+                                                   class="custom-control-input">
+                                            <label for="hide" class="custom-control-label">
+                                                {{ expense.hidden === true ? 'Skryté pro zaměstnance' : 'Viditelné pro zaměstnance' }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="note">Poznámka</label>
+                                    <textarea name="note" id="note" class="form-control" rows="5"
+                                              v-model="expense.note"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+
+    <div class="modal fade" id="supplierModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Seznam dodavatelů</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <table class="table table-hover table-sm">
+                        <tr n:foreach="$supplierList as $supplier">
+                            <td class="ml-5">{$supplier->getName()}</td>
+                            <td width="80">
+                                <button @click="loadSupplier('{$supplier->getId()}')"
+                                        class="btn btn-info btn-xs"
+                                        data-dismiss="modal">
+                                    Vybrat <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Zrušit</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div class="modal fade" id="intrastatCodes">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Seznam kódů zboží pro Intrastat</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <table class="table table-hover table-sm">
+                        <tr n:foreach="$productCodes as $code => $description">
+                            <td class="ml-5">{$code}</td>
+                            <td>{$description}</td>
+                            <td width="80">
+                                <button @click="setProductCode('{$code}')" class="btn btn-info btn-xs"
+                                        data-dismiss="modal">
+                                    Vybrat <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Zrušit</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+{/block}
+
+{block scripts}
+    <script>
+		$(document).ready(function () {
+			$(document).on('keyup', '[data-js-search-input]', function () {
+				let val = $(this).val();
+
+				console.log(val);
+
+				if (val === '') {
+					$('[data-js-search]').each(function () {
+						$(this).show();
+					});
+				} else {
+					let regex = new RegExp('(.*)' + val + '(.*)', 'gi');
+
+					$('[data-js-search]').each(function () {
+						let companyData = $(this).attr('data-js-search');
+
+						if (companyData.match(regex)) {
+							$(this).show();
+						} else {
+							$(this).hide();
+						}
+					});
+				}
+			});
+		});
+    </script>
+{/block}

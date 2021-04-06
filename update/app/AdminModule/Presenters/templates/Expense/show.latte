@@ -1,0 +1,352 @@
+{block title}
+    Výdaj {$expense->getNumber()}
+{/block}
+
+{block pageTitle}
+    <h1>Výdaj {$expense->getNumber()}</h1>
+{/block}
+
+{block breadcrumb}
+    <ol class="breadcrumb float-sm-right">
+        <li class="breadcrumb-item">
+            <a n:href="Homepage:default">
+                <i class="fas fa-tachometer-alt"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a n:href="Homepage:default">
+                <i class="fas fa-file-invoice-dollar"></i> Náklady
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <i class="fas fa-wrench"></i> {$expense->getNumber()}
+        </li>
+    </ol>
+{/block}
+
+{block modals}
+    <form n:name="payForm" class="ajax">
+        <div class="modal fade in" id="payModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Úhrada nákladu</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="">Datum úhrady</label>
+                            <input n:name="date" class="form-control datepicker">
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <a href="#" class="btn btn-default" data-dismiss="modal">Zrušit</a>
+                        <button n:name="submit" class="btn btn-success">
+                            <i class="fas fa-cash-register"></i>&nbsp;Uhradit
+                        </button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </form>
+{/block}
+
+{block content}
+    {var $color = 'rgb(74, 164, 50)'}
+    <!-- Main content -->
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-6">
+                    <span class="badge badge-pill badge-info">
+					{\MatiCore\Invoice\ExpenseCategory::getName($expense->getCategory())}
+					</span>
+                {if $adminAccess}
+                    <span n:if="$expense->isHidden() === true" class="badge badge-pill badge-primary">
+					Skryté
+					</span>
+                    <span n:if="$expense->isHidden() === false" class="badge badge-pill badge-warning">
+					Viditelné
+					</span>
+                {/if}
+            </div>
+            <div class="col-6 mb-3 text-right">
+                <a n:href="Expense:default" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-reply"></i>&nbsp;Zpět
+                </a>
+                <a n:if="$expense->isPaid() === false"
+                        href="#" data-toggle="modal" data-target="#payModal"
+                        class="btn btn-sm btn-success">
+                    <i class="fas fa-cash-register"></i>&nbsp;Uhradit
+                </a>
+                <a n:href="Expense:detail, expenseId => $expense->getId()" class="btn btn-sm btn-info">
+                    <i class="fas fa-edit"></i>&nbsp;Upravit
+                </a>
+                <a n:href="detail" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i>&nbsp;Nový výdaj
+                </a>
+            </div>
+        </div>
+
+        {if $expense instanceof \MatiCore\Invoice\ExpenseInvoice}
+            {include expenseInvoice}
+        {else}
+            {include expense}
+        {/if}
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Historie</h3>
+                        <table class="table table-hover">
+                            <tbody>
+                            <tr n:foreach="$historyList as $history">
+                                <td style="white-space: nowrap; width: 1%;">{$history->getDate()->format('d.m.Y H:i:s')}</td>
+                                <td>{$history->getDescription()|noescape}</td>
+                                <td style="white-space: nowrap; width: 1%;">{if $history->getUser() !== null}{$history->getUser()->getName()}{else}Systém{/if}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{/block}
+
+{define expense}
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <span>{$expense->getDescription()}</span>
+                    <span class="float-right">{$expense->getDate()->format('d.m.Y')}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row py-5">
+                        <div class="col">
+                            <div class="row py-1">
+                                <div class="col">Datum splatnosti</div>
+                                <div class="col">{$expense->getDueDate() === null ? '-' : $expense->getDueDate()->format('d.m.Y')}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Datum úhrady</div>
+                                <div n:class="col, $expense->isPaid() === false ? text-danger">{$expense->getPayDate() === null ? 'neuhrazeno' : $expense->getPayDate()->format('d.m.Y')}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Způsob úhrady</div>
+                                <div class="col">{\MatiCore\Invoice\ExpensePayMethod::getName($expense->getPayMethod())}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="row py-1">
+                                <div class="col">Měna</div>
+                                <div class="col">{$expense->getCurrency()->getCode()}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Kurz</div>
+                                <div class="col">{$expense->getRate()}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Částka</div>
+                                <div class="col">
+                                    {\MatiCore\Currency\Number::formatPrice($expense->getTotalPrice(), $expense->getCurrency(), 2)|noescape}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <h5>Poznámka</h5>
+                            <p>{$expense->getNote() ?? ''|markdown}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{/define}
+
+{define expenseInvoice}
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <span>{$expense->getDescription()}</span>
+                    <span class="float-right">{$expense->getDate()->format('d.m.Y')}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5>Dodavatel</h5>
+                            <div class="row">
+                                <div class="col">{$expense->getSupplierName()}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">{$expense->getSupplierStreet()}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">{$expense->getSupplierCity()}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">{$expense->getSupplierZipCode()}, {$expense->getSupplierCountry()->getName()}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">IČ: {$expense->getSupplierIc()}</div>
+                                <div class="col">DIČ: {$expense->getSupplierDic()}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">Číslo dokladu dodavatele:</div>
+                                <div class="col">{$expense->getSupplierInvoiceNumber()}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Variabilní symbol:</div>
+                                <div class="col">{$expense->getVariableSymbol()}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Váha:</div>
+                                <div class="col">{$expense->getWeight()} Kg</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Typ přepravy:</div>
+                                {var $deliveryType = $expense->getDeliveryType()}
+                                <div class="col">{if $deliveryType === 5}Silniční, letecká{elseif $deliveryType === 4}Letecká{else}Silniční{/if}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Kód zboží:</div>
+                                <div class="col">{$expense->getProductCode() ?? ''}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row py-5">
+                        <div class="col">
+                            <div class="row py-1">
+                                <div class="col">Datum vystavení</div>
+                                <div class="col">{$expense->getDatePrint() === null ? '-' : $expense->getDatePrint()->format('d.m.Y')}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Datum uskut. plň.</div>
+                                <div class="col">{$expense->getDate() === null ? '-' : $expense->getDate()->format('d.m.Y')}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Datum splatnosti</div>
+                                <div class="col">{$expense->getDueDate() === null ? '-' : $expense->getDueDate()->format('d.m.Y')}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Datum úhrady</div>
+                                <div n:class="col, $expense->isPaid() === false ? text-danger">{$expense->getPayDate() === null ? 'neuhrazeno' : $expense->getPayDate()->format('d.m.Y')}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Způsob úhrady</div>
+                                <div class="col">{\MatiCore\Invoice\ExpensePayMethod::getName($expense->getPayMethod())}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="row py-1">
+                                <div class="col">Měna</div>
+                                <div class="col">{$expense->getCurrency()->getCode()}</div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Kurz</div>
+                                <div class="col">
+                                    {$expense->getRate()}
+									{if ($expense->getRate() == 1 && $expense->getCurrency()->getCode() !== 'CZK') || ($expense->getRate() != 1 && $expense->getCurrency()->getCode() === 'CZK')}
+                                        <span class="ml-3 text-danger float-right"><i
+                                                    class="fas fa-times"></i> Chyba</span>
+                                    {/if}
+                                </div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">DPH</div>
+                                <div class="col">
+                                    {\MatiCore\Currency\Number::formatPrice($expense->getTotalTax(), $expense->getCurrency(), 2)|noescape}
+									{if $expense->getSupplierCountry()->getIsoCode() === 'CZE'}
+                                        {if $expense->checkTotalTax()}
+                                            <span class="ml-3 text-success float-right"><i class="fas fa-check"></i> Ověřeno</span>
+                                        {else}
+                                            <span class="ml-3 text-danger float-right"><i
+                                                        class="fas fa-times"></i> {\MatiCore\Currency\Number::formatPrice($expense->getItemsTotalTax(), $expense->getCurrency(), 2)|noescape}</span>
+                                        {/if}
+                                    {/if}
+                                </div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">Celkem s DPH</div>
+                                <div class="col">
+                                    {\MatiCore\Currency\Number::formatPrice($expense->getTotalPrice(), $expense->getCurrency(), 2)|noescape}
+									{if $expense->getSupplierCountry()->getIsoCode() === 'CZE'}
+                                        {if $expense->checkTotalPrice()}
+                                            <span class="ml-3 text-success float-right"><i class="fas fa-check"></i> Ověřeno</span>
+                                        {else}
+                                            <span class="ml-3 text-danger float-right"><i
+                                                        class="fas fa-times"></i> {\MatiCore\Currency\Number::formatPrice($expense->getItemsTotalPrice() + $expense->getItemsTotalTax(), $expense->getCurrency(), 2)|noescape}</span>
+                                        {/if}
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row py-5">
+                        <div class="col">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th colspan="3"></th>
+                                    <th>DPH %</th>
+                                    <th>Cena za MJ</th>
+                                    <th>Cena bez DPH</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr n:foreach="$expense->getItems() as $item">
+                                    <td style="width: 1%; white-space: nowrap;"
+                                        class="text-right">{$item->getQuantity()}</td>
+                                    <td style="width: 1%; white-space: nowrap;">{$item->getUnit()->getShortCut()}</td>
+                                    <td>{$item->getDescription()}</td>
+                                    <td style="width: 1%; white-space: nowrap; min-width: 80px;"
+                                        class="text-right">{$item->getVat()}</td>
+                                    <td style="width: 1%; white-space: nowrap; min-width: 150px;"
+                                        class="text-right">{\MatiCore\Currency\Number::formatPrice($item->getPricePerItem(), $expense->getCurrency(), 2)|noescape}</td>
+                                    <td style="width: 1%; white-space: nowrap; min-width: 150px;"
+                                        class="text-right">{\MatiCore\Currency\Number::formatPrice($item->getTotalPrice(), $expense->getCurrency(), 2)|noescape}</td>
+                                </tr>
+                                <tr n:if="count($expense->getItems()) === 0">
+                                    <td colspan="6" class="text-center">Žádné položky</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <h5>Poznámka</h5>
+                            <p>{$expense->getNote() ?? ''|markdown}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{/define}
+
+{block scripts}
+    <script>
+		$(document).ready(function () {
+			$('.datepicker').datepicker({
+				format: 'yyyy-mm-dd',
+				autoclose: true,
+				language: 'cs',
+			});
+		});
+    </script>
+{/block}

@@ -463,10 +463,10 @@ class InvoiceCore
 	protected bool $deleted = false;
 
 	/**
-	 * @var string
+	 * @var string|null
 	 * @ORM\Column(type="text", nullable=true)
 	 */
-	protected string $emails;
+	protected string|null $emails;
 
 	/**
 	 * @var string
@@ -1809,12 +1809,10 @@ class InvoiceCore
 	}
 
 	/**
-	 * @param string $emails
+	 * @param string|null $emails
 	 */
-	public function setEmails(string $emails): void
+	public function setEmails(?string $emails): void
 	{
-		dump($this->emails);
-		dumpe($emails);
 		$this->emails = $emails;
 	}
 

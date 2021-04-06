@@ -1,2 +1,5 @@
 menu:
 	title: Invoices
+	settings:
+		users:
+			signature: 'Signatures'

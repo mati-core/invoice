@@ -33,6 +33,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use MatiCore\User\BaseUser;
+use MatiCore\User\StorageIdentity;
 use MatiCore\Utils\Date;
 use Mpdf\MpdfException;
 use Nette\Application\AbortException;
@@ -291,7 +292,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				$invoice->setClosed(true);
 
 				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 				$history = new InvoiceHistory($invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>');
 				$history->setUser($user);
 				$this->entityManager->persist($history);
@@ -313,7 +314,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				$invoice->setAcceptStatus2(InvoiceStatus::WAITING);
 
 				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 				$history = new InvoiceHistory($invoice, '<span class="text-success text-bold">Doklad odevzdán a odeslán ke schválení.</span>');
 				$history->setUser($user);
 				$this->entityManager->persist($history);
@@ -333,7 +334,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				$invoice->setAcceptStatus2(InvoiceStatus::WAITING);
 
 				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 				$history = new InvoiceHistory($invoice, 'Doklad odevzdán ke schválení.');
 				$history->setUser($user);
 				$this->entityManager->persist($history);
@@ -394,7 +395,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			}
 
 			/** @var BaseUser $user */
-			$user = $this->getUser()->getIdentity();
+			$user = $this->getUser()->getIdentity()->getUser();
 			$history = new InvoiceHistory($invoice, '<b class="text-success">Faktura schválena.</b>');
 			$history->setUser($user);
 			$this->entityManager->persist($history);
@@ -470,7 +471,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				$this->editedInvoice->setStatus(InvoiceStatus::PAID);
 
 				/** @var BaseUser|null $user */
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 				$text = ($this->editedInvoice instanceof InvoiceProforma ? 'Proforma' : 'Faktura') . ' uhrazena dne ' . $values->date->format('d.m.Y');
 				$history = new InvoiceHistory($this->editedInvoice, $text);
 				$history->setUser($user);
@@ -1102,7 +1103,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
 			if ($this->editedInvoice !== null) {
 				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 
 				$this->editedInvoice->setAcceptStatus1(InvoiceStatus::DENIED);
 				$this->editedInvoice->setAcceptStatus1Description($values->description ?? '');
@@ -1147,7 +1148,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
 			if ($this->editedInvoice !== null) {
 				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 
 				$this->editedInvoice->setAcceptStatus2(InvoiceStatus::DENIED);
 				$this->editedInvoice->setAcceptStatus2Description($values->description ?? '');
@@ -1367,7 +1368,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				$comment = new InvoiceComment($this->editedInvoice, $values->description);
 
 				/** @var BaseUser $user */
-				$user = $this->user->getIdentity();
+				$user = $this->user->getIdentity()->getUser();
 				if ($user !== null) {
 					$comment->setUser($user);
 				}
@@ -1415,7 +1416,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
 			if (Validators::isEmail($values->email) && $this->editedInvoice->isReady() === false) {
 				$this->editedInvoice->addEmail(trim($values->email));
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 				if(!$user instanceof BaseUser){
 					$user = null;
 				}
@@ -1451,7 +1452,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			}
 		}
 
-		$user = $this->getUser()->getIdentity();
+		$user = $this->getUser()->getIdentity()->getUser();
 		if(!$user instanceof BaseUser){
 			$user = null;
 		}

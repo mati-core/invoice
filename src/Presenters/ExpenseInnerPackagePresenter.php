@@ -88,7 +88,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	public function actionDetail(string $expenseId = null): void
 	{
-		$this->template->adminAccess = $this->checkAccess('page__invoice__accepted_admin') ? 1 : 0;
+		$this->template->adminAccess = $this->checkAccess('page__expense__admin') ? 1 : 0;
 		$this->template->expenseId = $expenseId;
 		$this->template->currencyList = $this->currencyManager->get()->getActiveCurrencies();
 		$this->template->unitList = $this->unitManager->get()->getUnits();
@@ -105,7 +105,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 	{
 		try {
 			$this->expense = $this->expenseManager->get()->getExpenseById($id);
-			$this->template->adminAccess = $this->checkAccess('page__invoice__accepted_admin') ? 1 : 0;
+			$this->template->adminAccess = $this->checkAccess('page__expense__admin') ? 1 : 0;
 			$this->template->expense = $this->expense;
 			$this->template->historyList = $this->expenseManager->get()->getHistory($this->expense);
 		} catch (NoResultException | NonUniqueResultException) {
@@ -125,7 +125,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 		$currency = $this->currencyManager->get()->getDefaultCurrency();
 		$grid = new MatiDataGrid($this, $name);
 
-		if ($this->checkAccess('page__invoice__accepted_admin')) {
+		if ($this->checkAccess('page__expense__admin')) {
 			$grid->setDataSource(
 				$this->entityManager
 					->createQueryBuilder()
@@ -310,7 +310,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 			});
 
 		//Category
-		if ($this->checkAccess('page__invoice__accepted_admin')) {
+		if ($this->checkAccess('page__expense__admin')) {
 			$categoryList = ExpenseCategory::getListAll();
 		} else {
 			$categoryList = ExpenseCategory::getList();
@@ -423,7 +423,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 				$this->expense->setPayDate($values->date);
 
 				/** @var BaseUser|null $user */
-				$user = $this->getUser()->getIdentity();
+				$user = $this->getUser()->getIdentity()->getUser();
 				$text = 'Uhrazeno dne ' . $values->date->format('d.m.Y');
 				$history = new ExpenseHistory($this->expense, $text);
 				$history->setUser($user);

@@ -30,8 +30,21 @@
 {/block}
 
 {block content}
-	<div class="container-fluid" id="app-data" data-invoiceId="{$invoiceId}">
+	<div class="container-fluid" id="app-data" data-invoiceId="{$invoiceId ?? 0}">
 		<!-- Small boxes (Stat box) -->
+
+		<div v-if="showAlert" class="row">
+			<div class="col-lg-12">
+				<div class="alert alert-dismissible" :class="alertType">
+					<button type="button" class="close" @click="hideAlert">×</button>
+					<h5 v-if="alertType === 'alert-success'"><i class="icon fas fa-check"></i> Hotovo!</h5>
+					<h5 v-if="alertType === 'alert-info'"><i class="icon fas fa-info"></i> Info!</h5>
+					<h5 v-if="alertType === 'alert-warning'"><i class="icon fas fa-warning"></i> Pozor!</h5>
+					<h5 v-if="alertType === 'alert-danger'"><i class="icon fas fa-warning"></i> Chyba!</h5>
+					{{ alertText }}
+				</div>
+			</div>
+		</div>
 
 		<div class="row">
 			<div class="col text-right mb-3">
@@ -404,14 +417,14 @@
 								<table class="table">
 									<thead>
 									<tr>
-										<th>Sazba</th>
+										<th colspan="2">Sazba</th>
 										<th class="text-right">Základ</th>
 										<th class="text-right">DPH</th>
 									</tr>
 									</thead>
 									<tbody>
 									<tr v-for="taxData in invoice.taxList">
-										<td>
+										<td colspan="2">
 											{{ taxData.tax }}%
 										</td>
 										<td class="text-right">{{ taxData.valueWithoutTaxFormatted }}</td>
@@ -419,9 +432,12 @@
 									</tr>
 									<tr v-for="(d, index) in invoice.deposit">
 										<td>
+											<button @click="removeDeposit(index)" class="pl-3 btn btn-xs btn-danger">
+												<i class="fas fa-trash fa-fw"></i>
+											</button>
+										</td>
+										<td>
 											{{ bText(d.number, 'Záloha ') }}
-											<i @click="removeDeposit(index)" class="pl-3 fas fa-trash text-danger"
-											   style="cursor: pointer;"></i>
 										</td>
 										<td class="text-right" v-html="bText(d.itemPriceFormatted, '-')"></td>
 										<td class="text-right" v-html="bText(d.taxFormatted, '-')"></td>

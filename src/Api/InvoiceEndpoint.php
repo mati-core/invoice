@@ -70,6 +70,42 @@ class InvoiceEndpoint extends BaseEndpoint
 	}
 
 	/**
+	 * @param array|null $data
+	 * @return ResponseInterface
+	 */
+	public function postLoadFixInvoice(string $id): void
+	{
+		try {
+			$invoiceData = $this->invoiceHelper->getFixInvoiceById($id);
+
+			$this->sendOk([
+				'invoice' => $invoiceData,
+			]);
+		} catch (EntityManagerException|UnitException $e) {
+			$this->sendError($e->getMessage());
+		}
+	}
+
+	/**
+	 * @param array $data
+	 * @return ResponseInterface
+	 */
+	public function postDepositInvoice(array $invoiceData, string $depositNumber): ResponseInterface
+	{
+		$depositNumber = trim($depositNumber);
+
+		try {
+			$invoiceData = $this->invoiceHelper->addDepositInvoice($invoiceData, $depositNumber);
+
+			$this->sendOk([
+				'invoice' => $invoiceData,
+			]);
+		} catch (InvoiceException $e) {
+			$this->sendError($e->getMessage());
+		}
+	}
+
+	/**
 	 * @param string $id
 	 */
 	public function postLoadCompanyById(string $id): void

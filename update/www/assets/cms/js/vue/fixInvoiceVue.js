@@ -37,12 +37,12 @@ let app = new Vue({
 			textAfterItems: '',
 			company: {
 				id: null,
-				name: 'SATRA GLOBAL, s.r.o.',
-				address: 'Klíčanská 1265/2',
-				city: 'Praha',
-				zipCode: '18200',
-				ic: '0123123',
-				dic: 'CZ0123123'
+				name: '...',
+				address: '...',
+				city: '...',
+				zipCode: '...',
+				ic: '...',
+				dic: '...'
 			},
 			customer: {
 				id: null,
@@ -100,21 +100,18 @@ let app = new Vue({
 			}
 		},
 		changeCurrency: function () {
-			fetch('/api/v1/invoice', {
+			fetch('/api/v1/invoice/loadCurrency', {
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						action: "loadCurrency",
-						data: {
-							code: this.invoice.currency,
-							invoice: this.invoice,
-						}
+						code: this.invoice.currency,
+						invoiceData: this.invoice,
 					}
 				)
 			})
 				.then(response => response.json())
 				.then(responseData => {
-					if (responseData.status === 'ok') {
+					if (responseData.state === 'ok') {
 						this.invoice.currencyData = responseData.data.currency;
 						this.calculateTotalPrice();
 					} else {
@@ -235,20 +232,17 @@ let app = new Vue({
 			}
 		},
 		save: function () {
-			fetch('/api/v1/invoice', {
+			fetch('/api/v1/invoice/save', {
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						action: "save",
-						data: {
-							invoice: this.invoice
-						}
+						invoiceData: this.invoice
 					}
 				)
 			})
 				.then(response => response.json())
 				.then(responseData => {
-					if (responseData.status === 'ok') {
+					if (responseData.state === 'ok') {
 						this.invoice = responseData.data.invoice;
 						this.calculateTotalPrice();
 
@@ -270,21 +264,18 @@ let app = new Vue({
 				});
 		},
 		addDeposit: function () {
-			fetch('/api/v1/invoice', {
+			fetch('/api/v1/invoice/depositInvoice', {
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						action: "depositInvoice",
-						data: {
-							invoice: this.invoice,
-							depositNumber: this.depositNumber,
-						}
+						invoiceData: this.invoice,
+						depositNumber: this.depositNumber,
 					}
 				)
 			})
 				.then(response => response.json())
 				.then(responseData => {
-					if (responseData.status === 'ok') {
+					if (responseData.state === 'ok') {
 						this.invoice = responseData.data.invoice;
 						this.calculateTotalPrice();
 						this.depositNumber = '';
@@ -324,15 +315,12 @@ let app = new Vue({
 		},
 	},
 	created: function () {
-		this.invoice.id = document.getElementById('app').getAttribute('data-invoiceId');
-		fetch('/api/v1/invoice', {
+		this.invoice.id = document.getElementById('app-data').getAttribute('data-invoiceId');
+		fetch('/api/v1/invoice/loadFixInvoice', {
 			method: 'POST',
 			body: JSON.stringify(
 				{
-					action: "loadFixInvoice",
-					data: {
-						id: this.invoice.id
-					}
+					id: this.invoice.id
 				}
 			)
 		})

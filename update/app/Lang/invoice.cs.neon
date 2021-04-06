@@ -1,2 +1,5 @@
 menu:
 	title: Faktury
+	settings:
+		users:
+			signature: 'Podpisy'

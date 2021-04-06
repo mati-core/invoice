@@ -39,6 +39,17 @@ parameters:
 							position: 20
 							rights:
 								- page__invoice__bank_movements
+		cmsMainSetting:
+			items:
+				users:
+					children:
+						userSignature:
+							title: invoice.menu.settings.users.signature
+							icon: 'fas fa-signature'
+							route: ':Admin:UserSignature:default'
+							position: 0
+							rights:
+								- cms__users__signatures
 
 	invoice:
 		company:
@@ -96,7 +107,6 @@ parameters:
 				- info@app-universe.cz
 		export:
 			author: 'App Universe'
-			logo: 'https://goldenarrows.eu/assets/img/logo_v2.svg'
 			companyDescription: 'Zápis do obchodního rejstříku dne 1.1.1111 u Městského soudu v Město, oddíl X., vložka 00000'
 			phone: +420 000 000 000
 			email: info@app-universe.cz

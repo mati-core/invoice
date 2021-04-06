@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	Ceník {$company !== null ? ' - ' . $company->getName() : ''}
+	<h1>Ceník {$company !== null ? ' - ' . $company->getName() : ''}</h1>
 {/block}
 
 {block breadcrumb}
@@ -34,10 +34,9 @@
 		<!-- Small boxes (Stat box) -->
 
 		<div class="row">
-			<div class="col"></div>
-			<div class="col-6 mb-3 text-right">
+			<div class="col-12 col-md-6 offset-md-6 mb-3 text-right">
 				<a n:href="Invoice:show, id => $invoice->getId()" class="btn btn-secondary btn-sm">
-					<i class="fas fa-reply">Zpět</i>
+					<i class="fas fa-reply"></i> {_cms.main.back}
 				</a>
 			</div>
 		</div>

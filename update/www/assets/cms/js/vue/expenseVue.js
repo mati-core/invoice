@@ -2,7 +2,7 @@ let app = new Vue({
 	el: '#app',
 	data: {
 		adminAccess: false,
-		types:[
+		types: [
 			{
 				id: 'invoice',
 				name: 'Přijatá faktura',
@@ -15,7 +15,7 @@ let app = new Vue({
 		expense: {
 			id: null,
 			type: 'invoice',
-			category: 'nakup-nahradni-dily',
+			category: '',
 			description: '',
 			number: '20010000',
 			invoiceNumber: '',
@@ -30,8 +30,8 @@ let app = new Vue({
 				city: '',
 				zipCode: '',
 				country: '',
-				ic: '',
-				dic: ''
+				cin: '',
+				tin: ''
 			},
 			currency: 'CZK',
 			currencyData: {
@@ -74,10 +74,10 @@ let app = new Vue({
 		alertType: 'alert-success',
 	},
 	methods: {
-		setItemPosition: function(item, position){
+		setItemPosition: function (item, position) {
 			this.array_move(this.expense.items, item, position);
 		},
-		array_move: function(arr, old_index, new_index) {
+		array_move: function (arr, old_index, new_index) {
 			if (new_index >= arr.length) {
 				let k = new_index - arr.length + 1;
 				while (k--) {
@@ -86,7 +86,7 @@ let app = new Vue({
 			}
 			arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
 		},
-		addItem: function(){
+		addItem: function () {
 			this.expense.items.push({
 				id: null,
 				countString: '1',
@@ -102,21 +102,18 @@ let app = new Vue({
 			});
 		},
 		changeCurrency: function () {
-			fetch('/api/v1/expense', {
+			fetch('/api/v1/expense/loadCurrency', {
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						action: "loadCurrency",
-						data: {
-							code: this.expense.currency,
-							expense: this.expense,
-						}
+						code: this.expense.currency,
+						expenseData: this.expense,
 					}
 				)
 			})
 				.then(response => response.json())
 				.then(responseData => {
-					if (responseData.status === 'ok') {
+					if (responseData.state === 'ok') {
 						let currency = responseData.data.currency;
 						this.expense.currencyData.id = currency.id;
 						this.expense.currencyData.code = currency.code;
@@ -138,20 +135,17 @@ let app = new Vue({
 				});
 		},
 		loadCompanyByIc: function () {
-			fetch('/api/v1/expense', {
+			fetch('/api/v1/expense/loadCompanyByCin', {
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						action: "loadCompanyByIc",
-						data: {
-							ic: this.expense.customer.ic
-						}
+						cin: this.expense.customer.cin
 					}
 				)
 			})
 				.then(response => response.json())
 				.then(responseData => {
-					if (responseData.status === 'ok') {
+					if (responseData.state === 'ok') {
 						this.expense.customer = responseData.data.customer;
 					} else {
 						let msg = responseData.data.msg;
@@ -167,20 +161,17 @@ let app = new Vue({
 				});
 		},
 		save: function () {
-			fetch('/api/v1/expense', {
+			fetch('/api/v1/expense/save', {
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						action: "save",
-						data: {
-							expense: this.expense
-						}
+						expenseData: this.expense
 					}
 				)
 			})
 				.then(response => response.json())
 				.then(responseData => {
-					if (responseData.status === 'ok') {
+					if (responseData.state === 'ok') {
 						this.expense = responseData.data.expense;
 
 						let redirect = responseData.data.redirect;
@@ -200,20 +191,20 @@ let app = new Vue({
 					console.log(error)
 				});
 		},
-		checkVariableSymbol: function(){
+		checkVariableSymbol: function () {
 			let vs = this.expense.variableSymbol;
 
-			if(vs === ''){
+			if (vs === '') {
 				this.expense.variableSymbolError = 0;
-			}else if(/^\d{1,10}$/.test(vs)){
+			} else if (/^\d{1,10}$/.test(vs)) {
 				this.expense.variableSymbolError = 1;
-			}else{
+			} else {
 				this.expense.variableSymbolError = 2;
 			}
 		},
-		updateData: function(){
-			this.expense.price = parseFloat(this.expense.priceFormatted.replace(',','.'));
-			this.expense.tax = parseFloat(this.expense.taxFormatted.replace(',','.'));
+		updateData: function () {
+			this.expense.price = parseFloat(this.expense.priceFormatted.replace(',', '.'));
+			this.expense.tax = parseFloat(this.expense.taxFormatted.replace(',', '.'));
 
 			let totalItemPrice = 0.0;
 			this.expense.items.forEach(function (item, index, array) {
@@ -231,14 +222,14 @@ let app = new Vue({
 
 			this.expense.itemTotalPrice = totalItemPrice;
 		},
-		updatePrice: function(){
-			this.expense.price = parseFloat(this.expense.priceFormatted.replace(',','.'));
+		updatePrice: function () {
+			this.expense.price = parseFloat(this.expense.priceFormatted.replace(',', '.'));
 		},
 		removeItem: function (id) {
 			this.expense.items.splice(id, 1);
 			this.updateData();
 		},
-		changeDUP: function(){
+		changeDUP: function () {
 			this.expense.dateError = !/^2[0-1][0-9]{2}-(1[0-2]|0[1-9])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])$/.test(this.expense.date);
 
 			let d = new Date(Date.parse(this.expense.date));
@@ -246,32 +237,29 @@ let app = new Vue({
 			this.expense.dateData.month = d.getMonth() + 1;
 			this.changeCurrency();
 		},
-		changeDate: function(){
+		changeDate: function () {
 			this.expense.date = this.expense.dateData.year + '-' + (this.expense.dateData.month < 10 ? '0' : '') + this.expense.dateData.month + '-01';
 			this.expense.dateError = !/^2[0-1][0-9]{2}-(1[0-2]|0[1-9])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])$/.test(this.expense.date);
 			this.changeCurrency();
 		},
-		updateRate: function(){
+		updateRate: function () {
 			this.expense.currencyData.rate = parseFloat(this.expense.currencyData.rateString.replace(',', '.'));
 		},
-		validatePrintDate: function(){
+		validatePrintDate: function () {
 			this.expense.datePrintError = !/^2[0-1][0-9]{2}-(1[0-2]|0[1-9])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])$/.test(this.expense.datePrint);
 		},
-		validateDueDate: function(){
+		validateDueDate: function () {
 			this.expense.dateDueError = !/^2[0-1][0-9]{2}-(1[0-2]|0[1-9])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])$/.test(this.expense.dateDue);
 		},
-		validatePayDate: function(){
+		validatePayDate: function () {
 			this.expense.datePayError = !(this.expense.datePay === '' || /^2[0-1][0-9]{2}-(1[0-2]|0[1-9])-(0[1-9]|1[0-9]|2[0-9]|3[0-1])$/.test(this.expense.datePay));
 		},
-		loadSupplier: function(id){
-			fetch('/api/v1/expense', {
+		loadSupplier: function (id) {
+			fetch('/api/v1/expense/loadSupplier', {
 				method: 'POST',
 				body: JSON.stringify(
 					{
-						action: "loadSupplier",
-						data: {
-							id: id
-						}
+						id: id
 					}
 				)
 			})
@@ -283,18 +271,18 @@ let app = new Vue({
 					console.log(error)
 				});
 		},
-		setCNBRate: function(){
+		setCNBRate: function () {
 			this.expense.currencyData.rate = this.expense.currencyData.rateReal;
 			this.expense.currencyData.rateString = this.expense.currencyData.rateRealString;
 		},
-		calculatePriceWithVat: function(){
-			this.expense.priceNoVat = parseFloat(this.expense.priceNoVatFormatted.replace(',','.'));
+		calculatePriceWithVat: function () {
+			this.expense.priceNoVat = parseFloat(this.expense.priceNoVatFormatted.replace(',', '.'));
 			this.expense.price = Math.round(this.expense.priceNoVat * 1.21 * 100) / 100;
-			this.expense.priceFormatted = this.expense.price.toString().replace('.',',');
+			this.expense.priceFormatted = this.expense.price.toString().replace('.', ',');
 			this.expense.tax = Math.round(this.expense.priceNoVat * 0.21 * 100) / 100;
-			this.expense.taxFormatted = this.expense.tax.toString().replace('.',',');
+			this.expense.taxFormatted = this.expense.tax.toString().replace('.', ',');
 		},
-		setProductCode: function(code){
+		setProductCode: function (code) {
 			this.expense.productCode = code;
 		},
 		flashMsg: function (msg, type) {
@@ -307,28 +295,25 @@ let app = new Vue({
 		hideAlert: function () {
 			this.showAlert = false;
 		},
-		bText: function(text, prefix){
+		bText: function (text, prefix) {
 			return prefix + text;
 		},
 	},
 	created: function () {
-		this.expense.id = document.getElementById('app').getAttribute('data-expenseId');
-		this.adminAccess = parseInt(document.getElementById('app').getAttribute('data-admin')) === 1;
-		fetch('/api/v1/expense', {
+		this.expense.id = document.getElementById('app-data').getAttribute('data-expenseId');
+		this.adminAccess = parseInt(document.getElementById('app-data').getAttribute('data-admin')) === 1;
+		fetch('/api/v1/expense/loadExpense', {
 			method: 'POST',
 			body: JSON.stringify(
 				{
-					action: "loadExpense",
-					data: {
-						id: this.expense.id
-					}
+					id: this.expense.id
 				}
 			)
 		})
 			.then(response => response.json())
 			.then(responseData => {
 				this.expense = responseData.data.expense;
-				if(this.expense.id === null){
+				if (this.expense.id === null) {
 					this.expense.hidden = this.adminAccess;
 				}
 			})
