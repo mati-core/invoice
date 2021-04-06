@@ -85,22 +85,22 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	/**
 	 * @var Data|null
 	 */
-	private Data|null $aresData;
+	private Data|null $aresData = null;
 
 	/**
 	 * @var Company|null
 	 */
-	private Company|null $editedCompany;
+	private Company|null $editedCompany = null;
 
 	/**
 	 * @var CompanyStock|null
 	 */
-	private CompanyStock|null $editedStock;
+	private CompanyStock|null $editedStock = null;
 
 	/**
 	 * @var CompanyContact|null
 	 */
-	private CompanyContact|null $editedContact;
+	private CompanyContact|null $editedContact = null;
 
 	/**
 	 * @var int

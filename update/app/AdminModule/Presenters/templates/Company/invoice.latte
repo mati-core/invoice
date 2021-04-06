@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	{$company->getName()} - Faktury
+	<h1>{$company->getName()} - Faktury</h1>
 {/block}
 
 {block breadcrumb}
@@ -36,7 +36,7 @@
 			<div class="row">
 				<div class="col-12 mb-3 text-right">
 					<a n:href="Company:detail, id => $company->getId()" class="btn btn-sm btn-secondary">
-						<i class="fas fa-reply"></i>&nbsp;Zpět
+						<i class="fas fa-reply"></i>&nbsp;{_cms.main.back}
 					</a>
 					<a n:href="Invoice:detail" class="btn btn-sm btn-primary">
 						<i class="fas fa-plus"></i>&nbsp;Nová faktura
@@ -44,87 +44,8 @@
 				</div>
 			</div>
 
-			<div n:if="$presenter->checkUserRight('page__company__statistics')" class="row">
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-info">
-						<span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
-
-						<div class="info-box-content">
-							<span class="info-box-text">Celkem</span>
-							<span class="info-box-number">{$company->getInvoicesPriceFormated()|noescape}</span>
-
-							<div class="progress">
-								<div class="progress-bar" style="width: 100%"></div>
-							</div>
-							<span class="progress-description">
-			                  Celkem {$company->getInvoicesCount()} faktur.
-			                </span>
-						</div>
-						<!-- /.info-box-content -->
-					</div>
-					<!-- /.info-box -->
-				</div>
-				<!-- /.col -->
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-success">
-						<span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
-
-						<div class="info-box-content">
-							<span class="info-box-text">Zaplaceno</span>
-							<span class="info-box-number">{$company->getInvoicesPaidPriceFormated()|noescape}</span>
-
-							<div class="progress">
-								<div class="progress-bar" style="width: {$company->getInvoicesPaidPercent()}%"></div>
-							</div>
-							<span class="progress-description">
-			                  Celkem {$company->getInvoicesPaidCount()} faktur.
-			                </span>
-						</div>
-						<!-- /.info-box-content -->
-					</div>
-					<!-- /.info-box -->
-				</div>
-				<!-- /.col -->
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-warning">
-						<span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
-
-						<div class="info-box-content">
-							<span class="info-box-text">Nezaplaceno</span>
-							<span class="info-box-number">{$company->getInvoicesActivePriceFormated()|noescape}</span>
-
-							<div class="progress">
-								<div class="progress-bar" style="width: {$company->getInvoicesActivePercent()}%"></div>
-							</div>
-							<span class="progress-description">
-			                  Celkem {$company->getInvoicesActiveCount()} faktur.
-			                </span>
-						</div>
-						<!-- /.info-box-content -->
-					</div>
-					<!-- /.info-box -->
-				</div>
-				<!-- /.col -->
-				<div class="col-md-3 col-sm-6 col-12">
-					<div class="info-box bg-gradient-danger">
-						<span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
-
-						<div class="info-box-content">
-							<span class="info-box-text">Po splatnosti</span>
-							<span class="info-box-number">{$company->getInvoicesOverduePriceFormated()|noescape}</span>
-
-							<div class="progress">
-								<div class="progress-bar" style="width: {$company->getInvoicesOverduePercent()}%"></div>
-							</div>
-							<span class="progress-description">
-			                  Celkem {$company->getInvoicesOverdueCount()} faktur.
-			                </span>
-						</div>
-						<!-- /.info-box-content -->
-					</div>
-					<!-- /.info-box -->
-				</div>
-				<!-- /.col -->
+			<div n:if="$presenter->checkAccess('page__company__statistics')" class="row">
+				{control invoiceStatistics, $company}
 			</div>
 
 			<div class="row">

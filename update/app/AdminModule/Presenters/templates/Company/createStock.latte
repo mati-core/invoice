@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	{$company->getName()} - Nová pobočka
+	<h1>{$company->getName()} - Nová pobočka</h1>
 {/block}
 
 {block breadcrumb}
@@ -38,7 +38,7 @@
 			<div class="row">
 				<div class="col-12 mb-3 text-right">
 					<a n:href="detail, id => $company->getId()" class="btn btn-sm btn-secondary">
-						<i class="fas fa-reply"></i>&nbsp;Zpět
+						<i class="fas fa-reply"></i>&nbsp;{_cms.main.back}
 					</a>
 					<button n:name="submit" class="btn btn-sm btn-success">
 						<i class="fas fa-plus"></i>&nbsp;Přidat
@@ -79,28 +79,6 @@
 									</div>
 								</div>
 								<div class="col-lg-6 col-12">
-									<div class="form-group">
-										<label n:name="travelRateType">Způsob účtování dopravy</label>
-										<select n:name="travelRateType" class="form-control"></select>
-									</div>
-									<div class="form-group">
-										<label n:name="travelPrice">Cena dopravy</label>
-										<div class="input-group">
-											<div class="input-group-prepend">
-												<span class="input-group-text">{$company->getCurrency()->getSymbol()}</span>
-											</div>
-											<input n:name="travelPrice" class="form-control">
-										</div>
-									</div>
-									<div class="form-group">
-										<label n:name="travelDistance">Vzdálenost</label>
-										<div class="input-group">
-											<div class="input-group-prepend">
-												<span class="input-group-text">km</span>
-											</div>
-											<input n:name="travelDistance" class="form-control">
-										</div>
-									</div>
 									<div class="form-group">
 										<label n:name="note">Poznámka</label>
 										<textarea n:name="note" rows="5" class="form-control"></textarea>

@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	Kontakty
+	<h1>Kontakty</h1>
 {/block}
 
 {block breadcrumb}
@@ -43,11 +43,11 @@
 			<div class="col-12 mb-3 text-right">
 				<a n:if="$companyStock !== null" n:href="detailStock, id => $companyStock->getId()"
 						class="btn btn-sm btn-secondary">
-					<i class="fas fa-reply"></i>&nbsp;Zpět
+					<i class="fas fa-reply"></i>&nbsp;{_cms.main.back}
 				</a>
 				<a n:if="$companyStock === null" n:href="detail, id => $company->getId()"
 						class="btn btn-sm btn-secondary">
-					<i class="fas fa-reply"></i>&nbsp;Zpět
+					<i class="fas fa-reply"></i>&nbsp;{_cms.main.back}
 				</a>
 				<a n:if="$companyStock !== null" n:href="contact, companyId => $company->getId()"
 						class="btn btn-sm btn-info">
@@ -93,8 +93,7 @@
 							</thead>
 							<tbody>
 							{if count($contactList) > 0}
-								{var $showAllContacts = $presenter->checkUserRight('page__company__contactShowAll')}
-								<tr n:foreach="$contactList as $contact" n:if="$showAllContacts || $contact->isShowForServiceUser()"
+								<tr n:foreach="$contactList as $contact"
 										data-js-search="{$contact->getSearchString()}">
 									<td>
 										{$contact->getFirstName()}&nbsp;{$contact->getLastName()}
@@ -119,17 +118,9 @@
                                             {if $contact->isSendOrder()}
 												<i class="fas fa-receipt text-danger mb-1" title="Objednávky"></i>&nbsp;
 											{/if}
-                                            {if $contact->isSendCartService()}
-												<i class="fas fa-wrench text-gray-dark mb-1"
-												   title="Servisní zprávy"></i>&nbsp;
-											{/if}
                                             {if $contact->isSendMarketing()}
 												<i class="fas fa-comment-dollar text-indigo mb-1"
 												   title="Marketing"></i>&nbsp;
-											{/if}
-                                            {if $contact->isShowForServiceUser()}
-												<i class="fas fa-eye text-success mb-1"
-												   title="Zobrazit servisnímu technikovi"></i>&nbsp;
 											{/if}
 										</small>
 									</td>

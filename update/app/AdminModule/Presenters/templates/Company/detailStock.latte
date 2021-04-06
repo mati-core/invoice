@@ -1,8 +1,10 @@
 {block title}
-	{$company->getName()} - {$stock->getName()}
+	<h1>{$company->getName()} - {$stock->getName()}</h1>
 {/block}
 
 {block pageTitle}
+	<h1>
+		<small>
 	{if $company->isBlackList()}
 		<span class="badge badge-dark mr-3">Black list</span>
 	{elseif $company->getType() === 'typ-smluvni'}
@@ -10,9 +12,11 @@
 	{elseif $company->getType() === 'typ-vip'}
 		<span class="badge badge-warning mr-3">VIP</span>
 	{else}
-		<span class="badge badge-light mr-3">Standard</span>
+		<span class="badge badge-info mr-3">Standard</span>
 	{/if}
+		</small>
 	{$company->getName()} - {$stock->getName()}
+	</h1>
 {/block}
 
 {block breadcrumb}
@@ -39,7 +43,7 @@
 {/block}
 
 {block modals}
-	<div n:if="$presenter->checkUserRight('page__company__stockRemove')" class="modal fade" id="deleteModal">
+	<div n:if="$presenter->checkAccess('page__company__stockRemove')" class="modal fade" id="deleteModal">
 		<div class="modal-dialog">
 			<div class="modal-content bg-danger">
 				<div class="modal-header">
@@ -60,7 +64,7 @@
 		<!-- /.modal-dialog -->
 	</div>
 
-	<form n:if="$presenter->checkUserRight('page__company__stockNote')" n:name="companyStockNoteForm" class="ajax">
+	<form n:if="$presenter->checkAccess('page__company__stockNote')" n:name="companyStockNoteForm" class="ajax">
 		<div class="modal fade" id="noteModal">
 			<div class="modal-dialog">
 				<div class="modal-content">
@@ -75,40 +79,6 @@
 					<div class="modal-footer">
 						<button n:name="submit" class="btn btn-success" id="btn-custom-invoice">
 							<i class="fas fa-save"></i>&nbsp;Uložit
-						</button>
-						<a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
-					</div>
-				</div>
-				<!-- /.modal-content -->
-			</div>
-			<!-- /.modal-dialog -->
-		</div>
-	</form>
-
-	<form n:if="$presenter->checkUserRight('page__company__cartExport')" n:name="cartPriceReportForm">
-		<div class="modal fade" id="cartPriceReportModal">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						Datum
-					</div>
-					<div class="modal-body">
-						<div class="row">
-							<div class="col">
-								<div class="form-group">
-									<select class="form-control" type="text" n:name="month"></select>
-								</div>
-							</div>
-							<div class="col">
-								<div class="form-group">
-									<input class="form-control" type="text" n:name="year">
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button n:name="submit" class="btn btn-success" id="btn-custom-invoice">
-							<i class="fas fa-save"></i>&nbsp;Exportovat
 						</button>
 						<a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
 					</div>
@@ -159,9 +129,9 @@
                                     {$invoiceAddress->getCountry()->getName()}
 							</div>
 							<div class="col">
-								IČ: {$invoiceAddress->getIc()}
+								IČ: {$invoiceAddress->getCin()}
 									<br>
-								DIČ: {$invoiceAddress->getDic()}
+								DIČ: {$invoiceAddress->getTin()}
 									<br><br>
 								Měna: {$company->getCurrency()->getCode()}
 							</div>
@@ -178,91 +148,9 @@
 		</div>
 		<!-- /.row -->
 
-
-		<div n:if="$presenter->checkUserRight('page__company__statistics')" class="row">
-			<div class="col-md-3 col-sm-6 col-12">
-				<div class="info-box bg-gradient-info">
-					<span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
-
-					<div class="info-box-content">
-						<span class="info-box-text">Celkem</span>
-						<span class="info-box-number">{$company->getInvoicesPriceFormated()|noescape}</span>
-
-						<div class="progress">
-							<div class="progress-bar" style="width: 100%"></div>
-						</div>
-						<span class="progress-description">
-			                  Celkem {$company->getInvoicesCount()} faktur.
-			                </span>
-					</div>
-					<!-- /.info-box-content -->
-				</div>
-				<!-- /.info-box -->
-			</div>
-			<!-- /.col -->
-			<div class="col-md-3 col-sm-6 col-12">
-				<div class="info-box bg-gradient-success">
-					<span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
-
-					<div class="info-box-content">
-						<span class="info-box-text">Zaplaceno</span>
-						<span class="info-box-number">{$company->getInvoicesPaidPriceFormated()|noescape}</span>
-
-						<div class="progress">
-							<div class="progress-bar" style="width: {$company->getInvoicesPaidPercent()}%"></div>
-						</div>
-						<span class="progress-description">
-			                  Celkem {$company->getInvoicesPaidCount()} faktur.
-			                </span>
-					</div>
-					<!-- /.info-box-content -->
-				</div>
-				<!-- /.info-box -->
-			</div>
-			<!-- /.col -->
-			<div class="col-md-3 col-sm-6 col-12">
-				<div class="info-box bg-gradient-warning">
-					<span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
-
-					<div class="info-box-content">
-						<span class="info-box-text">Nezaplaceno</span>
-						<span class="info-box-number">{$company->getInvoicesActivePriceFormated()|noescape}</span>
-
-						<div class="progress">
-							<div class="progress-bar" style="width: {$company->getInvoicesActivePercent()}%"></div>
-						</div>
-						<span class="progress-description">
-			                  Celkem {$company->getInvoicesActiveCount()} faktur.
-			                </span>
-					</div>
-					<!-- /.info-box-content -->
-				</div>
-				<!-- /.info-box -->
-			</div>
-			<!-- /.col -->
-			<div class="col-md-3 col-sm-6 col-12">
-				<div class="info-box bg-gradient-danger">
-					<span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
-
-					<div class="info-box-content">
-						<span class="info-box-text">Po splatnosti</span>
-						<span class="info-box-number">{$company->getInvoicesOverduePriceFormated()|noescape}</span>
-
-						<div class="progress">
-							<div class="progress-bar" style="width: {$company->getInvoicesOverduePercent()}%"></div>
-						</div>
-						<span class="progress-description">
-			                  Celkem {$company->getInvoicesOverdueCount()} faktur.
-			                </span>
-					</div>
-					<!-- /.info-box-content -->
-				</div>
-				<!-- /.info-box -->
-			</div>
-			<!-- /.col -->
+		<div n:if="$presenter->checkAccess('page__company__statistics')" class="row">
+			{control invoiceStatistics, $company}
 		</div>
-
-		{include list}
 
 	</div>
 	<!-- /.container-fluid -->
@@ -297,51 +185,21 @@
 					<i class="fas fa-address-book"></i> Kontakty
 				</a>
 			</td>
-			<td n:if="$presenter->checkUserRight('page__company__statistics')">{$stock->getContactCount()}</td>
 			<td style="width: 1%; white-space: nowrap;">
-				<a n:if="$presenter->checkUserRight('page__company__contactCreate')" n:href="createContact, companyId => $company->getId(), companyStockId => $stock->getId()"
+				<a n:if="$presenter->checkAccess('page__company__contactCreate')" n:href="createContact, companyId => $company->getId(), companyStockId => $stock->getId()"
 						class="btn btn-xs btn-outline-info text-info">
 					<i class="fas fa-fw fa-plus"></i>
 				</a>
 			</td>
 		</tr>
-		<tr n:if="$presenter->checkUserRight('page__invoice')">
+		<tr n:if="$presenter->checkAccess('page__invoice')">
 			<td>
 				<a n:href="Company:invoice, id => $company->getId()">
 					<i class="fas fa-file-invoice"></i> Faktury
 				</a>
 			</td>
-			<td n:if="$presenter->checkUserRight('page__company__statistics')">{$company->getInvoicesCount()}</td>
 			<td style="width: 1%; white-space: nowrap;">
-				<a n:if="$presenter->checkUserRight('page__company__invoiceCreate')" n:href="Invoice:detail"
-						class="btn btn-xs btn-outline-info text-info">
-					<i class="fas fa-fw fa-plus"></i>
-				</a>
-			</td>
-		</tr>
-		<tr n:if="$presenter->checkUserRight('page__order')">
-			<td>
-				<a href="">
-					<i class="fas fa-receipt"></i> Objednávky
-				</a>
-			</td>
-			<td n:if="$presenter->checkUserRight('page__company__statistics')">{$stock->getOrdersCount()}</td>
-			<td style="width: 1%; white-space: nowrap;">
-				<a n:if="$presenter->checkUserRight('page__company__orderCreate')"
-						class="btn btn-xs btn-outline-info text-info">
-					<i class="fas fa-fw fa-plus"></i>
-				</a>
-			</td>
-		</tr>
-		<tr n:if="$presenter->checkUserRight('page__offer')">
-			<td>
-				<a n:href="Company:offer, id => $stock->getCompany()->getId()">
-					<i class="fas fa-file-invoice-dollar"></i> Nabídky
-				</a>
-			</td>
-			<td n:if="$presenter->checkUserRight('page__company__statistics')">{$stock->getOffersCount()}</td>
-			<td style="width: 1%; white-space: nowrap;">
-				<a n:if="$presenter->checkUserRight('page__company__offerCreate')"
+				<a n:if="$presenter->checkAccess('page__company__invoiceCreate')" n:href="Invoice:detail"
 						class="btn btn-xs btn-outline-info text-info">
 					<i class="fas fa-fw fa-plus"></i>
 				</a>
@@ -354,37 +212,21 @@
 	<a n:href="detail, id => $company->getId()" class="btn btn-sm btn-secondary">
 		<i class="fas fa-reply"></i>&nbsp;Zpět
 	</a>
-	<div n:if="$presenter->checkUserRight('page__company__cartCreate') || $presenter->checkUserRight('page__company__cartExport') || $presenter->checkUserRight('page__company__stockCartSort') || $presenter->checkUserRight('page__company__stockAdd') || $presenter->checkUserRight('page__company__stockEdit') || $presenter->checkUserRight('page__company__stockRemove')"
+	<div n:if="$presenter->checkAccess('page__company__stockAdd') || $presenter->checkAccess('page__company__stockEdit') || $presenter->checkAccess('page__company__stockRemove')"
 			class="btn-group btn-group-sm" role="group">
 		<button type="button" class="btn btn-xs btn-primary" data-toggle="dropdown">
 			Akce <i class="fas fa-caret-down"></i>
 			<div class="dropdown-menu" role="menu" x-placement="bottom-start"
 				 style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-1px, 37px, 0px);">
-				<a n:if="$presenter->checkUserRight('page__company__cartCreate')" n:href="createCart, id => $stock->getId()"
-						class="dropdown-item" onclick="window.location.href = this.href">
-					<i class="fas fa-forklift fa-fw"></i>&nbsp;Přidat vozík
-				</a>
-				{if $presenter->checkUserRight('page__company__cartExport')}
-					<div class="dropdown-divider"></div>
-					<a href="#"
-					   class="dropdown-item" onclick="$('#cartPriceReportModal').modal('show');">
-						<i class="fas fa-file-pdf fa-fw"></i>&nbsp;VZV - přehled fakturace
-					</a>
-				{/if}
-				<div class="dropdown-divider"></div>
-				<a n:if="$presenter->checkUserRight('page__company__stockAdd')" n:href="createStock, id => $company->getId()"
+				<a n:if="$presenter->checkAccess('page__company__stockAdd')" n:href="createStock, id => $company->getId()"
 						class="dropdown-item" onclick="window.location.href = this.href">
 					<i class="fas fa-plus fa-fw"></i>&nbsp;Přidat pobočku
 				</a>
-				<a n:if="$presenter->checkUserRight('page__company__stockEdit')" n:href="editStock, id => $stock->getId()"
+				<a n:if="$presenter->checkAccess('page__company__stockEdit')" n:href="editStock, id => $stock->getId()"
 						class="dropdown-item" onclick="window.location.href = this.href">
 					<i class="fas fa-edit fa-fw"></i>&nbsp;Upravit pobočku
 				</a>
-				<a n:if="$presenter->checkUserRight('page__company__stockCartSort')" n:href="cartSort, id => $stock->getId()"
-						class="dropdown-item" onclick="window.location.href = this.href">
-					<i class="fas fa-sort-alpha-down fa-fw"></i>&nbsp;Seřadit vozíky
-				</a>
-				<a n:if="$presenter->checkUserRight('page__company__stockRemove')" href="#"
+				<a n:if="$presenter->checkAccess('page__company__stockRemove')" href="#"
 																				   class="dropdown-item text-danger"
 																				   onclick="$('#deleteModal').modal('show');">
 					<i class="fas fa-trash fa-fw"></i>&nbsp;Smazat pobočku
@@ -392,188 +234,11 @@
 			</div>
 		</button>
 	</div>
-	<a n:if="$presenter->checkUserRight('page__company__stockNote')" href="#"
+	<a n:if="$presenter->checkAccess('page__company__stockNote')" href="#"
 																	 class="btn btn-outline-info btn-sm"
 																	 data-toggle="modal" data-target="#noteModal">
 		<i class="fas fa-file"></i>&nbsp;Poznámka
 	</a>
-{/block}
-
-{block list}
-	<div class="row">
-		<div class="col">
-			<div class="card">
-				<div class="card-header">
-					<h3 class="card-title mt-1">Seznam vozíků</h3>
-					<div class="card-tools">
-						<div class="input-group input-group-sm" style="width: 200px;">
-							<input type="text" data-js-search-input="" class="form-control float-right"
-								   placeholder="Hledat">
-
-							<div class="input-group-append">
-								<button type="submit" class="btn btn-default"><i class="fas fa-search"></i>
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="card-body p-0">
-					<table class="table table-hover projects" style="font-size: 12px;">
-						<thead>
-						<tr>
-							<th>Název</th>
-							<th colspan="2">Značka, Typ</th>
-							<th>Motor</th>
-							<th>Revize</th>
-							<th>TK</th>
-							<th>M3</th>
-							<th>M6</th>
-							<th>M12</th>
-							<th>Servis</th>
-							<th></th>
-						</tr>
-						</thead>
-						<tbody>
-						{if $stock->getCartsCount() > 0}
-							<tr n:foreach="$stock->getCarts() as $cart" n:class="$cart->getStatus() === 'in-out-of-order' ? text-secondary"
-									data-js-search="{$cart->getSearchString()}">
-								<td>
-									<b>{$cart->getName()}</b>
-									<br>
-									{if $cart->getStatus() === 'in-preparing'}
-										<span class="text-yellow">Připravujeme</span>
-									{elseif $cart->getStatus() === 'in-work'}
-										<span class="text-green">V provozu</span>
-									{elseif $cart->getStatus() === 'in-error'}
-										<span class="text-danger">Porucha</span>
-									{elseif $cart->getStatus() === 'in-out-of-order'}
-										<span class="text-secondary">Mimo provoz</span>
-									{else}
-										<span class="text-info">Neznámý</span>
-									{/if}
-								</td>
-								<td style="width: 1%; white-space: nowrap; padding: 0;">
-									{var $params = $cart->getType()->getParameters()}
-									{if $params !== null}
-										{var $type = $params->getForkCategory()}
-										{if $type === \App\Model\CartCategory::FRONT}
-											<img src="/img/icons/celni.svg" alt="Čelní" style="width: 15px; margin: 0;">
-										{elseif $type === \App\Model\CartCategory::RETRAK}
-											<img src="/img/icons/retrak.svg" alt="Retrak"
-												 style="width: 15px; margin: 0;">
-										{elseif $type === \App\Model\CartCategory::FORK_LIFT}
-											<img src="/img/icons/vysokozdvih.svg" alt="Vysokozdvih"
-												 style="width: 15px; margin: 0;">
-										{elseif $type === \App\Model\CartCategory::LOW_LIFT}
-											<img src="/img/icons/nizkozdvih.svg" alt="Nízkozdvih"
-												 style="width: 15px; margin: 0;">
-										{elseif $type === \App\Model\CartCategory::PALLET_FORKLIFT}
-											<img src="/img/icons/paletak.svg" alt="Paleťák"
-												 style="width: 15px; margin: 0;">
-										{elseif $type === \App\Model\CartCategory::SPECIAL}
-											<img src="/img/icons/special.svg" alt="Speciál"
-												 style="width: 15px; margin: 0;">
-										{else}
-											<b>???</b>
-										{/if}
-									{else}
-										<b>???</b>
-									{/if}
-								</td>
-								<td>
-									{$cart->getBrand()->getName()}
-									<br>
-									{$cart->getCartType()->getName()}
-								</td>
-								<td>{$cart->getMotor()->getName()}
-
-
-									<br>{$cart->getMotoHours() !== null ? number_format($cart->getMotoHours(), 0, ',', ' ') : '?'}
-									mh
-								</td>
-								<td>
-									{if $cart->getMotor()->isRevision()}
-										{if $cart->getMotorRevisionDate() !== null}
-											<i class="fas fa-wrench fa-fw"></i>&nbsp;{$cart->getMotorRevisionDate()->format('d.m.Y')}
-											&nbsp;({include csWeekDay, day => $cart->getMotorRevisionDate()})
-										{/if}
-										{if $cart->getNextMotorRevisionDate() !== null}
-											<br>
-											<i class="fas fa-clock fa-fw"></i>&nbsp;{$cart->getNextMotorRevisionDate()->format('d.m.Y')}
-											&nbsp;({include csWeekDay, day => $cart->getNextMotorRevisionDate()})
-										{/if}
-									{/if}
-								</td>
-								<td>
-									{if $cart->getLastServiceDateTK() !== null}
-										<i class="fas fa-wrench fa-fw"></i>&nbsp;{$cart->getLastServiceDateTK()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getLastServiceDateTK()})
-									{/if}
-                                    {if $cart->getNextServiceDateTK() !== null}
-										<br>
-										<i class="fas fa-clock fa-fw"></i>&nbsp;{$cart->getNextServiceDateTK()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getNextServiceDateTK()})
-									{/if}
-								</td>
-								<td>
-									{if $cart->getLastServiceDateM3() !== null}
-										<i class="fas fa-wrench fa-fw"></i>&nbsp;{$cart->getLastServiceDateM3()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getLastServiceDateM3()})
-									{/if}
-                                    {if $cart->getNextServiceDateM3() !== null}
-										<br>
-										<i class="fas fa-clock fa-fw"></i>&nbsp;{$cart->getNextServiceDateM3()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getNextServiceDateM3()})
-									{/if}
-								</td>
-								<td>
-									{if $cart->getLastServiceDateM6() !== null}
-										<i class="fas fa-wrench fa-fw"></i>&nbsp;{$cart->getLastServiceDateM6()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getLastServiceDateM6()})
-									{/if}
-                                    {if $cart->getNextServiceDateM6() !== null}
-										<br>
-										<i class="fas fa-clock fa-fw"></i>&nbsp;{$cart->getNextServiceDateM6()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getNextServiceDateM6()})
-									{/if}
-								</td>
-								<td>
-									{if $cart->getLastServiceDateM12() !== null}
-										<i class="fas fa-wrench fa-fw"></i>&nbsp;{$cart->getLastServiceDateM12()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getLastServiceDateM12()})
-									{/if}
-                                    {if $cart->getNextServiceDateM12() !== null}
-										<br>
-										<i class="fas fa-clock fa-fw"></i>&nbsp;{$cart->getNextServiceDateM12()->format('d.m.Y')}
-										&nbsp;({include csWeekDay, day => $cart->getNextServiceDateM12()})
-									{/if}
-								</td>
-								<td>
-									{if $cart->getLastCartService()}
-										{$cart->getLastCartService()->getServiceUser()->getName()}
-										<br>
-										{$cart->getLastCartService()->getDate()->format('d.m.Y')}
-									{else}
-										Nikdy
-									{/if}
-								</td>
-								<td class="text-right">
-									<a n:href="Company:detailCart, id => $cart->getId()" class="btn btn-info btn-xs">
-										<i class="fas fa-search"></i>&nbsp;Detail
-									</a>
-								</td>
-							</tr>
-						{else}
-							<tr>
-								<td class="text-center" colspan="9">Žádné vozíky v seznamu</td>
-							</tr>
-						{/if}
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	</div>
 {/block}
 
 {block scripts}

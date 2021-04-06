@@ -1,9 +1,9 @@
 {block title}
-	{$company->getName()}  - Fakturované položky
+	{$company->getName()} - Fakturované položky
 {/block}
 
 {block pageTitle}
-	{$company->getName()}  - Fakturované položky
+	<h1>{$company->getName()} - Fakturované položky</h1>
 {/block}
 
 {block breadcrumb}
@@ -36,7 +36,7 @@
 		<div class="row mb-3">
 			<div class="col text-right">
 				<a n:href="Company:detail, id => $company->getId()" class="btn btn-secondary btn-sm">
-					<i class="fas fa-reply"></i>&nbsp;Zpět
+					<i class="fas fa-reply"></i>&nbsp;{_cms.main.back}
 				</a>
 			</div>
 		</div>
@@ -50,7 +50,7 @@
 							<tr>
 								<th style="width: 1%; white-space: nowrap;">Kód</th>
 								<th>Položka</th>
-								<th n:if="$presenter->checkUserRight('page__invoice__priceList')"
+								<th n:if="$presenter->checkAccess('page__invoice')"
 										style="width: 1%; white-space: nowrap; text-align: right;">Poslední faktura
 								</th>
 								<th style="width: 1%; white-space: nowrap; text-align: right;">Cena</th>
@@ -60,7 +60,7 @@
 							<tr n:foreach="$list as $item">
 								<td style="width: 1%; white-space: nowrap;">{$item['code']}</td>
 								<td>{$item['name']}</td>
-								<td n:if="$presenter->checkUserRight('page__invoice__priceList')"
+								<td n:if="$presenter->checkAccess('page__invoice')"
 										style="width: 1%; white-space: nowrap; text-align: right;">
 									<a n:href="Invoice:show, id => $item['invoice']['id'], ret => 2">
 										{$item['invoice']['number']}

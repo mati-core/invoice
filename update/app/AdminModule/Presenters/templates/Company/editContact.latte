@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	Kontakt - {$contact->getName()|noescape}
+	<h1>Kontakt - {$contact->getName()|noescape}</h1>
 {/block}
 
 {block breadcrumb}
@@ -128,27 +128,9 @@
 									</div>
 									<div class="form-group">
 										<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-											<input n:name="sendCartService" type="checkbox"
-																			class="custom-control-input">
-											<label n:name="sendCartService" class="custom-control-label">
-												Zasílat servisní zprávy (při odevzdání technikem)
-											</label>
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
 											<input n:name="sendMarketing" type="checkbox" class="custom-control-input">
 											<label n:name="sendMarketing" class="custom-control-label">
 												Zasílat marketing
-											</label>
-										</div>
-									</div>
-									<div class="form-group">
-										<div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-											<input n:name="showForServiceUser" type="checkbox"
-																			   class="custom-control-input">
-											<label n:name="showForServiceUser" class="custom-control-label">
-												Zobrazovat servisním technikům
 											</label>
 										</div>
 									</div>
