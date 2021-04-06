@@ -58,7 +58,7 @@ class InvoiceEndpoint extends BaseEndpoint
 	public function postLoadInvoice(string $id): void
 	{
 		try {
-			if ($id === '' || $id === null) {
+			if ($id === '') {
 				$invoiceData = $this->invoiceHelper->getNewInvoice();
 			} else {
 				$invoiceData = $this->invoiceHelper->getInvoiceById($id);
@@ -139,8 +139,8 @@ class InvoiceEndpoint extends BaseEndpoint
 				'dateDue' => $now->modify('+' . $company->getInvoiceDueDayCount() . ' days')->format('Y-m-d'),
 				'dateDueSelect' => $dueSelect,
 			]);
-		} catch (NoResultException | NonUniqueResultException $e) {
-			$this->sendError([
+		} catch (NoResultException | NonUniqueResultException) {
+			$this->sendOk([
 				'customer' => [
 					'id' => null,
 					'name' => '',

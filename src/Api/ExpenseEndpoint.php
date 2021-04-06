@@ -61,7 +61,7 @@ class ExpenseEndpoint extends BaseEndpoint
 	public function postLoadExpense(string $id): void
 	{
 		try {
-			if ($id === '' || $id === null) {
+			if ($id === '') {
 				$expenseData = $this->expenseHelper->getNewExpense();
 			} else {
 				$expenseData = $this->expenseHelper->getExpenseById($id);
@@ -83,8 +83,8 @@ class ExpenseEndpoint extends BaseEndpoint
 	public function postLoadCurrency(string $code, array $expenseData): void
 	{
 		try {
-			$currency = $this->currencyManager->getCurrencyByIsoCode($isoCode);
-			$currencyTemp = $this->currencyManager->getCurrencyRateByDate($currency, DateTime::from($expenseData['date'] ?? 'NOW'));
+			$currency = $this->currencyManager->get()->getCurrencyByIsoCode($isoCode);
+			$currencyTemp = $this->currencyManager->get()->getCurrencyRateByDate($currency, DateTime::from($expenseData['date'] ?? 'NOW'));
 
 			$this->sendOk([
 				'currency' => [
@@ -107,7 +107,7 @@ class ExpenseEndpoint extends BaseEndpoint
 	public function postLoadCompanyByCin(string $cin): void
 	{
 		try {
-			$aresData = $this->companyManager->getDataFromAres($companyIc);
+			$aresData = $this->companyManager->get()->getDataFromAres($cin);
 
 			$this->sendOk([
 				'customer' => [
@@ -131,7 +131,7 @@ class ExpenseEndpoint extends BaseEndpoint
 					'city' => '',
 					'zipCode' => '',
 					'country' => 'CZE',
-					'ic' => $companyIc,
+					'ic' => $cin,
 					'dic' => '',
 				],
 				'currency' => 'CZK',
