@@ -8,6 +8,7 @@ use Baraja\Doctrine\EntityManagerException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Address\CountryManager;
+use MatiCore\Address\CountryManagerAccessor;
 use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManagerAccessor;
 use MatiCore\Form\FormFactoryTrait;
@@ -39,10 +40,10 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 	public CurrencyManagerAccessor $currencyManager;
 
 	/**
-	 * @var CountryManager
+	 * @var CountryManagerAccessor
 	 * @inject
 	 */
-	public CountryManager $countryManager;
+	public CountryManagerAccessor $countryManager;
 
 	use FormFactoryTrait;
 
@@ -54,7 +55,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 	public function actionDefault(): void
 	{
 		try {
-			$this->countryManager->getCountryByIsoCode('CZE')->getId();
+			$this->countryManager->get()->getCountryByIsoCode('CZE')->getId();
 		} catch (NonUniqueResultException|NoResultException $e) {
 			$this->flashMessage('Seznam zemí není nainstalován. <a href="' . $this->link('Country:install') . '">Instalovat..</a>', 'warning');
 		}
@@ -141,9 +142,9 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 			$form->addText('zipCode', 'PSČ');
 
-			$form->addText('ic', 'IČ');
+			$form->addText('cin', 'IČ');
 
-			$form->addText('dic', 'DIČ');
+			$form->addText('tin', 'DIČ');
 
 			$form->addSelect('country', 'Země', $this->countryManager->getCountriesForForm())
 				->setDefaultValue($this->countryManager->getCountryByIsoCode('CZE')->getId());
@@ -159,14 +160,14 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 				}
 
 				try {
-					$country = $this->countryManager->getCountryById($values->country);
+					$country = $this->countryManager->get()->getCountryById($values->country);
 				} catch (NoResultException|NonUniqueResultException $e) {
-					$country = $this->countryManager->getCountryByIsoCode('CZE');
+					$country = $this->countryManager->get()->getCountryByIsoCode('CZE');
 				}
 
 				$supplier = $this->supplierManager->get()->createSupplier($values->name, $currency, $values->street ?? '', $values->city ?? '', $country);
-				$supplier->getAddress()->setCin($values->ic === '' ? null : $values->ic);
-				$supplier->getAddress()->setTin($values->dic === '' ? null : $values->dic);
+				$supplier->getAddress()->setCin($values->cin === '' ? null : $values->cin);
+				$supplier->getAddress()->setTin($values->tin === '' ? null : $values->tin);
 				$supplier->setDeliveryCompany(
 					$values->deliveryCompany === ''
 						? null
@@ -229,13 +230,13 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$form->addText('zipCode', 'PSČ')
 				->setDefaultValue($this->editedSupplier->getAddress()->getZipCode() ?? '');
 
-			$form->addText('ic', 'IČ')
+			$form->addText('cin', 'IČ')
 				->setDefaultValue($this->editedSupplier->getAddress()->getCin() ?? '');
 
-			$form->addText('dic', 'DIČ')
+			$form->addText('tin', 'DIČ')
 				->setDefaultValue($this->editedSupplier->getAddress()->getTin() ?? '');
 
-			$form->addSelect('country', 'Země', $this->countryManager->getCountriesForForm())
+			$form->addSelect('country', 'Země', $this->countryManager->get()->getCountriesForForm())
 				->setDefaultValue(
 					$this->editedSupplier->getAddress()->getCountry()
 					? $this->editedSupplier->getAddress()->getCountry()->getId()
@@ -259,16 +260,16 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 				$this->editedSupplier->setCurrency($currency);
 
 				try {
-					$country = $this->countryManager->getCountryById($values->country);
+					$country = $this->countryManager->get()->getCountryById($values->country);
 				} catch (NoResultException|NonUniqueResultException $e) {
-					$country = $this->countryManager->getCountryByIsoCode('CZE');
+					$country = $this->countryManager->get()->getCountryByIsoCode('CZE');
 				}
 
 				$this->editedSupplier->getAddress()->setStreet($values->street === '' ? null : $values->street);
 				$this->editedSupplier->getAddress()->setCity($values->city === '' ? null : $values->city);
 				$this->editedSupplier->getAddress()->setZipCode($values->zipCode === '' ? null : $values->zipCode);
-				$this->editedSupplier->getAddress()->setCin($values->ic === '' ? null : $values->ic);
-				$this->editedSupplier->getAddress()->setTin($values->dic === '' ? null : $values->dic);
+				$this->editedSupplier->getAddress()->setCin($values->cin === '' ? null : $values->cin);
+				$this->editedSupplier->getAddress()->setTin($values->tin === '' ? null : $values->tin);
 				$this->editedSupplier->getAddress()->setCountry($country);
 				$this->editedSupplier->setDeliveryCompany(
 					$values->deliveryCompany === ''
@@ -276,7 +277,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 						: $values->deliveryCompany
 				);
 
-				$this->entityManager->flush($this->editedSupplier);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 

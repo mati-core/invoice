@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	Dodavatelé
+	<h1>Dodavatelé</h1>
 {/block}
 
 {block breadcrumb}
@@ -71,7 +71,7 @@
 										</a>
 									</td>
 									<td>
-										{$supplier->getCountry()->getName()} ({$supplier->getCountry()->getIsoCode()})
+										{$supplier->getAddress()->getCountry()->getName()} ({$supplier->getAddress()->getCountry()->getIsoCode()})
 									</td>
 									<td class="text-center">
 										{$supplier->getCurrency()->getCode()}

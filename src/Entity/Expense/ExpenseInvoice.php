@@ -41,13 +41,13 @@ class ExpenseInvoice extends Expense
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierIc;
+	protected string|null $supplierCin;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierDic;
+	protected string|null $supplierTin;
 
 	/**
 	 * @var string|null
@@ -191,33 +191,33 @@ class ExpenseInvoice extends Expense
 	/**
 	 * @return string|null
 	 */
-	public function getSupplierIc(): ?string
+	public function getSupplierCin(): ?string
 	{
-		return $this->supplierIc;
+		return $this->supplierCin;
 	}
 
 	/**
-	 * @param string|null $supplierIc
+	 * @param string|null $supplierCin
 	 */
-	public function setSupplierIc(?string $supplierIc): void
+	public function setSupplierCin(?string $supplierCin): void
 	{
-		$this->supplierIc = $supplierIc;
+		$this->supplierCin = $supplierCin;
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getSupplierDic(): ?string
+	public function getSupplierTin(): ?string
 	{
-		return $this->supplierDic;
+		return $this->supplierTin;
 	}
 
 	/**
-	 * @param string|null $supplierDic
+	 * @param string|null $supplierTin
 	 */
-	public function setSupplierDic(?string $supplierDic): void
+	public function setSupplierTin(?string $supplierTin): void
 	{
-		$this->supplierDic = $supplierDic;
+		$this->supplierTin = $supplierTin;
 	}
 
 	/**

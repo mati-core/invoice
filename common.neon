@@ -3,13 +3,6 @@ parameters:
 	menu:
 		cmsMainDefault:
 			items:
-				companies:
-					title: company.menu.title
-					icon: 'fas fa-building'
-					route: ':Admin:Company:default'
-					position: 51
-					rights:
-						- page__company
 				invoice:
 					title: invoice.menu.title
 					icon: fas fa-file-invoice
@@ -39,6 +32,20 @@ parameters:
 							position: 20
 							rights:
 								- page__invoice__bank_movements
+				companies:
+					title: company.menu.title
+					icon: 'fas fa-building'
+					route: ':Admin:Company:default'
+					position: 51
+					rights:
+						- page__company
+				suppliers:
+					title: supplier.menu.title
+					icon: 'fas fa-truck'
+					route: ':Admin:Supplier:default'
+					position: 51
+					rights:
+						- page__supplier
 		cmsMainSetting:
 			items:
 				users:

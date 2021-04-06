@@ -205,8 +205,8 @@ class ExpenseHelper
 		$supplierCity = '';
 		$supplierZip = '';
 		$supplierCountry = 'CZE';
-		$supplierIC = '';
-		$supplierDIC = '';
+		$supplierCin = '';
+		$supplierTin = '';
 
 		if ($expense instanceof ExpenseInvoice) {
 			$invoiceNumber = $expense->getSupplierInvoiceNumber() ?? '';
@@ -223,8 +223,8 @@ class ExpenseHelper
 			$supplierCity = $expense->getSupplierCity() ?? '';
 			$supplierZip = $expense->getSupplierZipCode() ?? '';
 			$supplierCountry = $expense->getSupplierCountry()->getIsoCode();
-			$supplierIC = $expense->getSupplierIc() ?? '';
-			$supplierDIC = $expense->getSupplierDic() ?? '';
+			$supplierCin = $expense->getSupplierCin() ?? '';
+			$supplierTin = $expense->getSupplierTin() ?? '';
 
 			foreach ($expense->getItems() as $item) {
 				$items[] = [
@@ -261,8 +261,8 @@ class ExpenseHelper
 				'city' => $supplierCity,
 				'zipCode' => $supplierZip,
 				'country' => $supplierCountry,
-				'ic' => $supplierIC,
-				'dic' => $supplierDIC,
+				'cin' => $supplierCin,
+				'tin' => $supplierTin,
 			],
 			'currency' => $expense->getCurrency()->getCode(),
 			'currencyData' => [
@@ -466,8 +466,8 @@ class ExpenseHelper
 			$expense->setSupplierCity($expenseData['customer']['city'] === '' ? null : $expenseData['customer']['city']);
 			$expense->setSupplierZipCode($expenseData['customer']['zipCode'] === '' ? null : $expenseData['customer']['zipCode']);
 			$expense->setSupplierCountry($country);
-			$expense->setSupplierIc($expenseData['customer']['ic'] === '' ? null : $expenseData['customer']['ic']);
-			$expense->setSupplierDic($expenseData['customer']['dic'] === '' ? null : $expenseData['customer']['dic']);
+			$expense->setSupplierCin($expenseData['customer']['cin'] === '' ? null : $expenseData['customer']['cin']);
+			$expense->setSupplierTin($expenseData['customer']['tin'] === '' ? null : $expenseData['customer']['tin']);
 			$expense->setSupplierBankAccount(null);
 			$expense->setSupplierIBAN(null);
 			$expense->setSupplierSWIFT(null);
