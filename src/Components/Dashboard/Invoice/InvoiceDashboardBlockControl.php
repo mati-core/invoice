@@ -29,6 +29,11 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 	protected string $blockName = 'invoice';
 
 	/**
+	 * @var array|null
+	 */
+	protected ?array $acceptRights;
+
+	/**
 	 * @var User
 	 */
 	protected User $user;
@@ -49,8 +54,9 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 	 * @param EntityManager $entityManager
 	 * @param CurrencyManagerAccessor $currencyManager
 	 */
-	public function __construct(User $user, EntityManager $entityManager, CurrencyManagerAccessor $currencyManager)
+	public function __construct(?array $acceptRights, User $user, EntityManager $entityManager, CurrencyManagerAccessor $currencyManager)
 	{
+		$this->acceptRights = $acceptRights;
 		$this->user = $user;
 		$this->entityManager = $entityManager;
 		$this->currencyManager = $currencyManager;
@@ -105,26 +111,32 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 			->setParameter('f', 0)
 			->setMaxResults(5);
 
-		if ($this->getPresenter()->checkAccess('page__invoice__accept-B')) {
-			$query->orderBy('invoice.number', 'ASC');
-			$query->andWhere('invoice.acceptStatus1 = :status1')
-				->setParameter('status1', InvoiceStatus::ACCEPTED);
-			$query->andWhere('invoice.acceptStatus2 = :status2')
-				->setParameter('status2', InvoiceStatus::WAITING);
-		} elseif ($this->getPresenter()->checkAccess('page__invoice__accept-A')) {
-			$query->orderBy('invoice.number', 'ASC');
-			$query->andWhere('invoice.submitted = :submitted')
-				->setParameter('submitted', true)
-				->andWhere('invoice.acceptStatus1 = :status')
-				->setParameter('status', InvoiceStatus::WAITING);
-		} else {
-			$query->orderBy('invoice.acceptStatus1', 'DESC');
-			$query->addOrderBy('invoice.acceptStatus2', 'DESC');
-			$query->addOrderBy('invoice.number', 'DESC');
-			$query->andWhere('(invoice.submitted = :f OR invoice.acceptStatus1 = :status1 OR invoice.acceptStatus2 = :status2)')
+		if ($this->acceptRights === null) {
+			$query->andWhere('invoice.submitted = :f')
 				->setParameter('f', 0)
-				->setParameter('status1', InvoiceStatus::DENIED)
-				->setParameter('status2', InvoiceStatus::DENIED);
+				->addOrderBy('invoice.number', 'DESC');
+		} else {
+			if ($this->getPresenter()->checkAccess('page__invoice__accept-B')) {
+				$query->orderBy('invoice.number', 'ASC');
+				$query->andWhere('invoice.acceptStatus1 = :status1')
+					->setParameter('status1', InvoiceStatus::ACCEPTED);
+				$query->andWhere('invoice.acceptStatus2 = :status2')
+					->setParameter('status2', InvoiceStatus::WAITING);
+			} elseif ($this->getPresenter()->checkAccess('page__invoice__accept-A')) {
+				$query->orderBy('invoice.number', 'ASC');
+				$query->andWhere('invoice.submitted = :submitted')
+					->setParameter('submitted', true)
+					->andWhere('invoice.acceptStatus1 = :status')
+					->setParameter('status', InvoiceStatus::WAITING);
+			} else {
+				$query->orderBy('invoice.acceptStatus1', 'DESC');
+				$query->addOrderBy('invoice.acceptStatus2', 'DESC');
+				$query->addOrderBy('invoice.number', 'DESC');
+				$query->andWhere('(invoice.submitted = :f OR invoice.acceptStatus1 = :status1 OR invoice.acceptStatus2 = :status2)')
+					->setParameter('f', 0)
+					->setParameter('status1', InvoiceStatus::DENIED)
+					->setParameter('status2', InvoiceStatus::DENIED);
+			}
 		}
 
 		$grid->setDataSource($query);
@@ -223,49 +235,51 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 			->setAlign('right')
 			->setTemplateEscaping(false);
 
-		$grid->addColumnText('accept', 'Schválení')
-			->setRenderer(function (InvoiceCore $invoiceCore): string {
-				if ($invoiceCore->isSubmitted() === false) {
-					return '<span class="text-warning">Editace</span>';
-				}
+		if ($this->acceptRights !== null) {
+			$grid->addColumnText('accept', 'Schválení')
+				->setRenderer(function (InvoiceCore $invoiceCore): string {
+					if ($invoiceCore->isSubmitted() === false) {
+						return '<span class="text-warning">Editace</span>';
+					}
 
-				$ret = '';
-				$link = $this->getPresenter()->link('Invoice:show', ['id' => $invoiceCore->getId()]);
+					$ret = '';
+					$link = $this->getPresenter()->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 
-				if ($invoiceCore->getAcceptStatus1() === 'denied') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+					if ($invoiceCore->getAcceptStatus1() === 'denied') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+					} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+					} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-				}
+					}
 
-				$ret .= '&nbsp;';
+					$ret .= '&nbsp;';
 
-				if ($invoiceCore->getAcceptStatus2() === 'denied') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+					if ($invoiceCore->getAcceptStatus2() === 'denied') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+					} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+					} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-				}
+					}
 
-				return $ret;
-			})
-			->setAlign('center')
-			->setTemplateEscaping(false);
+					return $ret;
+				})
+				->setAlign('center')
+				->setTemplateEscaping(false);
+		}
 
 		$grid->addAction('detail', 'Detail')
 			->setRenderer(function (InvoiceCore $invoiceCore) {

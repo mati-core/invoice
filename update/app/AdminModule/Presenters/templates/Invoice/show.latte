@@ -353,7 +353,7 @@
 					</a>
 					<a n:if="!$invoice->isSubmitted()" href="#" data-toggle="modal" data-target="#submitModal"
 						class="btn btn-sm btn-success">
-					   	{if $presenter->checkAccess('page__invoice__accept-B')}
+					   	{if !$presenter->isSettingAccept() || $presenter->checkAccess('page__invoice__accept-B')}
 						<i class="fas fa-check"></i>&nbsp;Odevzdat a schválit
 						{else}
 						<i class="fas fa-upload"></i>&nbsp;Odevzdat
@@ -374,7 +374,7 @@
 							class="btn btn-sm btn-success">
 						<i class="fas fa-file-invoice"></i>&nbsp;Vytvořit fakturu
 					</a>
-                    {if $invoice->isSubmitted()}
+                    {if $invoice->isSubmitted() && $presenter->isSettingAccept()}
 						{if $invoice->getAcceptStatus1() === 'waiting' && $presenter->checkAccess('page__invoice__accept-A')}
 							<a href="#" data-toggle="modal" data-target="#denyAModal"
 							   class="btn btn-sm btn-outline-danger">
@@ -395,7 +395,7 @@
 								<i class="fas fa-check"></i>&nbsp;Schválit
 							</a>
 						{/if}
-					{elseif $presenter->checkAccess('page__invoice__accept-B')}
+					{elseif $presenter->isSettingAccept() && $presenter->checkAccess('page__invoice__accept-B')}
 						<a href="#" data-toggle="modal" data-target="#denyBModal"
 						   class="btn btn-sm btn-outline-danger">
 							<i class="fas fa-times"></i>&nbsp;Zamítnout

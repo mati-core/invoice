@@ -41,6 +41,11 @@ class InvoiceManager
 	private string $tempDir;
 
 	/**
+	 * @var array|null
+	 */
+	private ?array $acceptSetting;
+
+	/**
 	 * @var array
 	 */
 	private array $params;
@@ -106,6 +111,7 @@ class InvoiceManager
 	{
 		$this->tempDir = $tempDir;
 		$this->params = $params;
+		$this->acceptSetting = $params['settings']['accept'] ?? null;
 		$this->entityManager = $entityManager;
 		$this->user = $user;
 		$this->currencyManager = $currencyManager;
@@ -113,6 +119,14 @@ class InvoiceManager
 		$this->linkGenerator = $linkGenerator;
 		$this->emailEngine = $emailEngine;
 		$this->exportManager = $exportManager;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getAcceptSetting(): array|null
+	{
+		return $this->acceptSetting;
 	}
 
 	/**
@@ -533,7 +547,7 @@ class InvoiceManager
 
 		/**
 		 * @var BaseUser $user
-		 * @phpstan-ignore-next-line  
+		 * @phpstan-ignore-next-line
 		 */
 		$user = $this->user->getIdentity()->getUser();
 
@@ -591,10 +605,13 @@ class InvoiceManager
 			$emails[] = $email;
 		}
 
+
+		$invoiceData = $this->getInvoiceTemplateData($invoice);
+		$invoiceData['logo'] = $this->params['company']['logo'];
+		$invoiceData['url'] = $this->params['company']['url'];
 		foreach ($emails as $recipient) {
 			try {
 				$recipient = trim($recipient);
-
 				if ($invoice instanceof FixInvoice) {
 					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceFixEmail::class, [
 						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
@@ -602,6 +619,7 @@ class InvoiceManager
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Opravný daňový doklad č.: ' . $invoice->getNumber(),
 						'invoice' => $invoice,
+						'invoiceData' => $this->getInvoiceTemplateData(),
 					]);
 				} elseif ($invoice instanceof InvoicePayDocument) {
 					$email = $this->emailEngine->get()->getEmailServiceByType(InvoicePayDocumentEmail::class, [
@@ -610,6 +628,7 @@ class InvoiceManager
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Doklad o přijetí platby č.: ' . $invoice->getNumber(),
 						'invoice' => $invoice,
+						'invoiceData' => $this->getInvoiceTemplateData(),
 					]);
 				} else {
 					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceFixEmail::class, [
@@ -618,6 +637,7 @@ class InvoiceManager
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Faktura č.: ' . $invoice->getNumber(),
 						'invoice' => $invoice,
+						'invoiceData' => $this->getInvoiceTemplateData(),
 					]);
 				}
 
@@ -642,6 +662,7 @@ class InvoiceManager
 					$this->entityManager->flush([$invoice]);
 				}
 			} catch (ConstantException | EntityManagerException | EmailException $e) {
+				Debugger::log($e);
 				$ih = new InvoiceHistory($invoice, '<span class="text-danger">Doklad se nepodařilo odeslat emailem na ' . $recipient . '</span>');
 				$ih->setUser($user);
 

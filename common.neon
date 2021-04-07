@@ -59,6 +59,13 @@ parameters:
 								- cms__users__signatures
 
 	invoice:
+		settings:
+			numberFormat:
+				invoice: ''
+				proforma: ''
+				fixInvoice: ''
+				payDocument: ''
+			accept: null
 		company:
 			name: 'App Universe'
 			address: 'Your street 1000/1'
@@ -68,6 +75,7 @@ parameters:
 			cin: '00000000'
 			tin: 'CZ00000000'
 			logo: 'https://app-universe.cz/assets/img/logo_big.png'
+			url: 'https://app-universe.cz'
 			bank:
 				CZK:
 					bankAccountName: 'Your account name'
@@ -201,3 +209,7 @@ services:
 	- MatiCore\Invoice\Command\InvoicePayCheckCommand(%tempDir%, %invoice%)
 	- MatiCore\Invoice\Command\InvoiceAlertCommand(%tempDir%,  %invoice%)
 	- MatiCore\Invoice\Command\InvoiceTaxListFixCommand
+	invoiceDashboardControl: MatiCore\Invoice\InvoiceDashboardBlockControl(%invoice.settings.accept%)
+	dashboardControl:
+		setup:
+			- addBlock(@MatiCore\Invoice\InvoiceDashboardBlockControl, 50)

@@ -127,7 +127,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			$this->editedInvoice = $this->invoiceManager->get()->getInvoiceById($id);
 
 			$color = $this->invoiceManager->get()->getColorByInvoiceDocument($this->editedInvoice);
-			
+
 			$this->template->color = $color;
 			$this->template->templateData = $this->invoiceManager->get()->getInvoiceTemplateData($this->editedInvoice);
 			$this->template->invoice = $this->editedInvoice;
@@ -285,7 +285,31 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 			$sendEmail = false;
 
-			if ($this->checkAccess('page__invoice__accept-B')) {
+			if ($this->invoiceManager->get()->getAcceptSetting() === null) {
+				$invoice->setAcceptStatus1(InvoiceStatus::ACCEPTED);
+				$invoice->setAcceptStatus2(InvoiceStatus::ACCEPTED);
+				$invoice->setStatus(InvoiceStatus::ACCEPTED);
+				$invoice->setClosed(true);
+
+				/** @var BaseUser $user */
+				$user = $this->getUser()->getIdentity()->getUser();
+				$history = new InvoiceHistory($invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>');
+				$history->setUser($user);
+				$this->entityManager->persist($history);
+
+				$invoice->addHistory($history);
+				$entities[] = $history;
+
+				if ($invoice instanceof FixInvoice) {
+					$this->flashMessage('Opravný daňový doklad byl odevzdán a schválen.', 'success');
+				} elseif ($invoice instanceof InvoiceProforma) {
+					$this->flashMessage('Proforma byla odevzdána a schválena.', 'success');
+				} else {
+					$this->flashMessage('Faktura byla odevzdána a schválena.', 'success');
+				}
+
+				$sendEmail = true;
+			} elseif ($this->checkAccess('page__invoice__accept-B')) {
 				$invoice->setAcceptStatus1(InvoiceStatus::ACCEPTED);
 				$invoice->setAcceptStatus2(InvoiceStatus::ACCEPTED);
 				$invoice->setStatus(InvoiceStatus::ACCEPTED);
@@ -577,7 +601,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$grid->addColumnText('bankAccount', 'Bankovní účet')
 			->setRenderer(static function (BankMovement $bm): string {
-				return  $bm->getBankAccountName() .'<br><small>' . $bm->getBankAccount() . '</small>';
+				return $bm->getBankAccountName() . '<br><small>' . $bm->getBankAccount() . '</small>';
 			})
 			->setTemplateEscaping(false);
 
@@ -753,8 +777,11 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 					$link = $this->link('Invoice:show', ['id' => $fixInvoice->getId()]);
 					$str = '<small><a href="' . $link . '" title="Dobropis" style="color: rgb(194, 0, 64);"><i class="fas fa-file-invoice"></i>&nbsp;' . $fixInvoice->getNumber();
 					if (
-						$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
-						|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
+						$this->invoiceManager->get()->getAcceptSetting() !== null
+						&& (
+							$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
+							|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
+						)
 					) {
 						if ($fixInvoice->getAcceptStatus1() === InvoiceStatus::WAITING) {
 							$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
@@ -846,49 +873,51 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			->setFitContent()
 			->setTemplateEscaping(false);
 
-		$grid->addColumnText('accept', 'Schválení')
-			->setRenderer(function (InvoiceCore $invoiceCore): string {
-				if ($invoiceCore->isSubmitted() === false) {
-					return '<span class="text-warning">Editace</span>';
-				}
+		if ($this->invoiceManager->get()->getAcceptSetting() !== null) {
+			$grid->addColumnText('accept', 'Schválení')
+				->setRenderer(function (InvoiceCore $invoiceCore): string {
+					if ($invoiceCore->isSubmitted() === false) {
+						return '<span class="text-warning">Editace</span>';
+					}
 
-				$ret = '';
-				$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
+					$ret = '';
+					$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 
-				if ($invoiceCore->getAcceptStatus1() === 'denied') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+					if ($invoiceCore->getAcceptStatus1() === 'denied') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+					} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+					} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-				}
+					}
 
-				$ret .= '&nbsp;';
+					$ret .= '&nbsp;';
 
-				if ($invoiceCore->getAcceptStatus2() === 'denied') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+					if ($invoiceCore->getAcceptStatus2() === 'denied') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+					} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+					} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-				}
+					}
 
-				return $ret;
-			})
-			->setAlign('center')
-			->setTemplateEscaping(false);
+					return $ret;
+				})
+				->setAlign('center')
+				->setTemplateEscaping(false);
+		}
 
 		$grid->addAction('detail', 'Detail')
 			->setRenderer(function (InvoiceCore $invoiceCore) {
@@ -927,14 +956,14 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		];
 
 		$invoiceUsers = $this->entityManager->getRepository(BaseUser::class)
-			->createQueryBuilder('u')
-			->select('u')
-			->join(InvoiceCore::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
-			->groupBy('u.id')
-			->orderBy('u.lastName','ASC')
-			->addOrderBy('u.firstName', 'ASC')
-			->getQuery()
-			->getResult() ?? [];
+				->createQueryBuilder('u')
+				->select('u')
+				->join(InvoiceCore::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
+				->groupBy('u.id')
+				->orderBy('u.lastName', 'ASC')
+				->addOrderBy('u.firstName', 'ASC')
+				->getQuery()
+				->getResult() ?? [];
 
 		foreach ($invoiceUsers as $user) {
 			$invoiceUserList[$user->getId()] = $user->getName();
@@ -1417,7 +1446,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			if (Validators::isEmail($values->email) && $this->editedInvoice->isReady() === false) {
 				$this->editedInvoice->addEmail(trim($values->email));
 				$user = $this->getUser()->getIdentity()->getUser();
-				if(!$user instanceof BaseUser){
+				if (!$user instanceof BaseUser) {
 					$user = null;
 				}
 
@@ -1453,7 +1482,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		}
 
 		$user = $this->getUser()->getIdentity()->getUser();
-		if(!$user instanceof BaseUser){
+		if (!$user instanceof BaseUser) {
 			$user = null;
 		}
 
@@ -1478,9 +1507,9 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	public function isCompanyContact(string $contact): bool
 	{
-		if($this->editedInvoice !== null && $this->editedInvoice->getCompany()){
-			foreach($this->editedInvoice->getCompany()->getContacts() as $companyContact){
-				if(trim($companyContact->getEmail() ?? '') === trim($contact)){
+		if ($this->editedInvoice !== null && $this->editedInvoice->getCompany()) {
+			foreach ($this->editedInvoice->getCompany()->getContacts() as $companyContact) {
+				if (trim($companyContact->getEmail() ?? '') === trim($contact)) {
 					return true;
 				}
 			}
@@ -1489,6 +1518,14 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		}
 
 		return true;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSettingAccept(): bool
+	{
+		return $this->invoiceManager->get()->getAcceptSetting() !== null;
 	}
 
 }
