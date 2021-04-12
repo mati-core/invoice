@@ -25,7 +25,7 @@
 		"mati-core/currency": "^1.0",
 		"mati-core/address": "^1.0.1",
 		"mati-core/unit": "^1.0.2",
-		"mati-core/email": "^1.0",
+		"mati-core/email": "^1.0.2 ~1.0",
 		"h4kuna/ares": "^1.4",
 		"bacon/bacon-qr-code": "^2.0",
 		"mpdf/mpdf": "^8.0",

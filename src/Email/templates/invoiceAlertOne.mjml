@@ -1,7 +1,7 @@
 <mjml>
   <mj-head>
     <mj-include path="includes/emailHead.mjml" />
-    <mj-title>1. upomínka - Faktura č.: {$number} | Your Company s.r.o.</mj-title>
+    <mj-title>1. upomínka - Faktura č.: {$number} | {$invoiceData['company']}</mj-title>
   </mj-head>
   <mj-body background-color="#fff">
     <mj-section>
@@ -11,16 +11,7 @@
         <mj-text> žádáme Vás o bezodkladnou úhradu naší pohledávky č.: {$number}, o celkové částce {$totalPrice|noescape}, nejpozději do {$newDueDate}. </mj-text>
       </mj-column>
     </mj-section>
-    <mj-section css-class="container" padding="0">
-      <mj-column padding="0">
-        <mj-raw> </mj-raw>
-      </mj-column>
-    </mj-section>
-    <mj-section padding="0">
-      <mj-column width="600px" background-color="#fff" padding="0" css-class="container">
-        <mj-text> Your Company s.r.o. </mj-text>
-      </mj-column>
-    </mj-section>
+    <mj-include path="includes/emailRegards.mjml" />
     <mj-section css-class="container" padding="0">
       <mj-column padding="0">
         <mj-raw> <br><br> </mj-raw>
@@ -29,12 +20,12 @@
     <mj-section background-color="#f7f7f7" css-class="container" padding="15px 5px">
       <mj-column width="280px" css-class="col_footer" padding="0">
         <mj-text><b>Kontaktní informace</b></mj-text>
-        <mj-text>Your Company s.r.o.</mj-text>
-        <mj-text><a href="https://app-universe.cz">https://app-universe.cz</a></mj-text>
+        <mj-text>{$invoiceData['company']}</mj-text>
+        <mj-text><a href="{$invoiceData['url']}">{$invoiceData['url']}</a></mj-text>
       </mj-column>
       <mj-column width="280px" css-class="col_footer" padding="0">
-        <mj-text> Telefon: <a href="tel:000000000">+420 000 000 000</a> </mj-text>
-        <mj-text> E-mail: <a href="mailto:faktury@app-universe.cz">faktury@app-universe.cz</a> </mj-text>
+        <mj-text> Telefon: <a href="tel:{$invoiceData['footerPhone']}">{$invoiceData['footerPhone']}</a> </mj-text>
+        <mj-text> E-mail: <a href="mailto:{$invoiceData['footerEmail']}">{$invoiceData['footerEmail']}</a> </mj-text>
       </mj-column>
     </mj-section>
   </mj-body>
