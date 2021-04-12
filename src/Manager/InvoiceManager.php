@@ -16,6 +16,7 @@ use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManager;
 use MatiCore\Email\EmailerAccessor;
 use MatiCore\Email\EmailException;
+use MatiCore\Invoice\Email\InvoiceEmail;
 use MatiCore\Invoice\Email\InvoiceFixEmail;
 use MatiCore\Invoice\Email\InvoicePayDocumentEmail;
 use MatiCore\User\BaseUser;
@@ -607,6 +608,7 @@ class InvoiceManager
 
 
 		$invoiceData = $this->getInvoiceTemplateData($invoice);
+		$invoiceData['company'] = $this->params['company']['name'];
 		$invoiceData['logo'] = $this->params['company']['logo'];
 		$invoiceData['url'] = $this->params['company']['url'];
 		foreach ($emails as $recipient) {
@@ -619,7 +621,7 @@ class InvoiceManager
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Opravný daňový doklad č.: ' . $invoice->getNumber(),
 						'invoice' => $invoice,
-						'invoiceData' => $this->getInvoiceTemplateData(),
+						'invoiceData' => $invoiceData,
 					]);
 				} elseif ($invoice instanceof InvoicePayDocument) {
 					$email = $this->emailEngine->get()->getEmailServiceByType(InvoicePayDocumentEmail::class, [
@@ -628,16 +630,16 @@ class InvoiceManager
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Doklad o přijetí platby č.: ' . $invoice->getNumber(),
 						'invoice' => $invoice,
-						'invoiceData' => $this->getInvoiceTemplateData(),
+						'invoiceData' => $invoiceData,
 					]);
 				} else {
-					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceFixEmail::class, [
+					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceEmail::class, [
 						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
 						'to' => $recipient,
 						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 						'subject' => 'Faktura č.: ' . $invoice->getNumber(),
 						'invoice' => $invoice,
-						'invoiceData' => $this->getInvoiceTemplateData(),
+						'invoiceData' => $invoiceData,
 					]);
 				}
 
@@ -647,7 +649,7 @@ class InvoiceManager
 
 				$email->send();
 
-				if ($recipient !== 'zaloha@martinolmr.cz') {
+				if (!str_starts_with($recipient, 'backup') && !str_starts_with($recipient, 'zaloha')) {
 					$ih = new InvoiceHistory($invoice, 'Doklad odeslán emailem na ' . $recipient);
 					$ih->setUser($user);
 

@@ -24,7 +24,7 @@ parameters:
 							route: :Admin:Expense:default
 							position: 15
 							rights:
-								- page__invoice__accepted
+								- page__expense
 						bankMovements:
 							title: Bankovní pohyby
 							icon: fas fa-wallet
@@ -104,6 +104,13 @@ parameters:
 			production: false
 			copy:
 				- backup@app-universe.cz
+			templates:
+				invoice:
+					default: %appDir%/../vendor/mati-core/invoice/src/Email/templates/invoice.mjml
+				fix:
+					default: %appDir%/../vendor/mati-core/invoice/src/Email/templates/invoiceFix.mjml
+				payDocument:
+					default: %appDir%/../vendor/mati-core/invoice/src/Email/templates/invoicePayDocument.mjml
 		alertEmail:
 			name: 'YOUR COMPANY NAME'
 			email: 'invoice@your-company.com'
@@ -112,12 +119,18 @@ parameters:
 			firstAlert:
 				sendAt: '+5 days'
 				dueDate: '+5 days'
+				template:
+					default: %appDir%/../vendor/mati-core/invoice/src/Email/templates/invoiceAlertOne.mjml
 			secondAlert:
 				sendAt: '+10 days'
 				dueDate: '+10 days'
+				template:
+					default: %appDir%/../vendor/mati-core/invoice/src/Email/templates/invoiceAlertTwo.mjml
 			thirdAlert:
 				sendAt: '+20 days'
 				dueDate: '+5 days'
+				template:
+					default: %appDir%/../vendor/mati-core/invoice/src/Email/templates/invoiceAlertThree.mjml
 			copy:
 				- info@app-universe.cz
 		export:
@@ -200,12 +213,12 @@ services:
 	- MatiCore\Invoice\SignatureManager(%wwwDir%)
 	- MatiCore\Invoice\SignatureManagerAccessor
 	- MatiCore\Invoice\InvoiceHelper(%invoice.company%)
-	- MatiCore\Invoice\Email\InvoiceAlertOneEmail
-	- MatiCore\Invoice\Email\InvoiceAlertTwoEmail
-	- MatiCore\Invoice\Email\InvoiceAlertThreeEmail
-	- MatiCore\Invoice\Email\InvoiceEmail
-	- MatiCore\Invoice\Email\InvoiceFixEmail
-	- MatiCore\Invoice\Email\InvoicePayDocumentEmail
+	- MatiCore\Invoice\Email\InvoiceAlertOneEmail(%invoice.alertEmail.firstAlert.template%)
+	- MatiCore\Invoice\Email\InvoiceAlertTwoEmail(%invoice.alertEmail.secondAlert.template%)
+	- MatiCore\Invoice\Email\InvoiceAlertThreeEmail(%invoice.alertEmail.thirdAlert.template%)
+	- MatiCore\Invoice\Email\InvoiceEmail(%invoice.invoiceEmail.templates.invoice%)
+	- MatiCore\Invoice\Email\InvoiceFixEmail(%invoice.invoiceEmail.templates.fix%)
+	- MatiCore\Invoice\Email\InvoicePayDocumentEmail(%invoice.invoiceEmail.templates.payDocument%)
 	- MatiCore\Invoice\Command\InvoicePayCheckCommand(%tempDir%, %invoice%)
 	- MatiCore\Invoice\Command\InvoiceAlertCommand(%tempDir%,  %invoice%)
 	- MatiCore\Invoice\Command\InvoiceTaxListFixCommand

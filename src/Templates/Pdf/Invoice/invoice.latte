@@ -7,16 +7,16 @@
 		    style="width:50%; padding: 15px 30px 15px 30px;">
             {if $invoice->isProforma()}
 				<h1 class="text-bold text-white">PROFORMA {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Zálohová faktura (není daňový doklad) - VZOR</h3>
+				<h3 class="text-white">Zálohová faktura (není daňový doklad)</h3>
             {elseif $invoice->isPayDocument()}
 				<h1 class="text-bold text-white">PLATBA {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Doklad k přijaté platbě - VZOR</h3>
+				<h3 class="text-white">Doklad k přijaté platbě</h3>
             {elseif $invoice->isFix()}
 				<h1 class="text-bold text-white">DOBROPIS {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Opravný daňový doklad - VZOR</h3>
+				<h3 class="text-white">Opravný daňový doklad</h3>
             {else}
 				<h1 class="text-bold text-white">Faktura {$invoice->getNumber()}</h1>
-				<h3 class="text-white">Daňový doklad - VZOR</h3>
+				<h3 class="text-white">Daňový doklad</h3>
             {/if}
 		</td>
 	</tr>
