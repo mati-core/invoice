@@ -110,6 +110,7 @@ class InvoiceEndpoint extends BaseEndpoint
 
 	/**
 	 * @param string $id
+	 * @throws \Exception
 	 */
 	public function postLoadCompanyById(string $id): void
 	{
@@ -159,7 +160,8 @@ class InvoiceEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @param string $id
+	 * @param string $cin
+	 * @throws \Exception
 	 */
 	public function postLoadCompanyByCIN(string $cin): void
 	{
