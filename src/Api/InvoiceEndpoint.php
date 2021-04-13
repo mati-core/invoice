@@ -10,6 +10,7 @@ use Baraja\Doctrine\EntityManagerException;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use h4kuna\Ares\Exceptions\IdentificationNumberNotFoundException;
 use MatiCore\Company\CompanyManagerAccessor;
 use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManagerAccessor;
@@ -153,6 +154,83 @@ class InvoiceEndpoint extends BaseEndpoint
 				],
 				'currency' => 'CZK',
 			]);
+		}
+	}
+
+
+	/**
+	 * @param string $id
+	 */
+	public function postLoadCompanyByCIN(string $cin): void
+	{
+		$now = DateTime::from('NOW');
+
+		try {
+			$company = $this->companyManager->get()->getCompanyByCIN($cin);
+
+			$dueSelect = $company->getInvoiceDueDayCount();
+
+			if (!in_array($dueSelect, [0, 7, 10, 14, 30])) {
+				$dueSelect = '';
+			}
+
+			$this->sendOk([
+				'customer' => [
+					'id' => $company->getId(),
+					'name' => $company->getName(),
+					'address' => $company->getInvoiceAddress()->getStreet(),
+					'city' => $company->getInvoiceAddress()->getCity(),
+					'zipCode' => $company->getInvoiceAddress()->getZipCode(),
+					'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
+					'cin' => $company->getInvoiceAddress()->getCin(),
+					'tin' => $company->getInvoiceAddress()->getTin(),
+				],
+				'currency' => $company->getCurrency()->getCode(),
+				'date' => $now->format('Y-m-d'),
+				'dateTax' => $now->format('Y-m-d'),
+				'dateDue' => $now->modify('+' . $company->getInvoiceDueDayCount() . ' days')->format('Y-m-d'),
+				'dateDueSelect' => $dueSelect,
+			]);
+		} catch (NoResultException | NonUniqueResultException) {
+			try {
+				$aresData = $this->companyManager->get()->getDataFromAres($cin);
+
+				$this->sendOk([
+					'customer' => [
+						'id' => null,
+						'name' => $aresData->company,
+						'address' => $aresData->street . ' ' . $aresData->house_number,
+						'city' => $aresData->city,
+						'zipCode' => $aresData->zip,
+						'country' => 'CZE',
+						'cin' => $aresData->in,
+						'tin' => $aresData->tin,
+					],
+					'currency' => 'CZK',
+					'date' => $now->format('Y-m-d'),
+					'dateTax' => $now->format('Y-m-d'),
+					'dateDue' => $now->modify('+14 days')->format('Y-m-d'),
+					'dateDueSelect' => 14,
+				]);
+			} catch (IdentificationNumberNotFoundException $e) {
+				$this->sendOk([
+					'customer' => [
+						'id' => null,
+						'name' => '',
+						'address' => '',
+						'city' => '',
+						'zipCode' => '',
+						'country' => 'CZE',
+						'cin' => '',
+						'tin' => '',
+					],
+					'currency' => 'CZK',
+					'date' => $now->format('Y-m-d'),
+					'dateTax' => $now->format('Y-m-d'),
+					'dateDue' => $now->modify('+14 days')->format('Y-m-d'),
+					'dateDueSelect' => 14,
+				]);
+			}
 		}
 	}
 

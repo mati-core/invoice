@@ -143,7 +143,7 @@ let app = new Vue({
 			})
 				.then(response => response.json())
 				.then(responseData => {
-					if (responseData.status === 'ok') {
+					if (responseData.state === 'ok') {
 						this.invoice.customer = responseData.data.customer;
 						this.invoice.currency = responseData.data.currency;
 						this.invoice.date = responseData.data.date;
