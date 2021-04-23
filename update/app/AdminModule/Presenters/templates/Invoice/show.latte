@@ -129,6 +129,31 @@
 		<!-- /.modal-dialog -->
 	</div>
 
+	<div class="modal modal-danger fade in" id="removeBModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Odstranění dokladu</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>Opravdu si přejete odstranit tento doklad?</p>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Zrušit</button>
+					<a n:href="delete!, id => $invoice->getId()"
+							class="btn btn-danger">
+						<i class="fas fa-check"></i>&nbsp;Odstranit
+					</a>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+
 	<form n:name="invoiceDenyFormA" class="ajax">
 		<div class="modal modal-danger fade in" id="denyAModal">
 			<div class="modal-dialog">
@@ -404,6 +429,11 @@
 					<a n:if="$invoice->isFix() === false && $invoice->isPayDocument() === false && $invoice->isProforma() === false && $invoice->getFixInvoice() === null && $presenter->checkAccess('page__invoice__fixInvoice')" n:href="Invoice:detailFix, id => $invoice->getId()"
 							class="btn btn-sm btn-outline-danger">
 						<i class="fas fa-wrench"></i>&nbsp;Oprava
+					</a>
+					<a n:if="$invoice->isSubmitted() === false && $invoice->isFix() === false && $invoice->isPayDocument() === false && $invoice->getFixInvoice() === null && $presenter->checkAccess('page__invoice__fixInvoice')" href="#"
+							class="btn btn-sm btn-outline-danger"
+							data-toggle="modal" data-target="#removeBModal">
+						<i class="fas fa-trash"></i>&nbsp;Smazat
 					</a>
 					<a n:if="$invoice->isFix() === false && $presenter->checkAccess('page__invoice__invoicedItems')" n:href="Invoice:invoicedItems, id => $invoice->getId()"
 							class="btn btn-sm btn-outline-dark" target="_blank">
