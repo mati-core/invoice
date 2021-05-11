@@ -32,6 +32,7 @@ let app = new Vue({
 			totalPriceRounded: 0.0,
 			totalPriceRoundedFormatted: '0 Kč',
 			defaultUnit: '',
+			defaultTax: 0.0,
 			textBeforeItems: '',
 			textAfterItems: '',
 			company: {
@@ -80,6 +81,7 @@ let app = new Vue({
 			],
 			deposit: [],
 			taxList: [],
+			taxEnabled: false,
 			offers: [],
 		},
 		depositNumber: '',
@@ -112,8 +114,8 @@ let app = new Vue({
 				sale: 0,
 				salePrice: 0,
 				salePriceString: 0,
-				taxString: '21',
-				tax: 21.0,
+				taxString: this.invoice.defaultTax.toString().replace('.', ','),
+				tax: this.invoice.defaultTax,
 				priceString: '0',
 				price: 0,
 				buyPrice: null,
@@ -217,11 +219,19 @@ let app = new Vue({
 				this.invoice.dateDue = date.getFullYear() + '-' + m + '-' + d;
 			}
 
+			if(this.invoice.taxEnabled === false){
+				this.invoice.dateTax = invoiceDate;
+			}
+
 			this.reloadInvoiceNumber();
 		},
 		setDate: function (e, item) {
 			if (item !== undefined) {
 				this.invoice.date = item.value;
+
+				if(this.invoice.taxEnabled === false){
+					this.setDateTax(e, item);
+				}
 			}
 		},
 		setDateDue: function (e, item) {

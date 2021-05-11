@@ -337,7 +337,7 @@
 						<a n:href="Invoice:show, id => $invoice->getInvoice()->getId()">
 							<span class="badge badge-pill badge-info">Faktura {$invoice->getInvoice()->getNumber()}</span>
 						</a>
-					{elseif $invoice->isProforma() === false && $invoice->isPayDocument() === false && $invoice->getFixInvoice() !== null}
+					{elseif $invoice->isProforma() === false && $invoice->isPayDocument() === false && $invoice->isFix() === false && $invoice->getFixInvoice() !== null}
 						<a n:href="Invoice:show, id => $invoice->getFixInvoice()->getId()">
 							<span class="badge badge-pill badge-danger" style="background-color: rgb(194,0,61);">Dobropis {$invoice->getFixInvoice()->getNumber()}</span>
 						</a>
@@ -500,7 +500,7 @@
 										<div class="col-6 text-right">
 											{$invoice->getCompanyCin()}
 											<br>
-                                            {$invoice->getCompanyTin()}
+											{if $invoice->isTaxEnabled()}{$invoice->getCompanyTin()}{else}&nbsp;{/if}
 										</div>
 									</div>
 								</div>
@@ -636,7 +636,7 @@
 													</div>
 												</div>
 											</div>
-											<div n:if="$invoice->isProforma() === false && $invoice->isPayDocument() === false"
+											<div n:if="($invoice->isTaxEnabled() || $invoice->isFix()) && $invoice->isProforma() === false && $invoice->isPayDocument() === false"
 													class="row">
 												<div class="col">
 													{if $invoice->isFix()}Datum uznání reklamace{else}Datum uskut. plnění{/if}
@@ -665,7 +665,7 @@
 														</div>
 													</div>
 												</div>
-											{elseif $invoice->isProforma() === false && $invoice->isPayDocument() === false && $invoice->getTotalPrice() !== 0 . 0}
+											{elseif $invoice->isProforma() === false && $invoice->isPayDocument() === false && $invoice->getTotalPrice() !== 0.0}
 												<div class="row">
 													<div class="col">
 														Datum splatnosti
@@ -693,21 +693,22 @@
 											<th style="white-space: nowrap; width: 1%;" class="border-top-0"></th>
 											<th style="white-space: nowrap; width: 1%;" class="border-top-0"></th>
 											<th class="border-top-0"></th>
-											<th n:if="$invoice->isProforma() === false"
+											<th n:if="$invoice->isTaxEnabled() && $invoice->isProforma() === false"
 													style="white-space: nowrap; width: 1%; font-weight: normal;"
 													class="border-top-0 text-gray">DPH
 											</th>
 											<th style="white-space: nowrap; width: 1%; font-weight: normal;"
 												class="border-top-0 text-gray">CENA ZA MJ
 											</th>
-											<th n:if="$invoice->isProforma() === false"
-													style="white-space: nowrap; width: 1%; font-weight: normal;"
+											{if $invoice->isTaxEnabled() && $invoice->isProforma() === false}
+											<th style="white-space: nowrap; width: 1%; font-weight: normal;"
 													class="border-top-0 text-gray">CELKEM BEZ DPH
 											</th>
-											<th n:if="$invoice->isProforma() === true"
-													style="white-space: nowrap; width: 1%; font-weight: normal;"
+											{else}
+											<th	style="white-space: nowrap; width: 1%; font-weight: normal;"
 													class="border-top-0 text-gray">CELKEM
 											</th>
+											{/if}
 										</tr>
 										</thead>
 										<tbody>
@@ -716,7 +717,7 @@
 												<td class="text-right">{$item->getQuantity()}</td>
 												<td>{$item->getUnit()->getShortcut()}</td>
 												<td>{$item->getDescription()}</td>
-												<td n:if="$invoice->isProforma() === false"
+												<td n:if="$invoice->isTaxEnabled() && $invoice->isProforma() === false"
 														style="white-space: nowrap; width: 1%;">{$item->getVat()} %
 												</td>
 												<td n:if="$invoice->isProforma() === false" class="text-right"
@@ -756,7 +757,7 @@
 												<td class="text-right">1</td>
 												<td>x</td>
 												<td>{$item->getSaleDescription()}</td>
-												<td n:if="$invoice->isProforma() === false"
+												<td n:if="$invoice->isTaxEnabled() && $invoice->isProforma() === false"
 														style="white-space: nowrap; width: 1%;"></td>
 												<td n:if="$invoice->isProforma() === false" class="text-right"
 																							style=" white-space: nowrap;">
@@ -782,7 +783,7 @@
 							</div>
 							<div class="row" style="font-size: 20px;">
 								<div n:class="pl-5, $invoice->getCurrency()->getCode() === 'CZK' ? col-6 : col-4">
-									<div n:if="$invoice->getTotalPrice() !== 0 . 0 && $invoice->isFix() === false"
+									<div n:if="$invoice->getTotalPrice() !== 0.0 && $invoice->isFix() === false"
 											style="width: 200px; height: 200px; padding: 10px; border: 1px solid #ccc;">
 										<img src="data:image/svg+xml;base64,{$invoice->getQRCode()}" alt="QR code"
 											 style="width: 100%; height: 100%;">
@@ -797,7 +798,7 @@
 										Přepočet proveden kurzem ČNB ze dne {$invoice->getRateDate()->format('d.m.Y')}
 										({$invoice->getRate()} Kč / {$invoice->getCurrency()->getCode()})
 									</p>
-									<table n:if="$invoice->isProforma() === false" class="table m-0">
+									<table n:if="$invoice->isTaxEnabled() && $invoice->isProforma() === false" class="table m-0">
 										<tr>
 											<td class="border-top-0 text-gray">Sazba</td>
 											<td class="border-top-0 text-gray text-right">Základ</td>
@@ -878,7 +879,7 @@
 											{MatiCore\Currency\Number::formatPrice($invoice->getTotalPriceDiff(), $invoice->getCurrency(), 2)|noescape}
 										</div>
 									</div>
-									<div n:if="$invoice->isPayDocument() === true"
+									<div n:if="$invoice->isPayDocument() === true || $invoice->isTaxEnabled() === false"
 												class="row" n:foreach="$invoice->getDepositInvoices() as $depositInvoice">
 										<div class="col">
 											<a n:href="Invoice:show, id => $depositInvoice->getId()">Záloha {$depositInvoice->getNumber()}</a>
@@ -915,9 +916,14 @@
 									<img src="{$invoice->getSignImage()}" alt="Podpis" style="max-width: 150px;">
 								</div>
 							</div>
-							<div n:if="$invoice->isProforma()" class="row mt-5">
+							<div n:if="$invoice->isTaxEnabled() === true && $invoice->isProforma()" class="row mt-5">
 								<div class="col">
 									<p>Výše uvedené ceny jsou včetně DPH.</p>
+								</div>
+							</div>
+							<div n:if="$invoice->isTaxEnabled() === false" class="row mt-5">
+								<div class="col">
+									<p>Nejsme plátci DPH.</p>
 								</div>
 							</div>
 							<div n:if="$templateData['description'] !== null" class="row">

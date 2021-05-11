@@ -246,6 +246,12 @@ class InvoiceCore
 	protected array|Collection $taxList;
 
 	/**
+	 * @var bool
+	 * @ORM\Column(type="boolean")
+	 */
+	protected bool $taxEnabled = false;
+
+	/**
 	 * Celkova castka
 	 *
 	 * @var float
@@ -1321,6 +1327,22 @@ class InvoiceCore
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isTaxEnabled(): bool
+	{
+		return $this->taxEnabled;
+	}
+
+	/**
+	 * @param bool $taxEnabled
+	 */
+	public function setTaxEnabled(bool $taxEnabled): void
+	{
+		$this->taxEnabled = $taxEnabled;
+	}
+
+	/**
 	 * @return InvoiceItem[]|Collection
 	 */
 	public function getItems(): array|Collection
@@ -1870,6 +1892,14 @@ class InvoiceCore
 	public function setDisableStatistics(bool $disableStatistics): void
 	{
 		$this->disableStatistics = $disableStatistics;
+	}
+
+	/**
+	 * @return FixInvoice|null
+	 */
+	public function getFixInvoice(): ?FixInvoice
+	{
+		return null;
 	}
 
 }

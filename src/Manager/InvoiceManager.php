@@ -20,6 +20,7 @@ use MatiCore\Invoice\Email\InvoiceEmail;
 use MatiCore\Invoice\Email\InvoiceFixEmail;
 use MatiCore\Invoice\Email\InvoicePayDocumentEmail;
 use MatiCore\User\BaseUser;
+use MatiCore\User\StorageIdentity;
 use Mpdf\MpdfException;
 use Mpdf\Output\Destination;
 use Nette\Application\LinkGenerator;
@@ -388,7 +389,12 @@ class InvoiceManager
 		$pd->setSignImage($this->signatureManager->getSignatureLink($invoice->getCreateUser()));
 
 		//Poznamky
-		$textBeforeItems = 'Vyúčtování DPH na základě přijetí zálohové platby č.: ' . $invoice->getVariableSymbol();
+		if ($invoice->isTaxEnabled()) {
+			$textBeforeItems = 'Vyúčtování DPH na základě přijetí zálohové platby č.: ' . $invoice->getVariableSymbol();
+		} else {
+			$textBeforeItems = 'Vyúčtování na základě přijetí zálohové platby č.: ' . $invoice->getVariableSymbol();
+		}
+
 		$pd->setTextBeforeItems($textBeforeItems);
 		$pd->setTextAfterItems($invoice->getTextAfterItems());
 
@@ -712,6 +718,14 @@ class InvoiceManager
 
 		/** @var BaseUser|null $user */
 		$user = $this->user->getIdentity();
+		if ($user instanceof StorageIdentity) {
+			$user = $user->getUser();
+		}
+
+		if (!$user instanceof BaseUser) {
+			$user = null;
+		}
+
 		$invoice->setCreateUser($user ?? $proforma->getCreateUser());
 		$invoice->setEditUser($user ?? $proforma->getCreateUser());
 		$invoice->setCreateDate(DateTime::from('NOW'));
@@ -777,6 +791,9 @@ class InvoiceManager
 		$textBeforeItems = 'Vystavení daňového dokladu na základě přijetí zálohové platby č.: ' . $proforma->getVariableSymbol();
 		$invoice->setTextBeforeItems($textBeforeItems);
 		$invoice->setTextAfterItems($proforma->getTextAfterItems());
+
+		//vypnuti/zapnuti DPH
+		$invoice->setTaxEnabled($proforma->isTaxEnabled());
 
 		//Persist
 		$this->entityManager->persist($invoice);

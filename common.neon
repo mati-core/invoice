@@ -76,6 +76,8 @@ parameters:
 			tin: 'CZ00000000'
 			logo: 'https://app-universe.cz/assets/img/logo_big.png'
 			url: 'https://app-universe.cz'
+			taxEnabled: false
+			taxDefault: 0
 			bank:
 				CZK:
 					bankAccountName: 'Your account name'

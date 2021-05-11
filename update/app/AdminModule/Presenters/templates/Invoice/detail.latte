@@ -26,7 +26,7 @@
 
 {block vueScripts}
 	<script src="{$basePath}/assets/cms/js/vue/components.js"></script>
-	<script src="{$basePath}/assets/cms/js/vue/invoiceVue.js?v2"></script>
+	<script src="{$basePath}/assets/cms/js/vue/invoiceVue.js?v3"></script>
 {/block}
 
 {block content}
@@ -99,7 +99,7 @@
 								</p>
 								<p>
 									IČ: {{ invoice.company.cin }}
-									<br>DIČ: {{ invoice.company.tin }}
+									<br><template v-if="invoice.taxEnabled === true">DIČ: {{ invoice.company.tin }}</template>
 								</p>
 							</div>
 							<div class="col-6">
@@ -221,7 +221,7 @@
 								</div>
 							</div>
 							<div class="col-2">
-								<div v-if="invoice.type !== 'proforma'" class="form-group">
+								<div v-if="invoice.type !== 'proforma' && invoice.taxEnabled === true" class="form-group">
 									<label for="">Datum uskut. plnění</label>
 									<input type="date" :value="invoice.dateTax"
 										   required pattern="\d{4}-\d{2}-\d{2}"
@@ -280,9 +280,9 @@
 										<th width="80">MJ</th>
 										<th>Popis</th>
 										<th width="80">Sleva %</th>
-										<th width="80">DPH %</th>
+										<th v-if="invoice.taxEnabled === true" width="80">DPH %</th>
 										<th width="120">Cena za MJ</th>
-										<th width="120">Cena bez DPH</th>
+										<th width="120">Cena<template v-if="invoice.taxEnabled === true"> bez DPH</template></th>
 									</tr>
 									</thead>
 									<tbody>
@@ -322,7 +322,7 @@
 														   class="form-control form-control-sm" value="0">
 												</div>
 											</td>
-											<td>
+											<td v-if="invoice.taxEnabled === true">
 												<div class="input-group input-group-sm">
 													<input type="text" v-model="item.taxString" v-on:keyup="updateData"
 														   class="form-control form-control-sm" value="21.0"
@@ -376,7 +376,7 @@
 													   :style="item.saleDescription.length < 1 ? 'border-color: red;' : ''">
 											</td>
 											<td></td>
-											<td></td>
+											<td v-if="invoice.taxEnabled === true"></td>
 											<td>
 												<div class="form-group m-0">
 													<div class="input-group input-group-sm">
@@ -408,7 +408,7 @@
 								</a>
 							</div>
 						</div>
-						<div class="row">
+						<div v-if="invoice.taxEnabled === true" class="row">
 							<div class="col-6 offset-6">
 								<p v-if="invoice.currency !== 'CZK'">
 									<small>
@@ -457,7 +457,7 @@
 								</div>
 							</div>
 							<div class="col-5 offset-1">
-								<div class="row">
+								<div v-if="invoice.taxEnabled === true" class="row">
 									<div class="col-6">
 										<h5>Celkem DPH</h5>
 									</div>
@@ -465,12 +465,23 @@
 										<h5>{{ invoice.totalTaxFormatted }}</h5>
 									</div>
 								</div>
-								<div class="row">
+								<div v-if="invoice.taxEnabled === true" class="row">
 									<div class="col-6">
 										<h5>Celkem s DPH</h5>
 									</div>
 									<div class="col-6 text-right">
 										<h5>{{ invoice.totalPriceFormatted }}</h5>
+									</div>
+								</div>
+								<div v-if="invoice.taxEnabled === false"  v-for="(d, index) in invoice.deposit" class="row">
+									<div class="col-6">
+										<button @click="removeDeposit(index)" class="pl-3 btn btn-xs btn-danger">
+											<i class="fas fa-trash fa-fw"></i>
+										</button>
+										<h5>{{ bText(d.number, 'Záloha ') }}</h5>
+									</div>
+									<div class="col-6 text-right">
+										<h5>{{ bText(d.itemPriceFormatted, '-') }}</h5>
 									</div>
 								</div>
 								<div v-if="invoice.priceDif != 0" class="row">

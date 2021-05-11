@@ -145,6 +145,7 @@ class InvoiceHelper
 				'totalPriceRounded' => 0.0,
 				'totalPriceRoundedFormated' => '0 Kč',
 				'defaultUnit' => $unit->getId(),
+				'defaultTax' => (float) $this->companyData['taxDefault'],
 				'textBeforeItems' => $invoice->getTextBeforeItems() ?? '',
 				'textAfterItems' => $invoice->getTextAfterItems() ?? '',
 				'company' => [
@@ -170,6 +171,7 @@ class InvoiceHelper
 				'items' => [],
 				'deposit' => [],
 				'taxList' => [],
+				'taxEnabled' => $invoice->isTaxEnabled(),
 			];
 
 			foreach ($invoice->getItems() as $item) {
@@ -298,6 +300,7 @@ class InvoiceHelper
 			'totalPriceRounded' => 0.0,
 			'totalPriceRoundedFormated' => '0 Kč',
 			'defaultUnit' => $unit->getId(),
+			'defaultTax' => (float) $this->companyData['taxDefault'],
 			'textBeforeItems' => '',
 			'textAfterItems' => '',
 			'company' => [
@@ -332,8 +335,8 @@ class InvoiceHelper
 					'sale' => 0,
 					'salePriceString' => 0,
 					'salePrice' => 0,
-					'taxString' => '21',
-					'tax' => 21.0,
+					'taxString' => (string) $this->companyData['taxDefault'],
+					'tax' => (float) $this->companyData['taxDefault'],
 					'priceString' => '0',
 					'price' => 0,
 					'buyPrice' => null,
@@ -348,6 +351,7 @@ class InvoiceHelper
 			],
 			'deposit' => [],
 			'taxList' => [],
+			'taxEnabled' => $this->companyData['taxEnabled'],
 		];
 	}
 
@@ -403,6 +407,7 @@ class InvoiceHelper
 				'totalPriceRounded' => 0.0,
 				'totalPriceRoundedFormated' => '0 Kč',
 				'defaultUnit' => $unit->getId(),
+				'defaultTax' => $this->companyData['taxDefault'],
 				'textBeforeItems' => $textBeforeItems,
 				'textAfterItems' => $textAfterItems,
 				'company' => [
@@ -428,6 +433,7 @@ class InvoiceHelper
 				'items' => [],
 				'deposit' => [],
 				'taxList' => [],
+				'taxEnabled' => $invoice->isTaxEnabled(),
 			];
 
 			foreach ($invoice->getItems() as $item) {
@@ -730,6 +736,9 @@ class InvoiceHelper
 		//Nastaveni celkove ceny
 		$invoice->setTotalPrice($totalPrice);
 		$invoice->setTotalTax($totalTax);
+
+		//Zapnuti DPH
+		$invoice->setTaxEnabled($invoiceData['taxEnabled']);
 
 		//Data
 		$invoice->setDate(DateTime::from($invoiceData['date']));

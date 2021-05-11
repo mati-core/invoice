@@ -94,8 +94,8 @@
 									<br>{{ invoice.company.zipCode }}
 								</p>
 								<p>
-									IČ: {{ invoice.company.ic }}
-									<br>DIČ: {{ invoice.company.dic }}
+									IČ: {{ invoice.company.cin }}
+									<br><template v-if="invoice.taxEnabled === true">DIČ: {{ invoice.company.tin }}</template>
 								</p>
 							</div>
 							<div class="col-6">
@@ -111,8 +111,8 @@
 									<br>{{ invoice.customer.zipCode }}
 								</p>
 								<p>
-									IČ: {{ invoice.customer.ic }}
-									<br>DIČ: {{ invoice.customer.dic }}
+									IČ: {{ invoice.customer.cin }}
+									<br>DIČ: {{ invoice.customer.tin }}
 								</p>
 							</div>
 						</div>
@@ -230,9 +230,9 @@
 										<th width="80">MJ</th>
 										<th>Popis</th>
 										<th width="80">Sleva %</th>
-										<th width="80">DPH %</th>
+										<th v-if="invoice.taxEnabled" width="80">DPH %</th>
 										<th width="120">Cena za MJ</th>
-										<th width="120">Cena bez DPH</th>
+										<th width="120">Cena<template v-if="invoice.taxEnabled"> bez DPH</template></th>
 									</tr>
 									</thead>
 									<tbody>
@@ -261,7 +261,7 @@
 														   class="form-control form-control-sm" value="0" disabled>
 												</div>
 											</td>
-											<td>
+											<td v-if="invoice.taxEnabled">
 												<div class="input-group input-group-sm">
 													<input type="text" v-model="item.taxString"
 														   class="form-control form-control-sm" value="21.0"
@@ -305,7 +305,7 @@
 													   disabled>
 											</td>
 											<td></td>
-											<td></td>
+											<td v-if="invoice.taxEnabled"></td>
 											<td>
 												<div class="form-group m-0">
 													<div class="input-group input-group-sm">
@@ -342,7 +342,7 @@
 										invoice.currencyData.rate}} Kč / {{ invoice.currencyData.code }})
 									</small>
 								</p>
-								<table class="table">
+								<table v-if="invoice.taxEnabled" class="table">
 									<thead>
 									<tr>
 										<th>Sazba</th>
@@ -378,7 +378,7 @@
 								</div>
 							</div>
 							<div class="col-5 offset-1">
-								<div class="row">
+								<div v-if="invoice.taxEnabled" class="row">
 									<div class="col-6">
 										<h5>Celkem DPH</h5>
 									</div>
@@ -386,7 +386,7 @@
 										<h5>{{ invoice.totalTaxFormatted }}</h5>
 									</div>
 								</div>
-								<div class="row">
+								<div v-if="invoice.taxEnabled" class="row">
 									<div class="col-6">
 										<h5>Celkem s DPH</h5>
 									</div>
@@ -444,16 +444,4 @@
 		</div>
 		<!-- /.modal-dialog -->
 	</div>
-{/block}
-
-{block scripts}
-	<script>
-		$(document).ready(function () {
-			$('.datepicker').datepicker({
-				format: 'yyyy-mm-dd',
-				autoclose: true,
-				language: 'cs',
-			});
-		});
-	</script>
 {/block}

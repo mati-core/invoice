@@ -33,6 +33,7 @@ let app = new Vue({
 			totalPriceRounded: 0.0,
 			totalPriceRoundedFormatted: '0 Kč',
 			defaultUnit: '',
+			defaultTax: 0.0,
 			textBeforeItems: '',
 			textAfterItems: '',
 			company: {
@@ -41,8 +42,8 @@ let app = new Vue({
 				address: '...',
 				city: '...',
 				zipCode: '...',
-				ic: '...',
-				dic: '...'
+				cin: '...',
+				tin: '...'
 			},
 			customer: {
 				id: null,
@@ -50,12 +51,13 @@ let app = new Vue({
 				address: '',
 				city: '',
 				zipCode: '',
-				ic: '',
-				dic: ''
+				cin: '',
+				tin: ''
 			},
 			items: [],
 			deposit: [],
 			taxList: [],
+			taxEnabled: false,
 		},
 		depositNumber: '',
 		showAlert: false,
@@ -65,10 +67,10 @@ let app = new Vue({
 	methods: {
 		updateDateDue: function () {
 			let val = this.invoice.dateDueSelect;
-			let invoiceDateTax = this.invoice.dateTax;
+			let invoiceDate = this.invoice.date;
 
 			if (val !== '') {
-				let date = new Date(Date.parse(invoiceDateTax + 'T00:00:00'));
+				let date = new Date(Date.parse(invoiceDate + 'T00:00:00'));
 				let increase = parseInt(this.invoice.dateDueSelect);
 				date.setTime(date.getTime() + (increase * 24 * 60 * 60 * 1000));
 				let m = date.getMonth() + 1;
@@ -80,6 +82,10 @@ let app = new Vue({
 					d = '0' + d;
 				}
 				this.invoice.dateDue = date.getFullYear() + '-' + m + '-' + d;
+
+				if(this.invoice.taxEnabled === false){
+					this.invoice.dateTax = invoiceDate;
+				}
 			}
 		},
 		setDate: function(e, item){
