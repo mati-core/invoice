@@ -716,7 +716,7 @@ class InvoiceManager
 		$invoice->addDepositInvoice($proforma);
 		$invoice->setCompany($proforma->getCompany());
 
-		/** @var BaseUser|null $user */
+		/** @var BaseUser|StorageIdentity|null $user */
 		$user = $this->user->getIdentity();
 		if ($user instanceof StorageIdentity) {
 			$user = $user->getUser();

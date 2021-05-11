@@ -88,6 +88,7 @@ let app = new Vue({
 		showAlert: false,
 		alertText: 'test',
 		alertType: 'alert-success',
+		saveBtnDisabled: false,
 	},
 	methods: {
 		setItemPosition: function (item, position) {
@@ -492,6 +493,7 @@ let app = new Vue({
 			return Math.round(price * 100) / 100;
 		},
 		save: function () {
+			this.saveBtnDisabled = true;
 			fetch('/api/v1/invoice/save', {
 				method: 'POST',
 				body: JSON.stringify(
@@ -518,9 +520,11 @@ let app = new Vue({
 
 						this.flashMsg(msg, 'alert-danger');
 					}
+					this.saveBtnDisabled = false;
 				})
 				.catch(error => {
 					console.log(error)
+					this.saveBtnDisabled = false;
 				});
 		},
 		flashMsg: function (msg, type) {

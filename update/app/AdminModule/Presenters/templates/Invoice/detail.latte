@@ -55,7 +55,7 @@
 						data-toggle="modal" data-target="#depositModal">
 					<i class="fas fa-cash-register"></i>&nbsp;Odečíst zálohu
 				</button>
-				<button @click="save" class="btn btn-success btn-sm">
+				<button @click="save" :disabled="saveBtnDisabled" class="btn btn-success btn-sm">
 					<i class="fas fa-save"></i>&nbsp;Uložit
 				</button>
 			</div>
