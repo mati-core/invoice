@@ -27,7 +27,7 @@ class Company
 
 	/**
 	 * @var string
-	 * @ORM\Column(type="string", unique=true)
+	 * @ORM\Column(type="string")
 	 */
 	private string $name;
 

@@ -414,8 +414,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			->setRequired('Zadejte název společnosti.');
 
 		$form->addText('ic', 'IČ')
-			->setDefaultValue($this->aresData->in ?? '')
-			->setRequired('Zadejte IČ společnosti.');
+			->setDefaultValue($this->aresData->in ?? '');
 
 		$form->addText('dic', 'DIČ')
 			->setDefaultValue($this->aresData->tin ?? '');
@@ -463,9 +462,11 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 */
 		$form->onValidate[] = function (Form $form, ArrayHash $value): void {
 			try {
-				$this->companyManager->get()->getCompanyByCIN($value->ic);
+				if($value->ic !== null) {
+					$this->companyManager->get()->getCompanyByCIN($value->ic);
 
-				$form->addError('Tato firma je již v systému zavedena.');
+					$form->addError('Tato firma je již v systému zavedena.');
+				}
 			} catch (NoResultException | NonUniqueResultException) {
 
 			}
@@ -479,8 +480,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			try {
 				$invoiceAddress = new Address($values->street, $values->city);
 				$invoiceAddress->setCompanyName($values->name);
-				$invoiceAddress->setCin($values->ic);
-				$invoiceAddress->setTin($values->dic);
+				$invoiceAddress->setCin($values->ic === '' ? null : $values->ic);
+				$invoiceAddress->setTin($values->dic === '' ? null : $values->dic);
 				$invoiceAddress->setZipCode($values->zipCode);
 				$invoiceAddress->setCountry($this->countryManager->get()->getCountryById($values->country));
 
@@ -526,8 +527,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			->setRequired('Zadejte název společnosti.');
 
 		$form->addText('cin', 'IČ')
-			->setDefaultValue($this->editedCompany->getInvoiceAddress()->getCin())
-			->setRequired('Zadejte IČ společnosti.');
+			->setDefaultValue($this->editedCompany->getInvoiceAddress()->getCin() ?? '');
 
 		$form->addText('tin', 'DIČ')
 			->setDefaultValue($this->editedCompany->getInvoiceAddress()->getTin() ?? '');
@@ -582,8 +582,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$invoiceAddress->setStreet($values->street);
 				$invoiceAddress->setCity($values->city);
 				$invoiceAddress->setCompanyName($values->name);
-				$invoiceAddress->setCin($values->cin);
-				$invoiceAddress->setTin($values->tin);
+				$invoiceAddress->setCin($values->ic === '' ? null : $values->ic);
+				$invoiceAddress->setTin($values->dic === '' ? null : $values->dic);
 				$invoiceAddress->setZipCode($values->zipCode);
 				$invoiceAddress->setCountry($this->countryManager->get()->getCountryById($values->country));
 

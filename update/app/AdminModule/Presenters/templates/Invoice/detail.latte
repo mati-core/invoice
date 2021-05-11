@@ -26,7 +26,7 @@
 
 {block vueScripts}
 	<script src="{$basePath}/assets/cms/js/vue/components.js"></script>
-	<script src="{$basePath}/assets/cms/js/vue/invoiceVue.js?v1"></script>
+	<script src="{$basePath}/assets/cms/js/vue/invoiceVue.js?v2"></script>
 {/block}
 
 {block content}
@@ -214,6 +214,7 @@
 								<div class="form-group">
 									<label for="">Datum vystavení</label>
 									<input type="date" v-model="invoice.date"
+										   required pattern="\d{4}-\d{2}-\d{2}"
 										   onchange="app.updateDateDue(null, this)"
 										   id="datepicker-date"
 										   class="form-control form-control-sm">
@@ -222,7 +223,8 @@
 							<div class="col-2">
 								<div v-if="invoice.type !== 'proforma'" class="form-group">
 									<label for="">Datum uskut. plnění</label>
-									<input type="text" :value="invoice.dateTax"
+									<input type="date" :value="invoice.dateTax"
+										   required pattern="\d{4}-\d{2}-\d{2}"
 										   id="datepicker-date-tax"
 										   onchange="app.setDateTax(null, this)"
 										   :disabled="invoice.id !== null && invoice.id !== ''"
@@ -232,8 +234,7 @@
 							<div class="col-2">
 								<div class="form-group">
 									<label for="">Splatnost</label>
-									<select type="text"
-											v-model="invoice.dateDueSelect"
+									<select v-model="invoice.dateDueSelect"
 											@change="updateDateDue"
 											class="form-control form-control-sm">
 										<option value="0">0 dní</option>
@@ -248,7 +249,8 @@
 							<div class="col-2">
 								<div class="form-group">
 									<label for="">Datum splatnosti</label>
-									<input type="text"
+									<input type="date"
+										   required pattern="\d{4}-\d{2}-\d{2}"
 										   :value="invoice.dateDue"
 										   id="datepicker-date-due"
 										   onchange="app.setDateDue(null, this)"

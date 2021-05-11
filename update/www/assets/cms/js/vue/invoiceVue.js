@@ -17,9 +17,9 @@ let app = new Vue({
 				rateDate: '???',
 			},
 			payMethod: 'bank',
-			date: '2020-01-01',
-			dateTax: '2020-01-01',
-			dateDue: '2020-01-14',
+			date: '2021-01-01',
+			dateTax: '2021-01-01',
+			dateDue: '2021-01-14',
 			dateDueSelect: '14',
 			priceDif: 0.0,
 			priceDifFormatted: '0 Kč',
@@ -200,10 +200,10 @@ let app = new Vue({
 		},
 		updateDateDue: function () {
 			let val = this.invoice.dateDueSelect;
-			let invoiceDateTax = this.invoice.dateTax;
+			let invoiceDate = this.invoice.date;
 
 			if (val !== '') {
-				let date = new Date(Date.parse(invoiceDateTax + 'T00:00:00'));
+				let date = new Date(Date.parse(invoiceDate + 'T00:00:00'));
 				let increase = parseInt(this.invoice.dateDueSelect);
 				date.setTime(date.getTime() + (increase * 24 * 60 * 60 * 1000));
 				let m = date.getMonth() + 1;
