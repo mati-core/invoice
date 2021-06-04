@@ -36,7 +36,7 @@ class ExpenseHistory
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
 	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
 	 */
-	private BaseUser|null $user;
+	private BaseUser|null $user = null;
 
 	/**
 	 * @var string

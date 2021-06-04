@@ -23,13 +23,13 @@ class ExpenseInvoice extends Expense
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierInvoiceNumber;
+	protected string|null $supplierInvoiceNumber = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $variableSymbol;
+	protected string|null $variableSymbol = null;
 
 	/**
 	 * @var string
@@ -41,31 +41,31 @@ class ExpenseInvoice extends Expense
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierCin;
+	protected string|null $supplierCin = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierTin;
+	protected string|null $supplierTin = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierStreet;
+	protected string|null $supplierStreet = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierCity;
+	protected string|null $supplierCity = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierZipCode;
+	protected string|null $supplierZipCode = null;
 
 	/**
 	 * @var Country
@@ -78,19 +78,19 @@ class ExpenseInvoice extends Expense
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierBankAccount;
+	protected string|null $supplierBankAccount = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierIBAN;
+	protected string|null $supplierIBAN = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $supplierSWIFT;
+	protected string|null $supplierSWIFT = null;
 
 	/**
 	 * @var ExpenseInvoiceItem[]|Collection
@@ -103,7 +103,7 @@ class ExpenseInvoice extends Expense
 	 * @var \DateTime|null
 	 * @ORM\Column(type="date", nullable=true)
 	 */
-	protected \DateTime|null $datePrint;
+	protected \DateTime|null $datePrint = null;
 
 	/**
 	 * @var int
@@ -121,7 +121,7 @@ class ExpenseInvoice extends Expense
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $productCode;
+	protected string|null $productCode = null;
 
 	/**
 	 * ExpenseInvoice constructor.

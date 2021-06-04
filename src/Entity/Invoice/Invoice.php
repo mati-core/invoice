@@ -20,14 +20,14 @@ class Invoice extends InvoiceCore
 	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoiceProforma", mappedBy="invoice")
 	 * @ORM\JoinColumn(name="proforma_id", referencedColumnName="id", nullable=true)
 	 */
-	private InvoiceProforma|null $proforma;
+	private InvoiceProforma|null $proforma = null;
 
 	/**
 	 * @var FixInvoice|null
 	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\FixInvoice", mappedBy="invoice")
 	 * @ORM\JoinColumn(name="fixing_invoice_id", referencedColumnName="id", nullable=true)
 	 */
-	private FixInvoice|null $fixInvoice;
+	private FixInvoice|null $fixInvoice = null;
 
 	/**
 	 * @return FixInvoice|null

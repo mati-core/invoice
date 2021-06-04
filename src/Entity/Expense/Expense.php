@@ -37,7 +37,7 @@ class Expense
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $category;
+	protected string|null $category = null;
 
 	/**
 	 * @var string
@@ -80,7 +80,7 @@ class Expense
 	 * @var \DateTime|null
 	 * @ORM\Column(type="date", nullable=true)
 	 */
-	protected \DateTime|null $dueDate;
+	protected \DateTime|null $dueDate = null;
 
 	/**
 	 * @var bool
@@ -92,13 +92,13 @@ class Expense
 	 * @var string|null
 	 * @ORM\Column(type="string", nullable=true)
 	 */
-	protected string|null $payMethod;
+	protected string|null $payMethod = null;
 
 	/**
 	 * @var \DateTime|null
 	 * @ORM\Column(type="date", nullable=true)
 	 */
-	protected \DateTime|null $payDate;
+	protected \DateTime|null $payDate = null;
 
 	/**
 	 * @var bool
@@ -117,13 +117,13 @@ class Expense
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
 	 * @ORM\JoinColumn(name="create_user_id", referencedColumnName="id", nullable=true)
 	 */
-	protected BaseUser|null $createUser;
+	protected BaseUser|null $createUser = null;
 
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="text", nullable=true)
 	 */
-	protected string|null $note;
+	protected string|null $note = null;
 
 	/**
 	 * @var bool

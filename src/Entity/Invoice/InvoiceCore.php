@@ -56,7 +56,7 @@ class InvoiceCore
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company")
 	 * @ORM\JoinColumn(name="company_id", referencedColumnName="id", nullable=true)
 	 */
-	protected Company|null $company;
+	protected Company|null $company = null;
 
 	/**
 	 * Relace na pobocku spolecnosti
@@ -65,7 +65,7 @@ class InvoiceCore
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock")
 	 * @ORM\JoinColumn(name="company_stock_id", referencedColumnName="id", nullable=true)
 	 */
-	protected CompanyStock|null $companyStock;
+	protected CompanyStock|null $companyStock = null;
 
 	/**
 	 * Cislo faktury
