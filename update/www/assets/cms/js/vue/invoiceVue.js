@@ -220,7 +220,7 @@ let app = new Vue({
 				this.invoice.dateDue = date.getFullYear() + '-' + m + '-' + d;
 			}
 
-			if(this.invoice.taxEnabled === false){
+			if (this.invoice.taxEnabled === false) {
 				this.invoice.dateTax = invoiceDate;
 			}
 
@@ -230,7 +230,7 @@ let app = new Vue({
 			if (item !== undefined) {
 				this.invoice.date = item.value;
 
-				if(this.invoice.taxEnabled === false){
+				if (this.invoice.taxEnabled === false) {
 					this.setDateTax(e, item);
 				}
 			}
@@ -267,6 +267,10 @@ let app = new Vue({
 				item.sale = Math.round(parseFloat(item.saleString.replace(',', '.')));
 				item.saleString = item.sale.toString();
 
+				if(item.saleString === 'NaN' || item.saleString === 'nan'){
+					item.sale = 0;
+					item.saleString = '';
+				}
 
 				let price = parseFloat(item.count) * parseFloat(item.price);
 				let tax = parseFloat(item.tax);
@@ -279,7 +283,9 @@ let app = new Vue({
 					item.salePriceString = item.salePrice.toString();
 				} else {
 					item.salePrice = 0;
-					item.salePriceString = '0';
+					if (item.salePriceString !== '') {
+						item.salePriceString = '0';
+					}
 				}
 
 				let exists = false;
