@@ -51,7 +51,8 @@ let app = new Vue({
 				city: '',
 				zipCode: '',
 				cin: '',
-				tin: ''
+				tin: '',
+				depositList: [],
 			},
 			items: [
 				{
@@ -163,6 +164,7 @@ let app = new Vue({
 
 						this.flashMsg(msg, 'alert-danger');
 					}
+					this.$forceUpdate();
 				})
 				.catch(error => {
 					console.log(error)
@@ -196,6 +198,7 @@ let app = new Vue({
 
 						this.flashMsg(msg, 'alert-danger');
 					}
+					this.$forceUpdate();
 				})
 				.catch(error => {
 					console.log(error)
@@ -267,7 +270,7 @@ let app = new Vue({
 				item.sale = Math.round(parseFloat(item.saleString.replace(',', '.')));
 				item.saleString = item.sale.toString();
 
-				if(item.saleString === 'NaN' || item.saleString === 'nan'){
+				if (item.saleString === 'NaN' || item.saleString === 'nan') {
 					item.sale = 0;
 					item.saleString = '';
 				}
@@ -415,6 +418,12 @@ let app = new Vue({
 				.catch(error => {
 					console.log(error)
 				});
+		},
+		addDepositFrom: function (number) {
+			this.depositNumber = number;
+			this.addDeposit();
+
+			return false;
 		},
 		addDeposit: function () {
 			fetch('/api/v1/invoice/depositInvoice', {

@@ -569,9 +569,28 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<div class="form-group">
-						<input v-model="depositNumber" type="text" class="form-control form-control-sm"
-							   placeholder="Číslo faktury">
+					<div class="row pb-3">
+						<div class="col">
+							<table class="table table-hover">
+								<tr v-for="(depositInvoice, index) in invoice.customer.depositList">
+									<td>
+										<a href="#" v-on:click="addDepositFrom(depositInvoice.number)">{{ depositInvoice.number }}</a>
+									</td>
+									<td class="text-right" v-html="depositInvoice.price"></td>
+									<td>
+										<button v-on:click="addDepositFrom(depositInvoice.number)" class="btn btn-xs btn-outline-info">Vybrat</button>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<div class="form-group">
+								<input v-model="depositNumber" type="text" class="form-control form-control-sm"
+									   placeholder="Číslo faktury">
+							</div>
+						</div>
 					</div>
 				</div>
 				<div class="modal-footer justify-content-between">

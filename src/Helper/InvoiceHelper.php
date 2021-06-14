@@ -8,9 +8,11 @@ namespace MatiCore\Invoice;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Address\CountryManagerAccessor;
+use MatiCore\Company\Company;
 use MatiCore\Company\CompanyManagerAccessor;
 use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManagerAccessor;
@@ -167,6 +169,7 @@ class InvoiceHelper
 					'country' => $invoice->getCustomerCountry()->getIsoCode(),
 					'cin' => $invoice->getCustomerCin() ?? '',
 					'tin' => $invoice->getCustomerTin() ?? '',
+					'depositList' => [],
 				],
 				'items' => [],
 				'deposit' => [],
@@ -322,6 +325,7 @@ class InvoiceHelper
 				'country' => 'CZE',
 				'cin' => '',
 				'tin' => '',
+				'depositList' => [],
 			],
 			'items' => [
 				[
@@ -429,6 +433,7 @@ class InvoiceHelper
 					'country' => $invoice->getCustomerCountry()->getIsoCode(),
 					'cin' => $invoice->getCustomerCin() ?? '',
 					'tin' => $invoice->getCustomerTin() ?? '',
+					'depositList' => [],
 				],
 				'items' => [],
 				'deposit' => [],
@@ -954,4 +959,32 @@ class InvoiceHelper
 		return $invoiceData;
 	}
 
+	/**
+	 * @param Company $company
+	 * @return array
+	 */
+	public function getDepositList(Company $company): array
+	{
+		/** @var InvoiceProforma[]|Collection $invoices */
+		$invoices = $this->entityManager->getRepository(InvoiceProforma::class)
+				->createQueryBuilder('proforma')
+				->select('proforma')
+				->where('proforma.company = :companyId')
+				->setParameter('companyId', $company->getId())
+				->andWhere('proforma.invoice IS NULL')
+				->andWhere('proforma.payDate IS NOT NULL')
+				->getQuery()
+				->getResult() ?? [];
+
+		$ret = [];
+
+		foreach ($invoices as $invoice) {
+			$ret[] = [
+				'number' => $invoice->getNumber(),
+				'price' => Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency()),
+			];
+		}
+
+		return $ret;
+	}
 }

@@ -84,7 +84,7 @@ class InvoiceEndpoint extends BaseEndpoint
 			$this->sendOk([
 				'invoice' => $invoiceData,
 			]);
-		} catch (EntityManagerException|UnitException $e) {
+		} catch (EntityManagerException | UnitException $e) {
 			$this->sendError($e->getMessage());
 		}
 	}
@@ -124,6 +124,8 @@ class InvoiceEndpoint extends BaseEndpoint
 				$dueSelect = '';
 			}
 
+			$depositList = $this->invoiceHelper->getDepositList($company);
+
 			$this->sendOk([
 				'customer' => [
 					'id' => $company->getId(),
@@ -134,6 +136,7 @@ class InvoiceEndpoint extends BaseEndpoint
 					'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
 					'cin' => $company->getInvoiceAddress()->getCin(),
 					'tin' => $company->getInvoiceAddress()->getTin(),
+					'depositList' => $depositList,
 				],
 				'currency' => $company->getCurrency()->getCode(),
 				'date' => $now->format('Y-m-d'),
@@ -152,6 +155,7 @@ class InvoiceEndpoint extends BaseEndpoint
 					'country' => 'CZE',
 					'cin' => '',
 					'tin' => '',
+					'depositList' => [],
 				],
 				'currency' => 'CZK',
 			]);
@@ -176,6 +180,8 @@ class InvoiceEndpoint extends BaseEndpoint
 				$dueSelect = '';
 			}
 
+			$depositList = $this->invoiceHelper->getDepositList($company);
+
 			$this->sendOk([
 				'customer' => [
 					'id' => $company->getId(),
@@ -186,6 +192,7 @@ class InvoiceEndpoint extends BaseEndpoint
 					'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
 					'cin' => $company->getInvoiceAddress()->getCin(),
 					'tin' => $company->getInvoiceAddress()->getTin(),
+					'depositList' => $depositList,
 				],
 				'currency' => $company->getCurrency()->getCode(),
 				'date' => $now->format('Y-m-d'),
@@ -207,6 +214,7 @@ class InvoiceEndpoint extends BaseEndpoint
 						'country' => 'CZE',
 						'cin' => $aresData->in,
 						'tin' => $aresData->tin,
+						'depositList' => [],
 					],
 					'currency' => 'CZK',
 					'date' => $now->format('Y-m-d'),
@@ -225,6 +233,7 @@ class InvoiceEndpoint extends BaseEndpoint
 						'country' => 'CZE',
 						'cin' => '',
 						'tin' => '',
+						'depositList' => [],
 					],
 					'currency' => 'CZK',
 					'date' => $now->format('Y-m-d'),
