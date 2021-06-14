@@ -1,0 +1,156 @@
+{block title}
+    Faktury - export
+{/block}
+
+{block pageTitle}
+    <h1>Faktury - export</h1>
+{/block}
+
+{block breadcrumb}
+    <ol class="breadcrumb float-sm-right">
+        <li class="breadcrumb-item">
+            <a n:href="Homepage:default">
+                <i class="fas fa-tachometer-alt"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a n:href="Invoice:default">
+                <i class="fas fa-file-dollar"></i>&nbsp;Faktury
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <i class="fas fa-file-pdf"></i>&nbsp;Export
+        </li>
+    </ol>
+{/block}
+
+{block vueScripts}
+    <script src="{$basePath}/cms/dist/js/vue/components.js"></script>
+    <script src="{$basePath}/js/initVue.js"></script>
+{/block}
+
+{block modals}
+    <form n:name="exportInvoicesForm">
+        <div class="modal modal-danger fade in" id="export-invoices">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Export faktur za období</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Vyberte počáteční a koncové datum pro export faktur.</p>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input n:name="dateStart" type="date" class="form-control datepicker">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input n:name="dateStop" type="date" class="form-control datepicker">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Zrušit</button>
+                        <button class="btn btn-success">
+                            <i class="fas fa-file-pdf"></i>&nbsp;Exportovat
+                        </button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </form>
+
+    <form n:name="exportInvoiceListForm">
+        <div class="modal modal-danger fade in" id="export-invoiceList">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Export faktur za období</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Vyberte počáteční a koncové datum pro export faktur.</p>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input n:name="dateStart" type="date" class="form-control datepicker">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input n:name="dateStop" type="date" class="form-control datepicker">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Zrušit</button>
+                        <button class="btn btn-success">
+                            <i class="fas fa-file-pdf"></i>&nbsp;Exportovat
+                        </button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </form>
+{/block}
+
+{block content}
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+
+        <div class="row">
+            <div class="col-12">
+
+                <!-- Default box -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Export faktur</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover">
+                            <tr>
+                                <td>
+                                    Faktury za dané období
+                                </td>
+                                <td class="text-right">
+                                    <a href="#" class="btn btn-success btn-xs"
+                                       data-toggle="modal"
+                                       data-target="#export-invoices">Vybrat</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Seznam faktur za dané období
+                                </td>
+                                <td class="text-right">
+                                    <a href="#" class="btn btn-success btn-xs"
+                                       data-toggle="modal"
+                                       data-target="#export-invoiceList">Vybrat</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+
+            </div>
+        </div>
+        <!-- /.row -->
+
+    </div>
+    <!-- /.container-fluid -->
+{/block}

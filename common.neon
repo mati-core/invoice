@@ -185,9 +185,13 @@ parameters:
 				style: null
 			summary:
 				filename: 'prehled_faktur_'
+				template: null
+				style: null
 			intrastat:
 				filename: 'intrastat_'
 				title: 'Your Company - Intrastat '
+				template: null
+				style: null
 
 orm.annotations:
 	paths:

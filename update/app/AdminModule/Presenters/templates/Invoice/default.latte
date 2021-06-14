@@ -3,7 +3,7 @@
 {/block}
 
 {block pageTitle}
-	Faktury
+	<h1>Faktury</h1>
 {/block}
 
 {block breadcrumb}
@@ -30,6 +30,9 @@
 
 		<div class="row">
 			<div class="col-12 mb-3 text-right">
+				<a n:href="exportList" class="btn btn-sm btn-outline-success">
+					<i class="fas fa-file-pdf"></i>&nbsp;Export
+				</a>
 				<a n:href="detail" class="btn btn-sm btn-primary">
 					<i class="fas fa-plus"></i>&nbsp;Nová faktura
 				</a>

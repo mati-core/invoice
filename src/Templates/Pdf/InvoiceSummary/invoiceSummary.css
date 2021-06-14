@@ -2,10 +2,6 @@
 	body {
 		font-family: Arial, SansSerif, serif;
 		font-size: 12px;
-		background-image: url("/img/pdf/company_logo_small.png");
-		background-size: auto;
-		background-repeat: no-repeat;
-		background-position: top left;
 	}
 
 	h1 {

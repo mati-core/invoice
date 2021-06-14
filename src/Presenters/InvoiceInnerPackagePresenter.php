@@ -46,6 +46,7 @@ use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use Tracy\Debugger;
 use Ublaboo\DataGrid\Exception\DataGridException;
+use function Clue\StreamFilter\fun;
 
 /**
  * Class InvoicePresenter
@@ -213,8 +214,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			$invoice = $this->invoiceManager->get()->getInvoiceById($id);
 
 			$this->exportManager->get()->exportInvoiceToPDF($invoice);
-
-			return;
 		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Faktura nebyla nalezena.', 'error');
 			$this->redirect('default');
@@ -1526,6 +1525,76 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	public function isSettingAccept(): bool
 	{
 		return $this->invoiceManager->get()->getAcceptSetting() !== null;
+	}
+
+	/**
+	 * @return Form
+	 */
+	public function createComponentExportInvoicesForm(): Form
+	{
+		$form = $this->formFactory->create();
+
+		$form->addDate('dateStart', 'dateStart');
+		$form->addDate('dateStop', 'dateStop');
+
+		$form->addSubmit('submit', 'Export');
+
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+			/** @var \DateTime $dateStart */
+			$dateStart = $values->dateStart;
+			if(!$dateStart instanceof \DateTime){
+				$dateStart = DateTime::from('NOW');
+			}
+
+			/** @var \DateTime $dateStop */
+			$dateStop = $values->dateStop;
+			if(!$dateStop instanceof \DateTime){
+				$dateStop = DateTime::from('NOW');
+			}
+
+			$invoices = $this->invoiceManager->get()->getInvoicesBetweenDates($dateStart, $dateStop);
+
+			$this->exportManager->get()->exportInvoicesToPDF($invoices);
+
+			die;
+		};
+
+		return $form;
+	}
+
+	/**
+	 * @return Form
+	 */
+	public function createComponentExportInvoiceListForm(): Form
+	{
+		$form = $this->formFactory->create();
+
+		$form->addDate('dateStart', 'dateStart');
+		$form->addDate('dateStop', 'dateStop');
+
+		$form->addSubmit('submit', 'Export');
+
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+			/** @var \DateTime $dateStart */
+			$dateStart = $values->dateStart;
+			if(!$dateStart instanceof \DateTime){
+				$dateStart = DateTime::from('NOW');
+			}
+
+			/** @var \DateTime $dateStop */
+			$dateStop = $values->dateStop;
+			if(!$dateStop instanceof \DateTime){
+				$dateStop = DateTime::from('NOW');
+			}
+
+			$invoices = $this->invoiceManager->get()->getInvoicesBetweenDates($dateStart, $dateStop);
+
+			$this->exportManager->get()->exportInvoiceSummaryToPDF($invoices);
+
+			die;
+		};
+
+		return $form;
 	}
 
 }
