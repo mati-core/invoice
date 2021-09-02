@@ -346,7 +346,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$company = $this->companyManager->get()->getCompanyById($id);
 			$company->setBlackList(!$company->isBlackList());
 
-			$this->entityManager->flush($company);
+			$this->entityManager->getUnitOfWork()->commit($company);
 
 			$this->redirect('detail', ['id' => $company->getId()]);
 		} catch (NonUniqueResultException | NoResultException) {
@@ -831,7 +831,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$contact->setSendOrder($values->sendOrder);
 			$contact->setSendMarketing($values->sendMarketing);
 
-			$this->entityManager->persist($contact)->flush($contact);
+			$this->entityManager->persist($contact)->getUnitOfWork()->commit($contact);
 
 			$this->flashMessage('Kontakt byl úspěšně vytvořen.', 'success');
 
@@ -924,7 +924,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->editedContact->setSendOrder($values->sendOrder);
 			$this->editedContact->setSendMarketing($values->sendMarketing);
 
-			$this->entityManager->persist($this->editedContact)->flush($this->editedContact);
+			$this->entityManager->persist($this->editedContact)->getUnitOfWork()->commit($this->editedContact);
 
 			$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 
@@ -988,7 +988,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
 			try {
 				$this->editedCompany->setNote($values->note);
-				$this->entityManager->flush($this->editedCompany);
+				$this->entityManager->getUnitOfWork()->commit($this->editedCompany);
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 			} catch (EntityManagerException $e) {
 				Debugger::log($e);
@@ -1020,7 +1020,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
 			try {
 				$this->editedStock->setNote($values->note);
-				$this->entityManager->flush($this->editedStock);
+				$this->entityManager->getUnitOfWork()->commit($this->editedStock);
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 			} catch (EntityManagerException $e) {
 				Debugger::log($e);

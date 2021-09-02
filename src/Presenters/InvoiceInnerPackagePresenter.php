@@ -374,7 +374,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				}
 			}
 
-			$this->entityManager->flush($entities);
+			$this->entityManager->getUnitOfWork()->commit($entities);
 
 			if ($sendEmail === true) {
 				$status = $this->invoiceManager->get()->sendEmailToCompany($invoice);
@@ -1215,7 +1215,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			$bm = $this->bankMovementManager->get()->getById($id);
 			$bm->setStatus(BankMovement::STATUS_DONE);
 
-			$this->entityManager->flush($bm);
+			$this->entityManager->getUnitOfWork()->commit($bm);
 
 			$this->flashMessage('Stav bankovního pohybu byl změněn na ' . BankMovementStatus::getName(BankMovement::STATUS_DONE) . '.', 'success');
 			$this->redirect('Invoice:detailBankMovement', [

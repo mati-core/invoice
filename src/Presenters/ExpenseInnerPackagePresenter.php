@@ -455,7 +455,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 		try {
 			$expense = $this->expenseManager->get()->getExpenseById($id);
 			$expense->setDeleted(true);
-			$this->entityManager->flush($expense);
+			$this->entityManager->getUnitOfWork()->commit($expense);
 
 			$this->flashMessage('Náklad byl odstraněn.');
 		} catch (NoResultException | NonUniqueResultException) {

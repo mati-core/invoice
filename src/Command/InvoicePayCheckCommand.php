@@ -364,7 +364,7 @@ class InvoicePayCheckCommand extends Command
 			$bm->setConstantSymbol($data['constantSymbol'] ?? null);
 			$bm->setMessage($data['message'] ?? null);
 
-			$this->entityManager->persist($bm)->flush($bm);
+			$this->entityManager->persist($bm)->getUnitOfWork()->commit($bm);
 
 			$this->processBankMovement($bm);
 		}
@@ -431,7 +431,7 @@ class InvoicePayCheckCommand extends Command
 			$bm->setStatus(BankMovement::STATUS_SYSTEM_ERROR);
 		}
 
-		$this->entityManager->flush($bm);
+		$this->entityManager->getUnitOfWork()->commit($bm);
 	}
 
 	/**

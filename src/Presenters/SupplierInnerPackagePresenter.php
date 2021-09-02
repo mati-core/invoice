@@ -108,7 +108,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$supplier = $this->supplierManager->get()->getSupplierById($id);
 			$supplier->setActive(!$supplier->isActive());
 
-			$this->entityManager->flush($supplier);
+			$this->entityManager->getUnitOfWork()->commit($supplier);
 		} catch (NonUniqueResultException|NoResultException $e) {
 			$this->flashMessage('Požadovaný dodavatel neexistuje.', 'error');
 		} catch (EntityManagerException $e) {
@@ -174,7 +174,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 						: $values->deliveryCompany
 				);
 
-				$this->entityManager->flush($supplier);
+				$this->entityManager->getUnitOfWork()->commit($supplier);
 
 				$this->flashMessage('Dodavatel ' . $supplier->getName() . ' byl úspěšně přidán do seznamu.', 'success');
 

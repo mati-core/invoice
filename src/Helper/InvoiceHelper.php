@@ -766,7 +766,7 @@ class InvoiceHelper
 
 		//Persistnuti faktury
 		$this->entityManager->persist($invoice);
-		$this->entityManager->flush($invoice);
+		$this->entityManager->getUnitOfWork()->commit($invoice);
 
 		//Historie faktury
 		$invoiceHistory = new InvoiceHistory($invoice, $changeDescription);

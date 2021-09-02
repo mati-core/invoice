@@ -290,7 +290,7 @@ class InvoiceManager
 			}
 		}
 
-		$this->entityManager->flush($entities);
+		$this->entityManager->getUnitOfWork()->commit($entities);
 	}
 
 	/**
