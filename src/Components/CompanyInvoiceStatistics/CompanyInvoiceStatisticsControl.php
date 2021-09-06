@@ -55,18 +55,18 @@ class CompanyInvoiceStatisticsControl extends Control
 
 		foreach ($invoices as $invoice) {
 			if (!$invoice instanceof InvoicePayDocument) {
-				$invoicesPrice += $invoice->getTotalPrice() * $invoice->getRate();
+				$invoicesPrice += $invoice->getTotalPrice();
 				$invoicesCount++;
 
 				if ($invoice->isPaid()) {
-					$invoicesPaidPrice += $invoice->getTotalPrice() * $invoice->getRate();
+					$invoicesPaidPrice += $invoice->getTotalPrice();
 					$invoicesPaidCount++;
 				} else {
-					$invoicesActivePrice += $invoice->getTotalPrice() * $invoice->getRate();
+					$invoicesActivePrice += $invoice->getTotalPrice();
 					$invoicesActiveCount++;
 
 					if ($now > $invoice->getDueDate()) {
-						$invoicesOverduePrice += $invoice->getTotalPrice() * $invoice->getRate();
+						$invoicesOverduePrice += $invoice->getTotalPrice();
 						$invoicesOverdueCount++;
 					}
 				}

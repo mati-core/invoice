@@ -582,8 +582,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$invoiceAddress->setStreet($values->street);
 				$invoiceAddress->setCity($values->city);
 				$invoiceAddress->setCompanyName($values->name);
-				$invoiceAddress->setCin($values->ic === '' ? null : $values->ic);
-				$invoiceAddress->setTin($values->dic === '' ? null : $values->dic);
+				$invoiceAddress->setCin($values->in === '' ? null : $values->in);
+				$invoiceAddress->setTin($values->tin === '' ? null : $values->tin);
 				$invoiceAddress->setZipCode($values->zipCode);
 				$invoiceAddress->setCountry($this->countryManager->get()->getCountryById($values->country));
 
