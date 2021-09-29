@@ -11,30 +11,17 @@ use MatiCore\Invoice\InvoicePayDocument;
 use Nette\Application\UI\Control;
 use Nette\Utils\DateTime;
 
-/**
- * Class CompanyInvoiceStatisticsControl
- * @package MatiCore\Company
- */
 class CompanyInvoiceStatisticsControl extends Control
 {
-
-	/**
-	 * @var InvoiceManagerAccessor
-	 */
 	private InvoiceManagerAccessor $invoiceManager;
 
-	/**
-	 * CompanyInvoiceStatisticsControl constructor.
-	 * @param InvoiceManagerAccessor $invoiceManager
-	 */
+
 	public function __construct(InvoiceManagerAccessor $invoiceManager)
 	{
 		$this->invoiceManager = $invoiceManager;
 	}
 
-	/**
-	 * @param Company $company
-	 */
+
 	public function render(Company $company): void
 	{
 		$invoices = $this->invoiceManager->get()->getInvoicesByCompany($company);
@@ -96,5 +83,4 @@ class CompanyInvoiceStatisticsControl extends Control
 		$this->template->setFile(__DIR__ . '/default.latte');
 		$this->template->render();
 	}
-
 }

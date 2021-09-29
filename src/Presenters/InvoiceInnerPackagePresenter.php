@@ -7,7 +7,13 @@ namespace App\AdminModule\Presenters;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
+use MatiCore\Company\CompanyManager;
+use MatiCore\Currency\CurrencyException;
+use MatiCore\Currency\CurrencyManager;
 use MatiCore\Currency\Number;
 use MatiCore\DataGrid\MatiDataGrid;
 use MatiCore\Form\FormFactoryTrait;
@@ -15,9 +21,6 @@ use MatiCore\Invoice\BankMovement;
 use MatiCore\Invoice\BankMovementCronLogAccessor;
 use MatiCore\Invoice\BankMovementManagerAccessor;
 use MatiCore\Invoice\BankMovementStatus;
-use MatiCore\Company\CompanyManager;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManager;
 use MatiCore\Invoice\ExportManagerAccessor;
 use MatiCore\Invoice\FixInvoice;
 use MatiCore\Invoice\Invoice;
@@ -29,9 +32,6 @@ use MatiCore\Invoice\InvoiceManagerAccessor;
 use MatiCore\Invoice\InvoiceProforma;
 use MatiCore\Invoice\InvoiceStatus;
 use MatiCore\Unit\UnitManager;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\QueryBuilder;
 use MatiCore\User\BaseUser;
 use MatiCore\User\StorageIdentity;
 use MatiCore\Utils\Date;
@@ -46,10 +46,10 @@ use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use Tracy\Debugger;
 use Ublaboo\DataGrid\Exception\DataGridException;
-use function Clue\StreamFilter\fun;
 
 /**
  * Class InvoicePresenter
+ *
  * @package App\AdminModule\Presenters
  */
 class InvoiceInnerPackagePresenter extends BaseAdminPresenter
@@ -100,6 +100,11 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	public ExportManagerAccessor $exportManager;
 
 	/**
+	 * @var string
+	 */
+	protected string $pageRight = 'page__invoice';
+
+	/**
 	 * @var InvoiceCore|null
 	 */
 	private InvoiceCore|null $editedInvoice;
@@ -109,10 +114,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	private int $returnButton = 0;
 
-	/**
-	 * @var string
-	 */
-	protected string $pageRight = 'page__invoice';
 
 	/**
 	 * @param string $id
@@ -141,6 +142,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->template->currency = $this->currencyManager->getDefaultCurrency();
 	}
 
+
 	/**
 	 * @param string|null $id
 	 */
@@ -152,6 +154,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->template->companyList = $this->companyManager->getCompanies();
 	}
 
+
 	/**
 	 * @param string $id
 	 */
@@ -161,6 +164,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->template->currencyList = $this->currencyManager->getActiveCurrencies();
 		$this->template->unitList = $this->unitManager->getUnits();
 	}
+
 
 	/**
 	 * @throws JsonException
@@ -179,6 +183,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->template->lastUpdate = $log['date'] ?? null;
 		$this->template->lastUpdateStatus = $log['status'] ?? null;
 	}
+
 
 	/**
 	 * @param string $id
@@ -203,6 +208,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -222,6 +228,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -249,6 +256,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -268,6 +276,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $invoiceId
@@ -292,7 +301,9 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
-				$history = new InvoiceHistory($invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>');
+				$history = new InvoiceHistory(
+					$invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>'
+				);
 				$history->setUser($user);
 				$this->entityManager->persist($history);
 
@@ -316,7 +327,9 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
-				$history = new InvoiceHistory($invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>');
+				$history = new InvoiceHistory(
+					$invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>'
+				);
 				$history->setUser($user);
 				$this->entityManager->persist($history);
 
@@ -338,7 +351,9 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
-				$history = new InvoiceHistory($invoice, '<span class="text-success text-bold">Doklad odevzdán a odeslán ke schválení.</span>');
+				$history = new InvoiceHistory(
+					$invoice, '<span class="text-success text-bold">Doklad odevzdán a odeslán ke schválení.</span>'
+				);
 				$history->setUser($user);
 				$this->entityManager->persist($history);
 
@@ -392,6 +407,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $invoiceId
@@ -450,6 +466,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -471,6 +488,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->redirect('default');
 	}
 
+
 	/**
 	 * @return Form
 	 */
@@ -488,14 +506,17 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$this->editedInvoice->setPayDate($values->date);
 				$this->editedInvoice->setStatus(InvoiceStatus::PAID);
 
 				/** @var BaseUser|null $user */
 				$user = $this->getUser()->getIdentity()->getUser();
-				$text = ($this->editedInvoice instanceof InvoiceProforma ? 'Proforma' : 'Faktura') . ' uhrazena dne ' . $values->date->format('d.m.Y');
+				$text = ($this->editedInvoice instanceof InvoiceProforma ? 'Proforma' : 'Faktura') . ' uhrazena dne ' . $values->date->format(
+						'd.m.Y'
+					);
 				$history = new InvoiceHistory($this->editedInvoice, $text);
 				$history->setUser($user);
 
@@ -508,7 +529,9 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				if ($this->editedInvoice instanceof InvoiceProforma) {
 					$pd = $this->invoiceManager->get()->createPayDocumentFromInvoice($this->editedInvoice);
 
-					$this->flashMessage('Proforma byla uhrazena a byl vygenerován doklad o zaplacení č.:' . $pd->getNumber(), 'success');
+					$this->flashMessage(
+						'Proforma byla uhrazena a byl vygenerován doklad o zaplacení č.:' . $pd->getNumber(), 'success'
+					);
 					$this->redirect('show', ['id' => $pd->getId()]);
 				}
 
@@ -524,6 +547,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @param string $name
@@ -541,81 +565,106 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				->orderBy('bm.date', 'DESC')
 		);
 
-		$grid->setRowCallback(static function (BankMovement $bm, Html $row): void {
-			$status = $bm->getStatus();
-			if ($status === BankMovement::STATUS_SUCCESS || $status === BankMovement::STATUS_DONE) {
-				return;
+		$grid->setRowCallback(
+			static function (BankMovement $bm, Html $row): void
+			{
+				$status = $bm->getStatus();
+				if ($status === BankMovement::STATUS_SUCCESS || $status === BankMovement::STATUS_DONE) {
+					return;
+				}
+
+				if ($status === BankMovement::STATUS_NOT_PROCESSED) {
+					$row->addClass('table-info');
+
+					return;
+				}
+
+				if ($status === BankMovement::STATUS_IS_PAID || $status === BankMovement::STATUS_BAD_VARIABLE_SYMBOL) {
+					$row->addClass('table-warning');
+
+					return;
+				}
+
+				$row->addClass('table-danger');
 			}
-
-			if ($status === BankMovement::STATUS_NOT_PROCESSED) {
-				$row->addClass('table-info');
-
-				return;
-			}
-
-			if ($status === BankMovement::STATUS_IS_PAID || $status === BankMovement::STATUS_BAD_VARIABLE_SYMBOL) {
-				$row->addClass('table-warning');
-
-				return;
-			}
-
-			$row->addClass('table-danger');
-		});
+		);
 
 		$grid->addColumnText('date', 'Datum')
-			->setRenderer(static function (BankMovement $bm): string {
-				return $bm->getDate()->format('d.m.Y')
-					. '<br>'
-					. '<small class="' . BankMovementStatus::getColor($bm->getStatus()) . '">' . BankMovementStatus::getName($bm->getStatus()) . '</small>';
-			})
+			->setRenderer(
+				static function (BankMovement $bm): string
+				{
+					return $bm->getDate()->format('d.m.Y')
+						. '<br>'
+						. '<small class="' . BankMovementStatus::getColor(
+							$bm->getStatus()
+						) . '">' . BankMovementStatus::getName($bm->getStatus()) . '</small>';
+				}
+			)
 			->setTemplateEscaping(false)
 			->setFitContent(true);
 
 		$grid->addColumnText('variableSymbol', 'VS')
-			->setRenderer(function (BankMovement $bm): string {
-				if ($bm->getInvoice() === null) {
-					return $bm->getVariableSymbol();
+			->setRenderer(
+				function (BankMovement $bm): string
+				{
+					if ($bm->getInvoice() === null) {
+						return $bm->getVariableSymbol();
+					}
+
+					$link = $this->link(
+						'Invoice:show', [
+							'id' => $bm->getInvoice()->getId(),
+						]
+					);
+
+					return '<a href="' . $link . '">' . $bm->getVariableSymbol() . '</a>';
 				}
-
-				$link = $this->link('Invoice:show', [
-					'id' => $bm->getInvoice()->getId(),
-				]);
-
-				return '<a href="' . $link . '">' . $bm->getVariableSymbol() . '</a>';
-			})
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('customerBankAccount', 'Proti účet')
-			->setRenderer(function (BankMovement $bm): string {
-				if ($bm->getInvoice() && $bm->getInvoice()->getCompany()) {
-					$link = $this->link('Company:detail', ['id' => $bm->getInvoice()->getCompany()->getId()]);
-					$ret = '<a href="' . $link . '">' . $bm->getCustomerName() . '</a>';
-				} else {
-					$ret = $bm->getCustomerName();
-				}
+			->setRenderer(
+				function (BankMovement $bm): string
+				{
+					if ($bm->getInvoice() && $bm->getInvoice()->getCompany()) {
+						$link = $this->link('Company:detail', ['id' => $bm->getInvoice()->getCompany()->getId()]);
+						$ret = '<a href="' . $link . '">' . $bm->getCustomerName() . '</a>';
+					} else {
+						$ret = $bm->getCustomerName();
+					}
 
-				return $ret . '<br><small>' . $bm->getCustomerBankAccount() . '</small>';
-			})
+					return $ret . '<br><small>' . $bm->getCustomerBankAccount() . '</small>';
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('bankAccount', 'Bankovní účet')
-			->setRenderer(static function (BankMovement $bm): string {
-				return $bm->getBankAccountName() . '<br><small>' . $bm->getBankAccount() . '</small>';
-			})
+			->setRenderer(
+				static function (BankMovement $bm): string
+				{
+					return $bm->getBankAccountName() . '<br><small>' . $bm->getBankAccount() . '</small>';
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('price', 'Částka')
-			->setRenderer(static function (BankMovement $bm): string {
-				return Number::formatPrice($bm->getPrice(), $bm->getCurrency(), 2);
-			})
+			->setRenderer(
+				static function (BankMovement $bm): string
+				{
+					return Number::formatPrice($bm->getPrice(), $bm->getCurrency(), 2);
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addAction('detail', 'Detail')
-			->setRenderer(function (BankMovement $bm): string {
-				$link = $this->link('detailBankMovement', ['id' => $bm->getId()]);
+			->setRenderer(
+				function (BankMovement $bm): string
+				{
+					$link = $this->link('detailBankMovement', ['id' => $bm->getId()]);
 
-				return '<a href="' . $link . '" class="btn btn-xs btn-info"><i class="fas fa-search"></i>&nbsp; detail</a>';
-			})
+					return '<a href="' . $link . '" class="btn btn-xs btn-info"><i class="fas fa-search"></i>&nbsp; detail</a>';
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->setDefaultPerPage(20);
@@ -641,25 +690,29 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			'ok' => 'Vyřešené',
 		];
 		$grid->addFilterSelect('status', 'Stav:', $statusList, 'status')
-			->setCondition(static function (QueryBuilder $qb, string $status): QueryBuilder {
-				if ($status === 'not') {
-					$qb->andWhere('bm.status != :status1')
-						->setParameter('status1', BankMovement::STATUS_DONE);
-					$qb->andWhere('bm.status != :status2')
-						->setParameter('status2', BankMovement::STATUS_SUCCESS);
-				} elseif ($status === 'ok') {
-					$qb->andWhere('(bm.status = :status1 OR bm.status = :status2)')
-						->setParameter('status1', BankMovement::STATUS_DONE)
-						->setParameter('status2', BankMovement::STATUS_SUCCESS);
-				}
+			->setCondition(
+				static function (QueryBuilder $qb, string $status): QueryBuilder
+				{
+					if ($status === 'not') {
+						$qb->andWhere('bm.status != :status1')
+							->setParameter('status1', BankMovement::STATUS_DONE);
+						$qb->andWhere('bm.status != :status2')
+							->setParameter('status2', BankMovement::STATUS_SUCCESS);
+					} elseif ($status === 'ok') {
+						$qb->andWhere('(bm.status = :status1 OR bm.status = :status2)')
+							->setParameter('status1', BankMovement::STATUS_DONE)
+							->setParameter('status2', BankMovement::STATUS_SUCCESS);
+					}
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		$grid->setOuterFilterRendering();
 
 		return $grid;
 	}
+
 
 	/**
 	 * @param string $name
@@ -682,261 +735,300 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				->leftJoin('invoice.depositingInvoices', 'deposit')
 				->where('invoice.deleted = :f')
 				->setParameter('f', 0)
-				->andWhere('invoice INSTANCE OF ' . Invoice::class . ' OR invoice INSTANCE OF ' . InvoiceProforma::class)
+				->andWhere(
+					'invoice INSTANCE OF ' . Invoice::class . ' OR invoice INSTANCE OF ' . InvoiceProforma::class
+				)
 				->orderBy('invoice.number', 'DESC')
 		);
 
-		$grid->setRowCallback(static function (InvoiceCore $invoice, Html $row): void {
-			$status = $invoice->getStatus();
-			if ($status === InvoiceStatus::ACCEPTED) {
-				$row->addClass('table-success');
+		$grid->setRowCallback(
+			static function (InvoiceCore $invoice, Html $row): void
+			{
+				$status = $invoice->getStatus();
+				if ($status === InvoiceStatus::ACCEPTED) {
+					$row->addClass('table-success');
 
-				return;
+					return;
+				}
+
+				if ($status === InvoiceStatus::DENIED) {
+					$row->addClass('table-danger');
+
+					return;
+				}
+
+				if ($status === InvoiceStatus::CREATED) {
+					$row->addClass('table-warning');
+
+					return;
+				}
+
+				if ($status === InvoiceStatus::PAY_ALERT_THREE) {
+					$row->addClass('table-danger');
+
+					return;
+				}
 			}
-
-			if ($status === InvoiceStatus::DENIED) {
-				$row->addClass('table-danger');
-
-				return;
-			}
-
-			if ($status === InvoiceStatus::CREATED) {
-				$row->addClass('table-warning');
-
-				return;
-			}
-
-			if ($status === InvoiceStatus::PAY_ALERT_THREE) {
-				$row->addClass('table-danger');
-
-				return;
-			}
-		});
+		);
 
 		$grid->addColumnText('number', 'Číslo')
-			->setRenderer(function (InvoiceCore $invoice): string {
-				$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
+			->setRenderer(
+				function (InvoiceCore $invoice): string
+				{
+					$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
 
-				return '<a href="' . $link . '">' . $invoice->getNumber() . '</a>'
-					. '<br>'
-					. '<small class="'
-					. InvoiceStatus::getColorByStatus($invoice->getStatus())
-					. '">'
-					. InvoiceStatus::getNameByStatus($invoice->getStatus())
-					. '</small>';;
-			})
+					return '<a href="' . $link . '">' . $invoice->getNumber() . '</a>'
+						. '<br>'
+						. '<small class="'
+						. InvoiceStatus::getColorByStatus($invoice->getStatus())
+						. '">'
+						. InvoiceStatus::getNameByStatus($invoice->getStatus())
+						. '</small>';;
+				}
+			)
 			->setFitContent()
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('company', 'Firma')
-			->setRenderer(function (InvoiceCore $invoice): string {
-				if ($invoice->getCompany() !== null) {
-					$link = $this->link('Company:detail', ['id' => $invoice->getCompany()->getId()]);
+			->setRenderer(
+				function (InvoiceCore $invoice): string
+				{
+					if ($invoice->getCompany() !== null) {
+						$link = $this->link('Company:detail', ['id' => $invoice->getCompany()->getId()]);
 
-					$ret = '<a href="' . $link . '">' . Strings::truncate($invoice->getCustomerName(), 60) . '</a>';
-				} else {
-					$ret = '<span class="text-blue">' . $invoice->getCustomerName() . '</span>';
+						$ret = '<a href="' . $link . '">' . Strings::truncate($invoice->getCustomerName(), 60) . '</a>';
+					} else {
+						$ret = '<span class="text-blue">' . $invoice->getCustomerName() . '</span>';
+					}
+
+					return $ret
+						. '<br>'
+						. '<small>'
+						. $invoice->getCustomerAddress() . ', '
+						. $invoice->getCustomerCity() . ', '
+						. $invoice->getCustomerPostalCode()
+						. '</small>';
+
 				}
-
-				return $ret
-					. '<br>'
-					. '<small>'
-					. $invoice->getCustomerAddress() . ', '
-					. $invoice->getCustomerCity() . ', '
-					. $invoice->getCustomerPostalCode()
-					. '</small>';
-
-			})
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('date', 'Vystaveno')
-			->setRenderer(static function (InvoiceCore $invoiceCore): string {
-				return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()->getName() . '</small>';
-			})
+			->setRenderer(
+				static function (InvoiceCore $invoiceCore): string
+				{
+					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
+							->getName() . '</small>';
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('taxDate', 'Daň. plnění')
-			->setRenderer(function (InvoiceCore $invoiceCore): string {
-				if ($invoiceCore->isProforma()) {
-					$invoice = $invoiceCore->getInvoice();
-					if ($invoice !== null) {
-						$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
-						$str = '<small><a href="' . $link . '" title="Faktura"><i class="fas fa-file-invoice"></i>&nbsp;' . $invoice->getNumber() . '</a></small>';
-					} else {
-						$str = '&nbsp;';
-					}
-					return '<span class="text-info"><small>Záloha</small></span><br>' . $str;
-				}
-
-				$str = '<small>&nbsp;</small>';
-
-				/** @var FixInvoice $fixInvoice */
-				$fixInvoice = $invoiceCore->getFixInvoice();
-				if ($fixInvoice !== null) {
-					$link = $this->link('Invoice:show', ['id' => $fixInvoice->getId()]);
-					$str = '<small><a href="' . $link . '" title="Dobropis" style="color: rgb(194, 0, 64);"><i class="fas fa-file-invoice"></i>&nbsp;' . $fixInvoice->getNumber();
-					if (
-						$this->invoiceManager->get()->getAcceptSetting() !== null
-						&& (
-							$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
-							|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
-						)
-					) {
-						if ($fixInvoice->getAcceptStatus1() === InvoiceStatus::WAITING) {
-							$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-						} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::DENIED) {
-							$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-						} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED) {
-							$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
+			->setRenderer(
+				function (InvoiceCore $invoiceCore): string
+				{
+					if ($invoiceCore->isProforma()) {
+						$invoice = $invoiceCore->getInvoice();
+						if ($invoice !== null) {
+							$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
+							$str = '<small><a href="' . $link . '" title="Faktura"><i class="fas fa-file-invoice"></i>&nbsp;' . $invoice->getNumber(
+								) . '</a></small>';
+						} else {
+							$str = '&nbsp;';
 						}
 
-						if ($fixInvoice->getAcceptStatus2() === InvoiceStatus::WAITING) {
-							$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-						} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::DENIED) {
-							$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-						} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
-							$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
-						}
+						return '<span class="text-info"><small>Záloha</small></span><br>' . $str;
 					}
-					$str .= '</a></small>';
-				}
 
-				return $invoiceCore->getTaxDate()->format('d.m.Y') . '<br>' . $str;
-			})
+					$str = '<small>&nbsp;</small>';
+
+					/** @var FixInvoice $fixInvoice */
+					$fixInvoice = $invoiceCore->getFixInvoice();
+					if ($fixInvoice !== null) {
+						$link = $this->link('Invoice:show', ['id' => $fixInvoice->getId()]);
+						$str = '<small><a href="' . $link . '" title="Dobropis" style="color: rgb(194, 0, 64);"><i class="fas fa-file-invoice"></i>&nbsp;' . $fixInvoice->getNumber(
+							);
+						if (
+							$this->invoiceManager->get()->getAcceptSetting() !== null
+							&& (
+								$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
+								|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
+							)
+						) {
+							if ($fixInvoice->getAcceptStatus1() === InvoiceStatus::WAITING) {
+								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
+							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::DENIED) {
+								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
+							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED) {
+								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
+							}
+
+							if ($fixInvoice->getAcceptStatus2() === InvoiceStatus::WAITING) {
+								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
+							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::DENIED) {
+								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
+							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
+								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
+							}
+						}
+						$str .= '</a></small>';
+					}
+
+					return $invoiceCore->getTaxDate()->format('d.m.Y') . '<br>' . $str;
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('dueDate', 'Splatnost')
-			->setRenderer(function (InvoiceCore $invoiceCore): string {
-				$ret = $invoiceCore->getDueDate()->format('d.m.Y');
+			->setRenderer(
+				function (InvoiceCore $invoiceCore): string
+				{
+					$ret = $invoiceCore->getDueDate()->format('d.m.Y');
 
-				if ($invoiceCore->isPaid() && $invoiceCore->getPayDate() !== null) {
-					$ret .= '<br><small class="text-success"><i class="fas fa-coins text-warning" title="Uhrazeno"></i>&nbsp;' . $invoiceCore->getPayDate()->format('d.m.Y') . '</small>';
+					if ($invoiceCore->isPaid() && $invoiceCore->getPayDate() !== null) {
+						$ret .= '<br><small class="text-success"><i class="fas fa-coins text-warning" title="Uhrazeno"></i>&nbsp;' . $invoiceCore->getPayDate(
+							)->format('d.m.Y') . '</small>';
 
-					if ($invoiceCore instanceof InvoiceProforma) {
-						$payDocument = $invoiceCore->getPayDocument();
-						if ($payDocument !== null) {
-							$link = $this->link('Invoice:show', ['id' => $payDocument->getId()]);
-							$ret .= '&nbsp;<small><a href="' . $link . '" style="color: rgb(75, 0, 150);" title="Doklad k přijaté platbě"><i class="fas fa-file-invoice-dollar"></i></a></small>';
+						if ($invoiceCore instanceof InvoiceProforma) {
+							$payDocument = $invoiceCore->getPayDocument();
+							if ($payDocument !== null) {
+								$link = $this->link('Invoice:show', ['id' => $payDocument->getId()]);
+								$ret .= '&nbsp;<small><a href="' . $link . '" style="color: rgb(75, 0, 150);" title="Doklad k přijaté platbě"><i class="fas fa-file-invoice-dollar"></i></a></small>';
+							}
+						}
+					} else {
+						$ret .= '<br>';
+						$diff = $invoiceCore->getPayDateDiff();
+						if ($diff < -4) {
+							$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dní</small>';
+						} elseif ($diff < -1) {
+							$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dny</small>';
+						} elseif ($diff < 0) {
+							$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' den</small>';
+						} elseif ($diff === 0) {
+							$ret .= '<small class="text-success">Dnes</small>';
+						} elseif ($diff > 4) {
+							$ret .= '<small class="text-danger">' . $diff . ' dní po splatnosti</small>';
+						} elseif ($diff > 1) {
+							$ret .= '<small class="text-danger">' . $diff . ' dny po splatnosti</small>';
+						} else {
+							$ret .= '<small class="text-danger">' . $diff . ' den po splatnosti</small>';
 						}
 					}
-				} else {
-					$ret .= '<br>';
-					$diff = $invoiceCore->getPayDateDiff();
-					if ($diff < -4) {
-						$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dní</small>';
-					} elseif ($diff < -1) {
-						$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dny</small>';
-					} elseif ($diff < 0) {
-						$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' den</small>';
-					} elseif ($diff === 0) {
-						$ret .= '<small class="text-success">Dnes</small>';
-					} elseif ($diff > 4) {
-						$ret .= '<small class="text-danger">' . $diff . ' dní po splatnosti</small>';
-					} elseif ($diff > 1) {
-						$ret .= '<small class="text-danger">' . $diff . ' dny po splatnosti</small>';
-					} else {
-						$ret .= '<small class="text-danger">' . $diff . ' den po splatnosti</small>';
-					}
-				}
 
-				return $ret;
-			})
+					return $ret;
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('price', 'Částka')
-			->setRenderer(static function (InvoiceCore $invoiceCore) use ($currency): string {
-				$totalPrice = $invoiceCore->getTotalPrice();
-				if ($invoiceCore instanceof Invoice) {
-					$fixInvoice = $invoiceCore->getFixInvoice();
+			->setRenderer(
+				static function (InvoiceCore $invoiceCore) use ($currency): string
+				{
+					$totalPrice = $invoiceCore->getTotalPrice();
+					if ($invoiceCore instanceof Invoice) {
+						$fixInvoice = $invoiceCore->getFixInvoice();
 
-					if ($fixInvoice !== null) {
-						$totalPrice += $fixInvoice->getTotalPrice();
+						if ($fixInvoice !== null) {
+							$totalPrice += $fixInvoice->getTotalPrice();
+						}
 					}
-				}
 
-				if ($totalPrice < 0) {
-					return '<b class="text-danger">' . Number::formatPrice($totalPrice, $invoiceCore->getCurrency(), 2) . '</b>'
+					if ($totalPrice < 0) {
+						return '<b class="text-danger">' . Number::formatPrice(
+								$totalPrice, $invoiceCore->getCurrency(), 2
+							) . '</b>'
+							. '<br>'
+							. '<small>'
+							. Number::formatPrice($totalPrice * $invoiceCore->getRate(), $currency, 2)
+							. '</small>';
+					}
+
+					return '<b>' . Number::formatPrice($totalPrice, $invoiceCore->getCurrency(), 2) . '</b>'
 						. '<br>'
 						. '<small>'
 						. Number::formatPrice($totalPrice * $invoiceCore->getRate(), $currency, 2)
 						. '</small>';
 				}
-
-				return '<b>' . Number::formatPrice($totalPrice, $invoiceCore->getCurrency(), 2) . '</b>'
-					. '<br>'
-					. '<small>'
-					. Number::formatPrice($totalPrice * $invoiceCore->getRate(), $currency, 2)
-					. '</small>';
-			})
+			)
 			->setAlign('right')
 			->setFitContent()
 			->setTemplateEscaping(false);
 
 		if ($this->invoiceManager->get()->getAcceptSetting() !== null) {
 			$grid->addColumnText('accept', 'Schválení')
-				->setRenderer(function (InvoiceCore $invoiceCore): string {
-					if ($invoiceCore->isSubmitted() === false) {
-						return '<span class="text-warning">Editace</span>';
-					}
+				->setRenderer(
+					function (InvoiceCore $invoiceCore): string
+					{
+						if ($invoiceCore->isSubmitted() === false) {
+							return '<span class="text-warning">Editace</span>';
+						}
 
-					$ret = '';
-					$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
+						$ret = '';
+						$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 
-					if ($invoiceCore->getAcceptStatus1() === 'denied') {
-						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+						if ($invoiceCore->getAcceptStatus1() === 'denied') {
+							$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-					} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
-						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+						} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
+							$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-					} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
-						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+						} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
+							$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-					}
+						}
 
-					$ret .= '&nbsp;';
+						$ret .= '&nbsp;';
 
-					if ($invoiceCore->getAcceptStatus2() === 'denied') {
-						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+						if ($invoiceCore->getAcceptStatus2() === 'denied') {
+							$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-					} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
-						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+						} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
+							$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-					} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
-						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+						} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
+							$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-					}
+						}
 
-					return $ret;
-				})
+						return $ret;
+					}
+				)
 				->setAlign('center')
 				->setTemplateEscaping(false);
 		}
 
 		$grid->addAction('detail', 'Detail')
-			->setRenderer(function (InvoiceCore $invoiceCore) {
-				$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
+			->setRenderer(
+				function (InvoiceCore $invoiceCore)
+				{
+					$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 
-				return '<a class="btn btn-info btn-xs" href="' . $link . '">
+					return '<a class="btn btn-info btn-xs" href="' . $link . '">
 							<i class="fas fa-eye fa-fw"></i>
 						</a>';
-			});
+				}
+			);
 
 		$grid->addAction('delete', 'Delete')
-			->setRenderer(function (InvoiceCore $invoiceCore) {
-				if ($this->checkAccess('page__invoice__forceRemove') === false) {
-					return '';
+			->setRenderer(
+				function (InvoiceCore $invoiceCore)
+				{
+					if ($this->checkAccess('page__invoice__forceRemove') === false) {
+						return '';
+					}
+
+					$link = $this->link('delete!', ['id' => $invoiceCore->getId()]);
+
+					return '<btn-delete redirect="' . $link . '"></btn-delete>';
 				}
-
-				$link = $this->link('delete!', ['id' => $invoiceCore->getId()]);
-
-				return '<btn-delete redirect="' . $link . '"></btn-delete>';
-			});
+			);
 
 		//filtr
 
@@ -985,43 +1077,46 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			'proforma' => 'Zálohová faktura',
 		];
 		$grid->addFilterSelect('status', 'Stav:', $statusList, 'status')
-			->setCondition(static function (QueryBuilder $qb, string $status): QueryBuilder {
-				if ($status === 'unpaid') {
-					$qb->andWhere('invoice.acceptStatus1 = :status1')
-						->setParameter('status1', InvoiceStatus::ACCEPTED)
-						->andWhere('invoice.acceptStatus2 = :status2')
-						->setParameter('status2', InvoiceStatus::ACCEPTED);
-					$qb->andWhere('invoice.payDate IS NULL');
-				} elseif ($status === 'paid') {
-					$qb->andWhere('invoice.payDate IS NOT NULL');
-				} elseif ($status === 'overDate') {
-					$qb->andWhere('invoice.acceptStatus1 = :status1')
-						->setParameter('status1', InvoiceStatus::ACCEPTED)
-						->andWhere('invoice.acceptStatus2 = :status2')
-						->setParameter('status2', InvoiceStatus::ACCEPTED);
-					$qb->andWhere('invoice.payDate IS NULL');
-					$qb->andWhere('invoice.dueDate < :now')
-						->setParameter('now', DateTime::from('NOW')->format('Y-m-d'));
-				} elseif ($status === 'edit') {
-					$qb->andWhere('invoice.submitted = :f')
-						->setParameter('f', false);
-				} elseif ($status === 'accepted') {
-					$qb->andWhere('invoice.acceptStatus1 = :status1')
-						->setParameter('status1', InvoiceStatus::ACCEPTED)
-						->andWhere('invoice.acceptStatus2 = :status2')
-						->setParameter('status2', InvoiceStatus::ACCEPTED);
-				} elseif ($status === 'notAccepted') {
-					$qb->andWhere('(invoice.acceptStatus1 = :status OR invoice.acceptStatus2 = :status)')
-						->setParameter('status', InvoiceStatus::WAITING);
-				} elseif ($status === 'denied') {
-					$qb->andWhere('(invoice.acceptStatus1 = :status OR invoice.acceptStatus2 = :status)')
-						->setParameter('status', InvoiceStatus::DENIED);
-				} elseif ($status === 'proforma') {
-					$qb->andWhere('invoice INSTANCE OF ' . InvoiceProforma::class);
-				}
+			->setCondition(
+				static function (QueryBuilder $qb, string $status): QueryBuilder
+				{
+					if ($status === 'unpaid') {
+						$qb->andWhere('invoice.acceptStatus1 = :status1')
+							->setParameter('status1', InvoiceStatus::ACCEPTED)
+							->andWhere('invoice.acceptStatus2 = :status2')
+							->setParameter('status2', InvoiceStatus::ACCEPTED);
+						$qb->andWhere('invoice.payDate IS NULL');
+					} elseif ($status === 'paid') {
+						$qb->andWhere('invoice.payDate IS NOT NULL');
+					} elseif ($status === 'overDate') {
+						$qb->andWhere('invoice.acceptStatus1 = :status1')
+							->setParameter('status1', InvoiceStatus::ACCEPTED)
+							->andWhere('invoice.acceptStatus2 = :status2')
+							->setParameter('status2', InvoiceStatus::ACCEPTED);
+						$qb->andWhere('invoice.payDate IS NULL');
+						$qb->andWhere('invoice.dueDate < :now')
+							->setParameter('now', DateTime::from('NOW')->format('Y-m-d'));
+					} elseif ($status === 'edit') {
+						$qb->andWhere('invoice.submitted = :f')
+							->setParameter('f', false);
+					} elseif ($status === 'accepted') {
+						$qb->andWhere('invoice.acceptStatus1 = :status1')
+							->setParameter('status1', InvoiceStatus::ACCEPTED)
+							->andWhere('invoice.acceptStatus2 = :status2')
+							->setParameter('status2', InvoiceStatus::ACCEPTED);
+					} elseif ($status === 'notAccepted') {
+						$qb->andWhere('(invoice.acceptStatus1 = :status OR invoice.acceptStatus2 = :status)')
+							->setParameter('status', InvoiceStatus::WAITING);
+					} elseif ($status === 'denied') {
+						$qb->andWhere('(invoice.acceptStatus1 = :status OR invoice.acceptStatus2 = :status)')
+							->setParameter('status', InvoiceStatus::DENIED);
+					} elseif ($status === 'proforma') {
+						$qb->andWhere('invoice INSTANCE OF ' . InvoiceProforma::class);
+					}
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		$grid->setOuterFilterRendering();
 
@@ -1037,6 +1132,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		return $grid;
 	}
 
+
 	/**
 	 * @param array $ids
 	 * @throws AbortException
@@ -1048,6 +1144,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->redirect('exportInvoices!');
 	}
+
 
 	/**
 	 * @throws AbortException
@@ -1077,6 +1174,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->redirect('default');
 	}
 
+
 	/**
 	 * @param array $ids
 	 * @throws AbortException
@@ -1088,6 +1186,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->redirect('exportSummary!');
 	}
+
 
 	/**
 	 * @throws AbortException
@@ -1117,6 +1216,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->redirect('default');
 	}
 
+
 	/**
 	 * @return Form
 	 */
@@ -1128,7 +1228,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			if ($this->editedInvoice !== null) {
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
@@ -1141,7 +1242,11 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 				$this->editedInvoice->setStatus(InvoiceStatus::DENIED);
 
-				$history = new InvoiceHistory($this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>' . str_replace("\n", '<br>', $values->description ?? ''));
+				$history = new InvoiceHistory(
+					$this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>' . str_replace(
+						"\n", '<br>', $values->description ?? ''
+					)
+				);
 				$history->setUser($user);
 
 				$this->entityManager->persist($history);
@@ -1161,6 +1266,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @return Form
@@ -1173,7 +1279,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			if ($this->editedInvoice !== null) {
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
@@ -1184,7 +1291,11 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 				$this->editedInvoice->setStatus(InvoiceStatus::DENIED);
 
-				$history = new InvoiceHistory($this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>' . str_replace("\n", '<br>', $values->description ?? ''));
+				$history = new InvoiceHistory(
+					$this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>' . str_replace(
+						"\n", '<br>', $values->description ?? ''
+					)
+				);
 				$history->setUser($user);
 
 				$this->entityManager->persist($history);
@@ -1204,6 +1315,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @param string $id
@@ -1217,20 +1329,28 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 			$this->entityManager->getUnitOfWork()->commit($bm);
 
-			$this->flashMessage('Stav bankovního pohybu byl změněn na ' . BankMovementStatus::getName(BankMovement::STATUS_DONE) . '.', 'success');
-			$this->redirect('Invoice:detailBankMovement', [
-				'id' => $id,
-			]);
+			$this->flashMessage(
+				'Stav bankovního pohybu byl změněn na ' . BankMovementStatus::getName(BankMovement::STATUS_DONE) . '.',
+				'success'
+			);
+			$this->redirect(
+				'Invoice:detailBankMovement', [
+					'id' => $id,
+				]
+			);
 		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Požadovaný bankovní pohyb neexistuje.', 'error');
 			$this->redirect('Invoice:bankMovements');
 		} catch (EntityManagerException $e) {
 			$this->flashMessage('Chyba při ukládání do databáze.', 'error');
-			$this->redirect('Invoice:detailBankMovement', [
-				'id' => $id,
-			]);
+			$this->redirect(
+				'Invoice:detailBankMovement', [
+					'id' => $id,
+				]
+			);
 		}
 	}
+
 
 	/**
 	 * @return Form
@@ -1247,7 +1367,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			$email = $values->email === '' ? null : $values->email;
 
 			if ($email === null) {
@@ -1269,6 +1390,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @return array
@@ -1376,6 +1498,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		return $data;
 	}
 
+
 	/**
 	 * @return Form
 	 */
@@ -1391,7 +1514,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			if ($values->description !== '' && $values->description !== null) {
 				$comment = new InvoiceComment($this->editedInvoice, $values->description);
 
@@ -1416,6 +1540,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		return $form;
 	}
 
+
 	/**
 	 * @param string|null $txt
 	 * @return string|null
@@ -1431,6 +1556,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		return $txt;
 	}
 
+
 	/**
 	 * @return Form
 	 */
@@ -1441,7 +1567,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$form->addText('email', 'E-mail');
 		$form->addSubmit('submit', 'Přidat');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			if (Validators::isEmail($values->email) && $this->editedInvoice->isReady() === false) {
 				$this->editedInvoice->addEmail(trim($values->email));
 				$user = $this->getUser()->getIdentity()->getUser();
@@ -1466,6 +1593,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @param string $contact
@@ -1500,6 +1628,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		$this->redrawControl('contact-list');
 	}
 
+
 	/**
 	 * @param string $contact
 	 * @return bool
@@ -1519,6 +1648,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		return true;
 	}
 
+
 	/**
 	 * @return bool
 	 */
@@ -1526,6 +1656,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	{
 		return $this->invoiceManager->get()->getAcceptSetting() !== null;
 	}
+
 
 	/**
 	 * @return Form
@@ -1539,16 +1670,17 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Export');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			/** @var \DateTime $dateStart */
 			$dateStart = $values->dateStart;
-			if(!$dateStart instanceof \DateTime){
+			if (!$dateStart instanceof \DateTime) {
 				$dateStart = DateTime::from('NOW');
 			}
 
 			/** @var \DateTime $dateStop */
 			$dateStop = $values->dateStop;
-			if(!$dateStop instanceof \DateTime){
+			if (!$dateStop instanceof \DateTime) {
 				$dateStop = DateTime::from('NOW');
 			}
 
@@ -1562,6 +1694,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		return $form;
 	}
 
+
 	/**
 	 * @return Form
 	 */
@@ -1574,16 +1707,17 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Export');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			/** @var \DateTime $dateStart */
 			$dateStart = $values->dateStart;
-			if(!$dateStart instanceof \DateTime){
+			if (!$dateStart instanceof \DateTime) {
 				$dateStart = DateTime::from('NOW');
 			}
 
 			/** @var \DateTime $dateStop */
 			$dateStop = $values->dateStop;
-			if(!$dateStop instanceof \DateTime){
+			if (!$dateStop instanceof \DateTime) {
 				$dateStop = DateTime::from('NOW');
 			}
 

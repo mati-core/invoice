@@ -26,72 +26,39 @@ use MatiCore\User\UserException;
 use Nette\Security\User;
 use Nette\Utils\DateTime;
 
-/**
- * Class InvoiceHelper
- * @package MatiCore\Invoice
- */
 class InvoiceHelper
 {
-
 	/**
 	 * @var array
 	 */
 	private array $companyData;
 
-	/**
-	 * @var CompanyManagerAccessor
-	 */
 	private CompanyManagerAccessor $companyManager;
 
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var InvoiceManagerAccessor
-	 */
 	private InvoiceManagerAccessor $invoiceManager;
 
-	/**
-	 * @var CurrencyManagerAccessor
-	 */
 	private CurrencyManagerAccessor $currencyManager;
 
-	/**
-	 * @var UnitManagerAccessor
-	 */
 	private UnitManagerAccessor $unitManager;
 
-	/**
-	 * @var CountryManagerAccessor
-	 */
 	private CountryManagerAccessor $countryManager;
 
-	/**
-	 * @var SignatureManagerAccessor
-	 */
 	private SignatureManagerAccessor $signatureManager;
 
-	/**
-	 * @var User
-	 */
 	private User $user;
 
+
 	/**
-	 * InvoiceHelper constructor.
 	 * @param array $companyData
-	 * @param CompanyManagerAccessor $companyManager
-	 * @param EntityManager $entityManager
-	 * @param InvoiceManagerAccessor $invoiceManager
-	 * @param CurrencyManagerAccessor $currencyManager
-	 * @param UnitManagerAccessor $unitManager
-	 * @param CountryManagerAccessor $countryManager
-	 * @param SignatureManagerAccessor $signatureManager
-	 * @param User $user
 	 */
-	public function __construct(array $companyData, CompanyManagerAccessor $companyManager, EntityManager $entityManager, InvoiceManagerAccessor $invoiceManager, CurrencyManagerAccessor $currencyManager, UnitManagerAccessor $unitManager, CountryManagerAccessor $countryManager, SignatureManagerAccessor $signatureManager, User $user)
-	{
+	public function __construct(
+		array $companyData, CompanyManagerAccessor $companyManager, EntityManager $entityManager,
+		InvoiceManagerAccessor $invoiceManager, CurrencyManagerAccessor $currencyManager,
+		UnitManagerAccessor $unitManager, CountryManagerAccessor $countryManager,
+		SignatureManagerAccessor $signatureManager, User $user
+	) {
 		$this->companyData = $companyData;
 		$this->companyManager = $companyManager;
 		$this->entityManager = $entityManager;
@@ -103,8 +70,8 @@ class InvoiceHelper
 		$this->user = $user;
 	}
 
+
 	/**
-	 * @param string $id
 	 * @return array
 	 * @throws CurrencyException
 	 * @throws InvoiceException
@@ -220,11 +187,20 @@ class InvoiceHelper
 					'id' => $depositInvoice->getId(),
 					'number' => $depositInvoice->getNumber(),
 					'itemPrice' => $depositInvoice->getItemTotalPrice(),
-					'itemPriceFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency())),
+					'itemPriceFormatted' => str_replace(
+						'&nbsp;', ' ',
+						Number::formatPrice($depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency())
+					),
 					'tax' => $depositInvoice->getTotalTax(),
-					'taxFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalTax(), $depositInvoice->getCurrency())),
+					'taxFormatted' => str_replace(
+						'&nbsp;', ' ',
+						Number::formatPrice($depositInvoice->getTotalTax(), $depositInvoice->getCurrency())
+					),
 					'price' => $depositInvoice->getTotalPrice(),
-					'priceFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalPrice(), $depositInvoice->getCurrency())),
+					'priceFormatted' => str_replace(
+						'&nbsp;', ' ',
+						Number::formatPrice($depositInvoice->getTotalPrice(), $depositInvoice->getCurrency())
+					),
 				];
 			}
 
@@ -234,25 +210,6 @@ class InvoiceHelper
 		}
 	}
 
-	/**
-	 * @param \DateTime $dateTax
-	 * @param \DateTime $dateDue
-	 * @return string
-	 */
-	private function getDueDayCount(\DateTime $dateTax, \DateTime $dateDue): string
-	{
-		$diff = (int) $dateDue->diff($dateTax)->format('%a');
-
-		$available = [
-			0 => '0',
-			7 => '7',
-			10 => '10',
-			14 => '14',
-			30 => '30',
-		];
-
-		return $available[$diff] ?? '';
-	}
 
 	/**
 	 * @return array
@@ -359,6 +316,7 @@ class InvoiceHelper
 		];
 	}
 
+
 	/**
 	 * @param string $id
 	 * @return array|null
@@ -372,12 +330,16 @@ class InvoiceHelper
 
 			$date = $invoice instanceof FixInvoice ? $invoice->getDate() : DateTime::from('NOW');
 			$taxDate = $invoice instanceof FixInvoice ? $invoice->getTaxDate() : DateTime::from('NOW');
-			$dueDate = $invoice instanceof FixInvoice ? $invoice->getDueDate() : DateTime::from($date)->modify('+30 days');
+			$dueDate = $invoice instanceof FixInvoice ? $invoice->getDueDate() : DateTime::from($date)->modify(
+				'+30 days'
+			);
 
-			$textBeforeItems = $invoice instanceof FixInvoice ? $invoice->getTextBeforeItems() ?? '' : 'Opravný daňový doklad k daňovému dokladu č. ' . $invoice->getNumber();
+			$textBeforeItems = $invoice instanceof FixInvoice ? $invoice->getTextBeforeItems(
+				) ?? '' : 'Opravný daňový doklad k daňovému dokladu č. ' . $invoice->getNumber();
 			$textAfterItems = $invoice instanceof FixInvoice ? $invoice->getTextBeforeItems() ?? '' : '';
 
-			$invoiceId = $invoice instanceof FixInvoice && $invoice->getInvoice() !== null ? $invoice->getInvoice()->getId() : $invoice->getId();
+			$invoiceId = $invoice instanceof FixInvoice && $invoice->getInvoice() !== null ? $invoice->getInvoice()
+				->getId() : $invoice->getId();
 
 			$ret = [
 				'id' => $invoice instanceof FixInvoice ? $invoice->getId() : null,
@@ -509,11 +471,20 @@ class InvoiceHelper
 						'id' => $depositInvoice->getId(),
 						'number' => $depositInvoice->getNumber(),
 						'itemPrice' => $depositInvoice->getItemTotalPrice(),
-						'itemPriceFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency())),
+						'itemPriceFormatted' => str_replace(
+							'&nbsp;', ' ',
+							Number::formatPrice($depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency())
+						),
 						'tax' => $depositInvoice->getTotalTax(),
-						'taxFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalTax(), $depositInvoice->getCurrency())),
+						'taxFormatted' => str_replace(
+							'&nbsp;', ' ',
+							Number::formatPrice($depositInvoice->getTotalTax(), $depositInvoice->getCurrency())
+						),
 						'price' => $depositInvoice->getTotalPrice(),
-						'priceFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalPrice(), $depositInvoice->getCurrency())),
+						'priceFormatted' => str_replace(
+							'&nbsp;', ' ',
+							Number::formatPrice($depositInvoice->getTotalPrice(), $depositInvoice->getCurrency())
+						),
 					];
 				}
 			}
@@ -523,6 +494,7 @@ class InvoiceHelper
 			return null;
 		}
 	}
+
 
 	/**
 	 * @param array $invoiceData
@@ -549,6 +521,7 @@ class InvoiceHelper
 
 		return $invoiceData;
 	}
+
 
 	/**
 	 * @param array $invoiceData
@@ -706,7 +679,9 @@ class InvoiceHelper
 			$invoice->setCompanyCountry($country);
 		}
 		$invoice->setCompanyCin($invoiceData['company']['cin']);
-		$invoice->setCompanyTin($invoiceData['company']['cin'] === '' || $invoiceData['company']['tin'] === null ? null : $invoiceData['company']['tin']);
+		$invoice->setCompanyTin(
+			$invoiceData['company']['cin'] === '' || $invoiceData['company']['tin'] === null ? null : $invoiceData['company']['tin']
+		);
 		$invoice->setCompanyLogo($this->companyData['logo']);
 
 		//Nastaveni banky
@@ -731,7 +706,9 @@ class InvoiceHelper
 			$invoice->setCustomerCountry($customerCountry);
 		}
 		$invoice->setCustomerCin($invoiceData['customer']['cin']);
-		$invoice->setCustomerTin($invoiceData['customer']['cin'] === '' || $invoiceData['customer']['tin'] === null ? null : $invoiceData['customer']['tin']);
+		$invoice->setCustomerTin(
+			$invoiceData['customer']['cin'] === '' || $invoiceData['customer']['tin'] === null ? null : $invoiceData['customer']['tin']
+		);
 
 		//cisla
 		$invoice->setOrderNumber($invoiceData['orderNumber'] === '' ? null : $invoiceData['orderNumber']);
@@ -872,39 +849,6 @@ class InvoiceHelper
 		return $invoiceData;
 	}
 
-	/**
-	 * @param InvoiceCore $invoice
-	 * @throws EntityManagerException
-	 */
-	private function clearInvoiceItems(InvoiceCore $invoice): void
-	{
-		foreach ($invoice->getItems() as $item) {
-			$invoice->removeItem($item);
-			$this->entityManager->remove($item);
-		}
-	}
-
-	/**
-	 * @param string $unitId
-	 * @return Unit
-	 * @throws UnitException
-	 */
-	private function getUnit(string $unitId): Unit
-	{
-		static $cache;
-
-		if ($cache === null) {
-			$cache = $this->unitManager->get()->getUnits();
-		}
-
-		foreach ($cache as $unit) {
-			if ($unit->getId() === $unitId) {
-				return $unit;
-			}
-		}
-
-		return $this->unitManager->get()->getDefaultUnit();
-	}
 
 	/**
 	 * @param array $invoiceData
@@ -929,7 +873,9 @@ class InvoiceHelper
 					'tin' => $depositInvoice->getCustomerTin() ?? '',
 				];
 			} elseif ($invoiceData['customer']['cin'] !== $depositInvoice->getCustomerCin()) {
-				throw new InvoiceException('IČ odběratele na zálohové faktuře se neshoduje s IČ odběratele na upravované faktuře.');
+				throw new InvoiceException(
+					'IČ odběratele na zálohové faktuře se neshoduje s IČ odběratele na upravované faktuře.'
+				);
 			}
 
 			if ($invoiceData['currency'] !== $depositInvoice->getCurrency()->getCode()) {
@@ -946,11 +892,18 @@ class InvoiceHelper
 				'id' => $depositInvoice->getId(),
 				'number' => $depositInvoice->getNumber(),
 				'itemPrice' => $depositInvoice->getItemTotalPrice(),
-				'itemPriceFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency())),
+				'itemPriceFormatted' => str_replace(
+					'&nbsp;', ' ',
+					Number::formatPrice($depositInvoice->getItemTotalPrice(), $depositInvoice->getCurrency())
+				),
 				'tax' => $depositInvoice->getTotalTax(),
-				'taxFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalTax(), $depositInvoice->getCurrency())),
+				'taxFormatted' => str_replace(
+					'&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalTax(), $depositInvoice->getCurrency())
+				),
 				'price' => $depositInvoice->getTotalPrice(),
-				'priceFormatted' => str_replace('&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalPrice(), $depositInvoice->getCurrency())),
+				'priceFormatted' => str_replace(
+					'&nbsp;', ' ', Number::formatPrice($depositInvoice->getTotalPrice(), $depositInvoice->getCurrency())
+				),
 			];
 		} catch (NoResultException | NonUniqueResultException) {
 			throw new InvoiceException('Zálohová faktura s číslem: ' . $depositNumber . ' neexistuje.');
@@ -958,6 +911,7 @@ class InvoiceHelper
 
 		return $invoiceData;
 	}
+
 
 	/**
 	 * @param Company $company
@@ -986,5 +940,62 @@ class InvoiceHelper
 		}
 
 		return $ret;
+	}
+
+
+	/**
+	 * @param \DateTime $dateTax
+	 * @param \DateTime $dateDue
+	 * @return string
+	 */
+	private function getDueDayCount(\DateTime $dateTax, \DateTime $dateDue): string
+	{
+		$diff = (int) $dateDue->diff($dateTax)->format('%a');
+
+		$available = [
+			0 => '0',
+			7 => '7',
+			10 => '10',
+			14 => '14',
+			30 => '30',
+		];
+
+		return $available[$diff] ?? '';
+	}
+
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @throws EntityManagerException
+	 */
+	private function clearInvoiceItems(InvoiceCore $invoice): void
+	{
+		foreach ($invoice->getItems() as $item) {
+			$invoice->removeItem($item);
+			$this->entityManager->remove($item);
+		}
+	}
+
+
+	/**
+	 * @param string $unitId
+	 * @return Unit
+	 * @throws UnitException
+	 */
+	private function getUnit(string $unitId): Unit
+	{
+		static $cache;
+
+		if ($cache === null) {
+			$cache = $this->unitManager->get()->getUnits();
+		}
+
+		foreach ($cache as $unit) {
+			if ($unit->getId() === $unitId) {
+				return $unit;
+			}
+		}
+
+		return $this->unitManager->get()->getDefaultUnit();
 	}
 }

@@ -2,31 +2,39 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
-/**
- * Class ExpenseCategory
- * @package MatiCore\Invoice
- */
 class ExpenseCategory
 {
-
 	public const DEFAULT = null;
+
 	public const PROVOZNI_NAKLADY = 'provozni-naklady';
+
 	public const PROVOZNI_NAKLADY_MZDY = 'provozni-naklady-mzdy';
+
 	public const PROVOZNI_NAKLADY_VOZIDLA = 'provozni-naklady-vozidla';
+
 	public const NAKLADY_DOPRAVA = 'naklady-doprava';
+
 	public const NAKUP_VOZIK = 'nakup-vozik';
+
 	public const NAKUP_NAHRADNI_DILY = 'nakup-nahradni-dily';
+
 	public const SPOTREBNI_MATERIAL = 'spotrebni-material';
+
 	public const PENZIJNI_FOND = 'penzijni-fond';
+
 	public const REKLAMA = 'reklama';
+
 	public const DOBROPIS = 'dobropis';
+
 	public const DPH = 'tax';
+
 	public const ODVOD_STATU = 'state-pay';
+
 	public const UVER = 'uver';
+
 
 	/**
 	 * @param string $key
@@ -36,6 +44,7 @@ class ExpenseCategory
 	{
 		return self::getListAll()[$key] ?? 'unknown';
 	}
+
 
 	/**
 	 * @return array
@@ -55,6 +64,7 @@ class ExpenseCategory
 		];
 	}
 
+
 	/**
 	 * @return array
 	 */
@@ -73,6 +83,7 @@ class ExpenseCategory
 			self::DOBROPIS => 'Dobropis',
 		];
 	}
+
 
 	/**
 	 * @return array

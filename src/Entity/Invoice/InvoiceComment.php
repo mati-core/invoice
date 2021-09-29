@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
@@ -13,14 +12,11 @@ use Nette\SmartObject;
 use Nette\Utils\DateTime;
 
 /**
- * Class InvoiceHistory
- * @package App\Model
  * @ORM\Entity()
  * @ORM\Table(name="invoice__invoice_comment")
  */
 class InvoiceComment
 {
-
 	use SmartObject;
 	use UuidIdentifier;
 
@@ -49,8 +45,10 @@ class InvoiceComment
 	 */
 	private \DateTime $date;
 
+
 	/**
 	 * InvoiceComment constructor.
+	 *
 	 * @param InvoiceCore $invoice
 	 * @param string $description
 	 * @throws \Exception
@@ -62,6 +60,7 @@ class InvoiceComment
 		$this->date = DateTime::from('NOW');
 	}
 
+
 	/**
 	 * @return InvoiceCore
 	 */
@@ -69,6 +68,7 @@ class InvoiceComment
 	{
 		return $this->invoice;
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -78,6 +78,7 @@ class InvoiceComment
 		$this->invoice = $invoice;
 	}
 
+
 	/**
 	 * @return BaseUser|null
 	 */
@@ -85,6 +86,7 @@ class InvoiceComment
 	{
 		return $this->user;
 	}
+
 
 	/**
 	 * @param BaseUser|null $user
@@ -94,21 +96,18 @@ class InvoiceComment
 		$this->user = $user;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
-	/**
-	 * @param string $description
-	 */
+
 	public function setDescription(string $description): void
 	{
 		$this->description = $description;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -117,6 +116,7 @@ class InvoiceComment
 	{
 		return $this->date;
 	}
+
 
 	/**
 	 * @param \DateTime $date

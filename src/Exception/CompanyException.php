@@ -2,17 +2,11 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Company;
 
 
-/**
- * Class CompanyException
- * @package MatiCore\Company
- */
 class CompanyException extends \Exception
 {
-
 	/**
 	 * @throws CompanyException
 	 */
@@ -21,6 +15,7 @@ class CompanyException extends \Exception
 		throw new self('Firmu nelze odstranit, protože je používána.');
 	}
 
+
 	/**
 	 * @throws CompanyException
 	 */
@@ -28,5 +23,4 @@ class CompanyException extends \Exception
 	{
 		throw new self('Pobočku nelze odstranit, protože je používána.');
 	}
-
 }

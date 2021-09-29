@@ -14,28 +14,20 @@ use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
 use Mpdf\MpdfException;
 use Mpdf\Output\Destination;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
-use setasign\Fpdi\PdfParser\PdfParserException;
-use setasign\Fpdi\PdfParser\Type\PdfTypeException;
 use Nette\Application\UI\ITemplateFactory;
 use Nette\Utils\DateTime;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Strings;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
+use setasign\Fpdi\PdfParser\PdfParserException;
+use setasign\Fpdi\PdfParser\Type\PdfTypeException;
 use Tracy\Debugger;
 
-/**
- * Class ExportManager
- * @package App\Model
- */
 class ExportManager
 {
-
-	/**
-	 * @var string
-	 */
 	private string $tempDir;
 
 	/**
@@ -43,37 +35,27 @@ class ExportManager
 	 */
 	private array $config;
 
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var ITemplateFactory
-	 */
 	private ITemplateFactory $templateFactory;
 
-	/**
-	 * @var CurrencyManager
-	 */
 	private CurrencyManager $currencyManager;
 
+
 	/**
-	 * ExportManager constructor.
-	 * @param string $tempDir
 	 * @param array $config
-	 * @param EntityManager $entityManager
-	 * @param ITemplateFactory $templateFactory
-	 * @param CurrencyManager $currencyManager
 	 */
-	public function __construct(string $tempDir, array $config, EntityManager $entityManager, ITemplateFactory $templateFactory, CurrencyManager $currencyManager)
-	{
+	public function __construct(
+		string $tempDir, array $config, EntityManager $entityManager, ITemplateFactory $templateFactory,
+		CurrencyManager $currencyManager
+	) {
 		$this->tempDir = $tempDir;
 		$this->config = $config;
 		$this->entityManager = $entityManager;
 		$this->templateFactory = $templateFactory;
 		$this->currencyManager = $currencyManager;
 	}
+
 
 	/**
 	 * @param array $invoices
@@ -102,8 +84,11 @@ class ExportManager
 			$files[] = $tmpFile;
 		}
 
-		return $this->mergePDF($files, Destination::DOWNLOAD, $this->config['invoice']['filename'] . date('Ymd_His') . '.pdf');
+		return $this->mergePDF(
+			$files, Destination::DOWNLOAD, $this->config['invoice']['filename'] . date('Ymd_His') . '.pdf'
+		);
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -124,6 +109,7 @@ class ExportManager
 		return $name;
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @param string $destination
@@ -132,8 +118,9 @@ class ExportManager
 	 * @throws CurrencyException
 	 * @throws MpdfException
 	 */
-	public function exportInvoiceToPDF(InvoiceCore $invoice, string $destination = Destination::DOWNLOAD, ?string $file = null): ?string
-	{
+	public function exportInvoiceToPDF(
+		InvoiceCore $invoice, string $destination = Destination::DOWNLOAD, ?string $file = null
+	): ?string {
 		$name = $this->getExportInvoiceFileName($invoice);
 
 		$template = $this->templateFactory->createTemplate();
@@ -204,38 +191,6 @@ class ExportManager
 		return $pdf->Output($name, $destination);
 	}
 
-	/**
-	 * @param string|null $txt
-	 * @param int $charToRow
-	 * @param int $skip
-	 * @param float $lineWeight
-	 * @return int
-	 */
-	private function getTextPBI(?string $txt, int $charToRow = 70, int $skip = 0, float $lineWeight = 1.5): int
-	{
-		$index = 0.0;
-
-		if ($txt !== null) {
-			$lines = explode("\n", $txt);
-			$index += count($lines) / $lineWeight;
-
-			foreach ($lines as $line) {
-				$charCount = strlen($line);
-				while ($charCount > $charToRow) {
-					$index++;
-					$charCount -= $charToRow;
-				}
-			}
-		}
-
-		$index -= $skip;
-
-		if ($index < 0) {
-			$index = 0;
-		}
-
-		return (int) round($index);
-	}
 
 	/**
 	 * @param array $files
@@ -244,8 +199,8 @@ class ExportManager
 	 * @return string|null
 	 * @throws MpdfException
 	 */
-	public function mergePDF(array $files, string $destination = Destination::DOWNLOAD, string $file = 'attachment.pdf'): ?string
-	{
+	public function mergePDF(array $files, string $destination = Destination::DOWNLOAD, string $file = 'attachment.pdf'
+	): ?string {
 		$pdf = new Mpdf();
 
 		try {
@@ -280,6 +235,7 @@ class ExportManager
 		return $pdf->Output($file, $destination);
 	}
 
+
 	/**
 	 * @param int $alertNumber
 	 * @param InvoiceCore $invoice
@@ -289,8 +245,10 @@ class ExportManager
 	 * @return string|null
 	 * @throws MpdfException
 	 */
-	public function exportInvoiceAlertToPDF(int $alertNumber, InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null)
-	{
+	public function exportInvoiceAlertToPDF(
+		int $alertNumber, InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD,
+		?string $file = null
+	) {
 		$template = $this->templateFactory->createTemplate();
 		$template->invoice = $invoice;
 		$template->newDueDate = $newDueDate;
@@ -345,6 +303,7 @@ class ExportManager
 		return $pdf->Output($name, $destination);
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @param \DateTime $newDueDate
@@ -353,23 +312,12 @@ class ExportManager
 	 * @return string|null
 	 * @throws MpdfException
 	 */
-	public function exportInvoiceAlertOneToPDF(InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null): ?string
-	{
+	public function exportInvoiceAlertOneToPDF(
+		InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null
+	): ?string {
 		return $this->exportInvoiceAlertToPDF(1, $invoice, $newDueDate, $destination, $file);
 	}
 
-	/**
-	 * @param InvoiceCore $invoice
-	 * @param \DateTime $newDueDate
-	 * @param string $destination
-	 * @param string|null $file
-	 * @return string|null
-	 * @throws MpdfException
-	 */
-	public function exportInvoiceAlertTwoToPDF(InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null): ?string
-	{
-		return $this->exportInvoiceAlertToPDF(2, $invoice, $newDueDate, $destination, $file);
-	}
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -379,10 +327,27 @@ class ExportManager
 	 * @return string|null
 	 * @throws MpdfException
 	 */
-	public function exportInvoiceAlertThreeToPDF(InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null): ?string
-	{
+	public function exportInvoiceAlertTwoToPDF(
+		InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null
+	): ?string {
+		return $this->exportInvoiceAlertToPDF(2, $invoice, $newDueDate, $destination, $file);
+	}
+
+
+	/**
+	 * @param InvoiceCore $invoice
+	 * @param \DateTime $newDueDate
+	 * @param string $destination
+	 * @param string|null $file
+	 * @return string|null
+	 * @throws MpdfException
+	 */
+	public function exportInvoiceAlertThreeToPDF(
+		InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null
+	): ?string {
 		return $this->exportInvoiceAlertToPDF(3, $invoice, $newDueDate, $destination, $file);
 	}
+
 
 	/**
 	 * @param InvoiceCore[] $invoices
@@ -392,8 +357,9 @@ class ExportManager
 	 * @throws CurrencyException
 	 * @throws MpdfException
 	 */
-	public function exportInvoiceSummaryToPDF(array $invoices, string $destination = Destination::DOWNLOAD, ?string $file = null): ?string
-	{
+	public function exportInvoiceSummaryToPDF(
+		array $invoices, string $destination = Destination::DOWNLOAD, ?string $file = null
+	): ?string {
 		$name = $this->config['summary']['filename'] . date('Ymd_His') . '.pdf';
 
 		$currency = $this->currencyManager->getDefaultCurrency();
@@ -458,6 +424,7 @@ class ExportManager
 
 		return $pdf->Output($name, $destination);
 	}
+
 
 	/**
 	 * @param \DateTime $date
@@ -542,7 +509,9 @@ class ExportManager
 		$sheet->getStyle('K')->getAlignment()->setHorizontal('right');
 
 		$sheet->setCellValue('B4', Strings::upper(Date::getCzechMonthName($startDate)) . ' ' . $startDate->format('Y'));
-		$sheet->setCellValue('D4', 'termín pro podání hlášení je Celní správou stanoven - 12. pracovní den následujícího měsíce');
+		$sheet->setCellValue(
+			'D4', 'termín pro podání hlášení je Celní správou stanoven - 12. pracovní den následujícího měsíce'
+		);
 
 		$spreadsheet->getActiveSheet()->getStyle('B4')->getFont()->setUnderline(true);
 		$spreadsheet->getActiveSheet()->getStyle('B6:K6')->getFont()->setBold(true);
@@ -566,8 +535,13 @@ class ExportManager
 			$sheet->setCellValue('B' . $rowId, $i++);
 			$sheet->setCellValue('C' . $rowId, $expense->getSupplierCountry()->getIsoCode());
 			$sheet->setCellValue('D' . $rowId, $expense->getSupplierCountry()->getIsoCode());
-			$sheet->setCellValue('E' . $rowId, $expense->getDeliveryType() === 5 ? '3,4' : (string) $expense->getDeliveryType());
-			$sheet->setCellValue('F' . $rowId, str_replace('&nbsp;', ' ', Number::formatPrice($expense->getTotalPrice(), $expense->getCurrency())));
+			$sheet->setCellValue(
+				'E' . $rowId, $expense->getDeliveryType() === 5 ? '3,4' : (string) $expense->getDeliveryType()
+			);
+			$sheet->setCellValue(
+				'F' . $rowId,
+				str_replace('&nbsp;', ' ', Number::formatPrice($expense->getTotalPrice(), $expense->getCurrency()))
+			);
 			$sheet->setCellValue('G' . $rowId, str_replace('.', ',', (string) $expense->getWeight()));
 			$sheet->setCellValue('H' . $rowId, str_replace(' ', '', $expense->getProductCode() ?? ''));
 			$sheet->setCellValue('I' . $rowId, $expense->getSupplierName());
@@ -602,6 +576,7 @@ class ExportManager
 		die;
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @return string
@@ -623,6 +598,7 @@ class ExportManager
 		return $this->config['invoice']['color'] ?? 'rgb(74, 164, 50)';
 	}
 
+
 	/**
 	 * @return string|null
 	 */
@@ -630,6 +606,7 @@ class ExportManager
 	{
 		return $this->config['email'] ?? null;
 	}
+
 
 	/**
 	 * @return string|null
@@ -639,6 +616,7 @@ class ExportManager
 		return $this->config['phone'] ?? null;
 	}
 
+
 	/**
 	 * @return string|null
 	 */
@@ -646,6 +624,7 @@ class ExportManager
 	{
 		return $this->config['companyDescription'] ?? null;
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -668,6 +647,7 @@ class ExportManager
 		return $this->config['invoice']['description'] ?? null;
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @return string|null
@@ -689,6 +669,7 @@ class ExportManager
 		return $this->config['invoice']['additionalDescription'] ?? null;
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @return array<string|null>
@@ -702,5 +683,39 @@ class ExportManager
 			'footerEmail' => $this->getFooterEmail(),
 			'footerPhone' => $this->getFooterPhone(),
 		];
+	}
+
+
+	/**
+	 * @param string|null $txt
+	 * @param int $charToRow
+	 * @param int $skip
+	 * @param float $lineWeight
+	 * @return int
+	 */
+	private function getTextPBI(?string $txt, int $charToRow = 70, int $skip = 0, float $lineWeight = 1.5): int
+	{
+		$index = 0.0;
+
+		if ($txt !== null) {
+			$lines = explode("\n", $txt);
+			$index += count($lines) / $lineWeight;
+
+			foreach ($lines as $line) {
+				$charCount = strlen($line);
+				while ($charCount > $charToRow) {
+					$index++;
+					$charCount -= $charToRow;
+				}
+			}
+		}
+
+		$index -= $skip;
+
+		if ($index < 0) {
+			$index = 0;
+		}
+
+		return (int) round($index);
 	}
 }

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
@@ -13,14 +12,11 @@ use MatiCore\Unit\Unit;
 use Nette\SmartObject;
 
 /**
- * Class InvoiceItem
- * @package MatiCore\Invoice
  * @ORM\Entity()
  * @ORM\Table(name="invoice__invoice_item")
  */
 class InvoiceItem
 {
-
 	use SmartObject;
 	use UuidIdentifier;
 
@@ -98,22 +94,26 @@ class InvoiceItem
 	 */
 	private string $saleDescription = 'Sleva';
 
+
 	/**
 	 * InvoiceItem constructor.
+	 *
 	 * @param InvoiceCore $invoice
 	 * @param string $description
 	 * @param float $quantity
 	 * @param Unit $unit
 	 * @param float $pricePerItem
 	 */
-	public function __construct(InvoiceCore $invoice, string $description, float $quantity, Unit $unit, float $pricePerItem)
-	{
+	public function __construct(
+		InvoiceCore $invoice, string $description, float $quantity, Unit $unit, float $pricePerItem
+	) {
 		$this->invoice = $invoice;
 		$this->description = $description;
 		$this->quantity = $quantity;
 		$this->unit = $unit;
 		$this->pricePerItem = $pricePerItem;
 	}
+
 
 	/**
 	 * @return InvoiceCore
@@ -123,6 +123,7 @@ class InvoiceItem
 		return $this->invoice;
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 */
@@ -131,21 +132,18 @@ class InvoiceItem
 		$this->invoice = $invoice;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
-	/**
-	 * @param string $description
-	 */
+
 	public function setDescription(string $description): void
 	{
 		$this->description = $description;
 	}
+
 
 	/**
 	 * @return string|null
@@ -155,13 +153,12 @@ class InvoiceItem
 		return $this->code;
 	}
 
-	/**
-	 * @param string|null $code
-	 */
+
 	public function setCode(?string $code): void
 	{
 		$this->code = $code;
 	}
+
 
 	/**
 	 * @return Unit
@@ -171,6 +168,7 @@ class InvoiceItem
 		return $this->unit;
 	}
 
+
 	/**
 	 * @param Unit $unit
 	 */
@@ -179,9 +177,7 @@ class InvoiceItem
 		$this->unit = $unit;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getPricePerItemWithVat(): float
 	{
 		$price = $this->getPricePerItem();
@@ -189,21 +185,18 @@ class InvoiceItem
 		return $price + (($price / 100) * $this->getVat());
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getPricePerItem(): float
 	{
 		return $this->pricePerItem;
 	}
 
-	/**
-	 * @param float $pricePerItem
-	 */
+
 	public function setPricePerItem(float $pricePerItem): void
 	{
 		$this->pricePerItem = $pricePerItem;
 	}
+
 
 	/**
 	 * @return float|null
@@ -213,13 +206,12 @@ class InvoiceItem
 		return $this->buyPrice;
 	}
 
-	/**
-	 * @param float|null $buyPrice
-	 */
+
 	public function setBuyPrice(?float $buyPrice): void
 	{
 		$this->buyPrice = $buyPrice;
 	}
+
 
 	/**
 	 * @return Currency|null
@@ -229,6 +221,7 @@ class InvoiceItem
 		return $this->buyCurrency;
 	}
 
+
 	/**
 	 * @param Currency|null $buyCurrency
 	 */
@@ -236,6 +229,7 @@ class InvoiceItem
 	{
 		$this->buyCurrency = $buyCurrency;
 	}
+
 
 	/**
 	 * @param Currency $currency
@@ -264,6 +258,7 @@ class InvoiceItem
 		return $price;
 	}
 
+
 	/**
 	 * @param Currency $currency
 	 * @return float
@@ -273,113 +268,85 @@ class InvoiceItem
 		return $this->getQuantity() * $this->getBuyPriceInCurrency($currency);
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getVat(): float
 	{
 		return $this->vat;
 	}
 
-	/**
-	 * @param float $vat
-	 */
+
 	public function setVat(float $vat): void
 	{
 		$this->vat = $vat;
 	}
 
-	/**
-	 * @return int
-	 */
+
 	public function getPosition(): int
 	{
 		return $this->position;
 	}
 
-	/**
-	 * @param int $position
-	 */
+
 	public function setPosition(int $position): void
 	{
 		$this->position = $position;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getSaleDescription(): string
 	{
 		return $this->saleDescription;
 	}
 
-	/**
-	 * @param string $saleDescription
-	 */
+
 	public function setSaleDescription(string $saleDescription): void
 	{
 		$this->saleDescription = $saleDescription;
 	}
 
-	/**
-	 * @return int
-	 */
+
 	public function getSale(): int
 	{
 		return $this->sale;
 	}
 
-	/**
-	 * @param int $sale
-	 */
+
 	public function setSale(int $sale): void
 	{
 		$this->sale = $sale;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getSalePrice(): float
 	{
 		return -(($this->getTotalPrice() / 100) * $this->sale);
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPrice(): float
 	{
 		return $this->pricePerItem * $this->getQuantity();
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getQuantity(): float
 	{
 		return $this->quantity;
 	}
 
-	/**
-	 * @param float $quantity
-	 */
+
 	public function setQuantity(float $quantity): void
 	{
 		$this->quantity = $quantity;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getSalePriceWithVat(): float
 	{
 		return -(($this->getTotalPriceWithVat() / 100) * $this->sale);
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPriceWithVat(): float
 	{
 		$totalPrice = $this->getTotalPrice();

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Api;
 
 
-use Baraja\Doctrine\DatabaseException;
 use Baraja\Doctrine\EntityManagerException;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
@@ -17,18 +16,14 @@ use MatiCore\Currency\CurrencyManagerAccessor;
 use MatiCore\Invoice\InvoiceException;
 use MatiCore\Invoice\InvoiceHelper;
 use MatiCore\Unit\UnitException;
-use Nette\Application\LinkGenerator;
 use Nette\Security\User;
 use Nette\Utils\DateTime;
 
 /**
- * Class SignEndpoint
- * @package App\Api
  * @public
  */
 class InvoiceEndpoint extends BaseEndpoint
 {
-
 	/**
 	 * @var User
 	 * @inject
@@ -53,6 +48,7 @@ class InvoiceEndpoint extends BaseEndpoint
 	 */
 	public CurrencyManagerAccessor $currencyManager;
 
+
 	/**
 	 * @param string $id
 	 */
@@ -65,13 +61,16 @@ class InvoiceEndpoint extends BaseEndpoint
 				$invoiceData = $this->invoiceHelper->getInvoiceById($id);
 			}
 
-			$this->sendOk([
-				'invoice' => $invoiceData,
-			]);
+			$this->sendOk(
+				[
+					'invoice' => $invoiceData,
+				]
+			);
 		} catch (InvoiceException | CurrencyException | EntityManagerException | UnitException $e) {
 			$this->sendError($e->getMessage());
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -81,13 +80,16 @@ class InvoiceEndpoint extends BaseEndpoint
 		try {
 			$invoiceData = $this->invoiceHelper->getFixInvoiceById($id);
 
-			$this->sendOk([
-				'invoice' => $invoiceData,
-			]);
+			$this->sendOk(
+				[
+					'invoice' => $invoiceData,
+				]
+			);
 		} catch (EntityManagerException | UnitException $e) {
 			$this->sendError($e->getMessage());
 		}
 	}
+
 
 	/**
 	 * @param array $invoiceData
@@ -100,13 +102,16 @@ class InvoiceEndpoint extends BaseEndpoint
 		try {
 			$invoiceData = $this->invoiceHelper->addDepositInvoice($invoiceData, $depositNumber);
 
-			$this->sendOk([
-				'invoice' => $invoiceData,
-			]);
+			$this->sendOk(
+				[
+					'invoice' => $invoiceData,
+				]
+			);
 		} catch (InvoiceException $e) {
 			$this->sendError($e->getMessage());
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -126,39 +131,43 @@ class InvoiceEndpoint extends BaseEndpoint
 
 			$depositList = $this->invoiceHelper->getDepositList($company);
 
-			$this->sendOk([
-				'customer' => [
-					'id' => $company->getId(),
-					'name' => $company->getName(),
-					'address' => $company->getInvoiceAddress()->getStreet(),
-					'city' => $company->getInvoiceAddress()->getCity(),
-					'zipCode' => $company->getInvoiceAddress()->getZipCode(),
-					'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
-					'cin' => $company->getInvoiceAddress()->getCin(),
-					'tin' => $company->getInvoiceAddress()->getTin(),
-					'depositList' => $depositList,
-				],
-				'currency' => $company->getCurrency()->getCode(),
-				'date' => $now->format('Y-m-d'),
-				'dateTax' => $now->format('Y-m-d'),
-				'dateDue' => $now->modify('+' . $company->getInvoiceDueDayCount() . ' days')->format('Y-m-d'),
-				'dateDueSelect' => $dueSelect,
-			]);
+			$this->sendOk(
+				[
+					'customer' => [
+						'id' => $company->getId(),
+						'name' => $company->getName(),
+						'address' => $company->getInvoiceAddress()->getStreet(),
+						'city' => $company->getInvoiceAddress()->getCity(),
+						'zipCode' => $company->getInvoiceAddress()->getZipCode(),
+						'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
+						'cin' => $company->getInvoiceAddress()->getCin(),
+						'tin' => $company->getInvoiceAddress()->getTin(),
+						'depositList' => $depositList,
+					],
+					'currency' => $company->getCurrency()->getCode(),
+					'date' => $now->format('Y-m-d'),
+					'dateTax' => $now->format('Y-m-d'),
+					'dateDue' => $now->modify('+' . $company->getInvoiceDueDayCount() . ' days')->format('Y-m-d'),
+					'dateDueSelect' => $dueSelect,
+				]
+			);
 		} catch (NoResultException | NonUniqueResultException) {
-			$this->sendOk([
-				'customer' => [
-					'id' => null,
-					'name' => '',
-					'address' => '',
-					'city' => '',
-					'zipCode' => '',
-					'country' => 'CZE',
-					'cin' => '',
-					'tin' => '',
-					'depositList' => [],
-				],
-				'currency' => 'CZK',
-			]);
+			$this->sendOk(
+				[
+					'customer' => [
+						'id' => null,
+						'name' => '',
+						'address' => '',
+						'city' => '',
+						'zipCode' => '',
+						'country' => 'CZE',
+						'cin' => '',
+						'tin' => '',
+						'depositList' => [],
+					],
+					'currency' => 'CZK',
+				]
+			);
 		}
 	}
 
@@ -182,68 +191,75 @@ class InvoiceEndpoint extends BaseEndpoint
 
 			$depositList = $this->invoiceHelper->getDepositList($company);
 
-			$this->sendOk([
-				'customer' => [
-					'id' => $company->getId(),
-					'name' => $company->getName(),
-					'address' => $company->getInvoiceAddress()->getStreet(),
-					'city' => $company->getInvoiceAddress()->getCity(),
-					'zipCode' => $company->getInvoiceAddress()->getZipCode(),
-					'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
-					'cin' => $company->getInvoiceAddress()->getCin(),
-					'tin' => $company->getInvoiceAddress()->getTin(),
-					'depositList' => $depositList,
-				],
-				'currency' => $company->getCurrency()->getCode(),
-				'date' => $now->format('Y-m-d'),
-				'dateTax' => $now->format('Y-m-d'),
-				'dateDue' => $now->modify('+' . $company->getInvoiceDueDayCount() . ' days')->format('Y-m-d'),
-				'dateDueSelect' => $dueSelect,
-			]);
+			$this->sendOk(
+				[
+					'customer' => [
+						'id' => $company->getId(),
+						'name' => $company->getName(),
+						'address' => $company->getInvoiceAddress()->getStreet(),
+						'city' => $company->getInvoiceAddress()->getCity(),
+						'zipCode' => $company->getInvoiceAddress()->getZipCode(),
+						'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
+						'cin' => $company->getInvoiceAddress()->getCin(),
+						'tin' => $company->getInvoiceAddress()->getTin(),
+						'depositList' => $depositList,
+					],
+					'currency' => $company->getCurrency()->getCode(),
+					'date' => $now->format('Y-m-d'),
+					'dateTax' => $now->format('Y-m-d'),
+					'dateDue' => $now->modify('+' . $company->getInvoiceDueDayCount() . ' days')->format('Y-m-d'),
+					'dateDueSelect' => $dueSelect,
+				]
+			);
 		} catch (NoResultException | NonUniqueResultException) {
 			try {
 				$aresData = $this->companyManager->get()->getDataFromAres($cin);
 
-				$this->sendOk([
-					'customer' => [
-						'id' => null,
-						'name' => $aresData->company,
-						'address' => $aresData->street . ' ' . $aresData->house_number,
-						'city' => $aresData->city,
-						'zipCode' => $aresData->zip,
-						'country' => 'CZE',
-						'cin' => $aresData->in,
-						'tin' => $aresData->tin,
-						'depositList' => [],
-					],
-					'currency' => 'CZK',
-					'date' => $now->format('Y-m-d'),
-					'dateTax' => $now->format('Y-m-d'),
-					'dateDue' => $now->modify('+14 days')->format('Y-m-d'),
-					'dateDueSelect' => 14,
-				]);
+				$this->sendOk(
+					[
+						'customer' => [
+							'id' => null,
+							'name' => $aresData->company,
+							'address' => $aresData->street . ' ' . $aresData->house_number,
+							'city' => $aresData->city,
+							'zipCode' => $aresData->zip,
+							'country' => 'CZE',
+							'cin' => $aresData->in,
+							'tin' => $aresData->tin,
+							'depositList' => [],
+						],
+						'currency' => 'CZK',
+						'date' => $now->format('Y-m-d'),
+						'dateTax' => $now->format('Y-m-d'),
+						'dateDue' => $now->modify('+14 days')->format('Y-m-d'),
+						'dateDueSelect' => 14,
+					]
+				);
 			} catch (IdentificationNumberNotFoundException $e) {
-				$this->sendOk([
-					'customer' => [
-						'id' => null,
-						'name' => '',
-						'address' => '',
-						'city' => '',
-						'zipCode' => '',
-						'country' => 'CZE',
-						'cin' => '',
-						'tin' => '',
-						'depositList' => [],
-					],
-					'currency' => 'CZK',
-					'date' => $now->format('Y-m-d'),
-					'dateTax' => $now->format('Y-m-d'),
-					'dateDue' => $now->modify('+14 days')->format('Y-m-d'),
-					'dateDueSelect' => 14,
-				]);
+				$this->sendOk(
+					[
+						'customer' => [
+							'id' => null,
+							'name' => '',
+							'address' => '',
+							'city' => '',
+							'zipCode' => '',
+							'country' => 'CZE',
+							'cin' => '',
+							'tin' => '',
+							'depositList' => [],
+						],
+						'currency' => 'CZK',
+						'date' => $now->format('Y-m-d'),
+						'dateTax' => $now->format('Y-m-d'),
+						'dateDue' => $now->modify('+14 days')->format('Y-m-d'),
+						'dateDueSelect' => 14,
+					]
+				);
 			}
 		}
 	}
+
 
 	/**
 	 * @param array $invoiceData
@@ -253,13 +269,16 @@ class InvoiceEndpoint extends BaseEndpoint
 		try {
 			$invoiceData = $this->invoiceHelper->reloadInvoiceNumber($invoiceData);
 
-			$this->sendOk([
-				'invoice' => $invoiceData,
-			]);
+			$this->sendOk(
+				[
+					'invoice' => $invoiceData,
+				]
+			);
 		} catch (InvoiceException $e) {
 			$this->sendError($e->getMessage());
 		}
 	}
+
 
 	/**
 	 * @param string $isoCode
@@ -274,19 +293,22 @@ class InvoiceEndpoint extends BaseEndpoint
 				DateTime::from($invoiceData['dateTax'] ?? 'NOW')
 			);
 
-			$this->sendOk([
-				'currency' => [
-					'id' => $currency->getId(),
-					'code' => $currency->getCode(),
-					'symbol' => $currency->getSymbol(),
-					'rate' => $currencyTemp->getRate(),
-					'rateDate' => $currencyTemp->getLastUpdate()->format('d.m.Y'),
-				],
-			]);
+			$this->sendOk(
+				[
+					'currency' => [
+						'id' => $currency->getId(),
+						'code' => $currency->getCode(),
+						'symbol' => $currency->getSymbol(),
+						'rate' => $currencyTemp->getRate(),
+						'rateDate' => $currencyTemp->getLastUpdate()->format('d.m.Y'),
+					],
+				]
+			);
 		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->sendError($e->getMessage());
 		}
 	}
+
 
 	/**
 	 * @param array $invoiceData
@@ -296,10 +318,12 @@ class InvoiceEndpoint extends BaseEndpoint
 		try {
 			$invoiceData = $this->invoiceHelper->saveInvoice($invoiceData);
 
-			$this->sendOk([
-				'invoice' => $invoiceData,
-				'redirect' => $this->link('Admin:Invoice:show', ['id' => $invoiceData['id']]),
-			]);
+			$this->sendOk(
+				[
+					'invoice' => $invoiceData,
+					'redirect' => $this->link('Admin:Invoice:show', ['id' => $invoiceData['id']]),
+				]
+			);
 		} catch (EntityManagerException | UnitException | CurrencyException $e) {
 			$this->sendError($e->getMessage());
 		}

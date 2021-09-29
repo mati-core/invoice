@@ -38,18 +38,8 @@ use Nette\Utils\Strings;
 use Tracy\Debugger;
 use Ublaboo\DataGrid\Exception\DataGridException;
 
-/**
- * Class CompanyInnerPackagePresenter
- * @package App\AdminModule\Presenters
- */
 class CompanyInnerPackagePresenter extends BaseAdminPresenter
 {
-
-	/**
-	 * @var string
-	 */
-	protected string $pageRight = 'page__company';
-
 	/**
 	 * @var CompanyManagerAccessor
 	 * @inject
@@ -68,19 +58,21 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	public CurrencyManagerAccessor $currencyManager;
 
-	use FormFactoryTrait;
-
 	/**
 	 * @var InvoiceManagerAccessor
 	 * @inject
 	 */
 	public InvoiceManagerAccessor $invoiceManager;
 
+	use FormFactoryTrait;
+
 	/**
 	 * @var CompanyInvoiceStatisticsControl
 	 * @inject
 	 */
 	public CompanyInvoiceStatisticsControl $invoiceStatisticsControl;
+
+	protected string $pageRight = 'page__company';
 
 	/**
 	 * @var Data|null
@@ -107,6 +99,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	private int $returnButton = 0;
 
+
 	public function actionDefault(): void
 	{
 		$companies = $this->companyManager->get()->getCompanies();
@@ -124,6 +117,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 		$this->template->companies = $companies;
 	}
+
 
 	/**
 	 * @param string|null $ic
@@ -145,6 +139,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -160,6 +155,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -179,6 +175,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -195,6 +192,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -210,6 +208,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -229,6 +228,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -244,6 +244,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $companyId
@@ -274,6 +275,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $companyId
 	 * @param string|null $companyStockId
@@ -297,6 +299,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -318,6 +321,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -334,6 +338,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -356,6 +361,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		}
 	}
 
+
 	/**
 	 * @param string $id
 	 * @throws AbortException
@@ -375,6 +381,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->redirect('default');
 	}
+
 
 	/**
 	 * @param string $id
@@ -398,6 +405,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->redirect('default');
 	}
+
 
 	/**
 	 * @return Form
@@ -460,9 +468,10 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $value
 		 */
-		$form->onValidate[] = function (Form $form, ArrayHash $value): void {
+		$form->onValidate[] = function (Form $form, ArrayHash $value): void
+		{
 			try {
-				if($value->ic !== null) {
+				if ($value->ic !== null) {
 					$this->companyManager->get()->getCompanyByCIN($value->ic);
 
 					$form->addError('Tato firma je již v systému zavedena.');
@@ -476,7 +485,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$invoiceAddress = new Address($values->street, $values->city);
 				$invoiceAddress->setCompanyName($values->name);
@@ -509,6 +519,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @return Form
@@ -576,7 +587,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$invoiceAddress = $this->editedCompany->getInvoiceAddress();
 				$invoiceAddress->setStreet($values->street);
@@ -610,6 +622,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @return Form
@@ -649,7 +662,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$address = new Address($values->street, $values->city);
 				$address->setCompanyName($this->editedCompany->getInvoiceAddress()->getCompanyName());
@@ -686,6 +700,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @return Form
@@ -736,7 +751,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$address = $this->editedStock->getAddress();
 				$address->setStreet($values->street);
@@ -765,6 +781,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @return Form
@@ -806,7 +823,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			$companyStock = null;
 			if ($values->companyStock !== null) {
 				foreach ($this->editedCompany->getStocks() as $stock) {
@@ -836,7 +854,10 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->flashMessage('Kontakt byl úspěšně vytvořen.', 'success');
 
 			if ($this->editedStock !== null) {
-				$this->redirect('contact', ['companyId' => $this->editedCompany->getId(), 'companyStockId' => $this->editedStock->getId()]);
+				$this->redirect(
+					'contact',
+					['companyId' => $this->editedCompany->getId(), 'companyStockId' => $this->editedStock->getId()]
+				);
 			} else {
 				$this->redirect('contact', ['companyId' => $this->editedCompany->getId()]);
 			}
@@ -900,7 +921,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			$companyStock = null;
 			if ($values->companyStock !== null) {
 				foreach ($this->editedCompany->getStocks() as $stock) {
@@ -929,7 +951,10 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 
 			if ($this->editedStock !== null) {
-				$this->redirect('contact', ['companyId' => $this->editedCompany->getId(), 'companyStockId' => $this->editedStock->getId()]);
+				$this->redirect(
+					'contact',
+					['companyId' => $this->editedCompany->getId(), 'companyStockId' => $this->editedStock->getId()]
+				);
 			} else {
 				$this->redirect('contact', ['companyId' => $this->editedCompany->getId()]);
 			}
@@ -937,6 +962,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @param string $id
@@ -954,20 +980,25 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			}
 
 			if ($contact->getCompanyStock() !== null) {
-				$this->redirect('contact', [
-					'companyId' => $contact->getCompany()->getId(),
-					'companyStockId' => $contact->getCompanyStock()->getId(),
-				]);
+				$this->redirect(
+					'contact', [
+						'companyId' => $contact->getCompany()->getId(),
+						'companyStockId' => $contact->getCompanyStock()->getId(),
+					]
+				);
 			} else {
-				$this->redirect('contact', [
-					'companyId' => $contact->getCompany()->getId(),
-				]);
+				$this->redirect(
+					'contact', [
+						'companyId' => $contact->getCompany()->getId(),
+					]
+				);
 			}
 		} catch (NoResultException | NonUniqueResultException) {
 			$this->flashMessage('Požadovaný kontakt neexistuje.', 'error');
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @return Form
@@ -985,7 +1016,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$this->editedCompany->setNote($values->note);
 				$this->entityManager->getUnitOfWork()->commit($this->editedCompany);
@@ -1000,6 +1032,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @return Form
@@ -1017,7 +1050,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		 * @param Form $form
 		 * @param ArrayHash $values
 		 */
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$this->editedStock->setNote($values->note);
 				$this->entityManager->getUnitOfWork()->commit($this->editedStock);
@@ -1032,6 +1066,7 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @param string $name
@@ -1053,245 +1088,281 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				->setParameter('f', 0)
 				->andWhere('invoice.company = :company')
 				->setParameter('company', $this->editedCompany->getId())
-				->andWhere('invoice INSTANCE OF ' . Invoice::class . ' OR invoice INSTANCE OF ' . InvoiceProforma::class)
+				->andWhere(
+					'invoice INSTANCE OF ' . Invoice::class . ' OR invoice INSTANCE OF ' . InvoiceProforma::class
+				)
 				->orderBy('invoice.number', 'DESC')
 		);
 
-		$grid->setRowCallback(static function (InvoiceCore $invoice, Html $row): void {
-			$status = $invoice->getStatus();
-			if ($status === InvoiceStatus::ACCEPTED) {
-				$row->addClass('table-success');
+		$grid->setRowCallback(
+			static function (InvoiceCore $invoice, Html $row): void
+			{
+				$status = $invoice->getStatus();
+				if ($status === InvoiceStatus::ACCEPTED) {
+					$row->addClass('table-success');
 
-				return;
+					return;
+				}
+
+				if ($status === InvoiceStatus::DENIED) {
+					$row->addClass('table-danger');
+
+					return;
+				}
+
+				if ($status === InvoiceStatus::CREATED) {
+					$row->addClass('table-warning');
+
+					return;
+				}
+
+				if ($status === InvoiceStatus::PAY_ALERT_THREE) {
+					$row->addClass('table-danger');
+
+					return;
+				}
 			}
-
-			if ($status === InvoiceStatus::DENIED) {
-				$row->addClass('table-danger');
-
-				return;
-			}
-
-			if ($status === InvoiceStatus::CREATED) {
-				$row->addClass('table-warning');
-
-				return;
-			}
-
-			if ($status === InvoiceStatus::PAY_ALERT_THREE) {
-				$row->addClass('table-danger');
-
-				return;
-			}
-		});
+		);
 
 		$grid->addColumnText('number', 'Číslo')
-			->setRenderer(function (InvoiceCore $invoice): string {
-				$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
+			->setRenderer(
+				function (InvoiceCore $invoice): string
+				{
+					$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
 
-				return '<a href="' . $link . '">' . $invoice->getNumber() . '</a>'
-					. '<br>'
-					. '<small class="'
-					. InvoiceStatus::getColorByStatus($invoice->getStatus())
-					. '">'
-					. InvoiceStatus::getNameByStatus($invoice->getStatus())
-					. '</small>';;
-			})
+					return '<a href="' . $link . '">' . $invoice->getNumber() . '</a>'
+						. '<br>'
+						. '<small class="'
+						. InvoiceStatus::getColorByStatus($invoice->getStatus())
+						. '">'
+						. InvoiceStatus::getNameByStatus($invoice->getStatus())
+						. '</small>';;
+				}
+			)
 			->setFitContent()
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('company', 'Firma')
-			->setRenderer(function (InvoiceCore $invoice): string {
-				if ($invoice->getCompany() !== null) {
-					$link = $this->link('Company:detail', ['id' => $invoice->getCompany()->getId()]);
+			->setRenderer(
+				function (InvoiceCore $invoice): string
+				{
+					if ($invoice->getCompany() !== null) {
+						$link = $this->link('Company:detail', ['id' => $invoice->getCompany()->getId()]);
 
-					$ret = '<a href="' . $link . '">' . Strings::truncate($invoice->getCustomerName(), 60) . '</a>';
-				} else {
-					$ret = '<span class="text-blue">' . $invoice->getCustomerName() . '</span>';
+						$ret = '<a href="' . $link . '">' . Strings::truncate($invoice->getCustomerName(), 60) . '</a>';
+					} else {
+						$ret = '<span class="text-blue">' . $invoice->getCustomerName() . '</span>';
+					}
+
+					return $ret
+						. '<br>'
+						. '<small>'
+						. $invoice->getCustomerAddress() . ', '
+						. $invoice->getCustomerCity() . ', '
+						. $invoice->getCustomerPostalCode()
+						. '</small>';
+
 				}
-
-				return $ret
-					. '<br>'
-					. '<small>'
-					. $invoice->getCustomerAddress() . ', '
-					. $invoice->getCustomerCity() . ', '
-					. $invoice->getCustomerPostalCode()
-					. '</small>';
-
-			})
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('date', 'Vystaveno')
-			->setRenderer(static function (InvoiceCore $invoiceCore): string {
-				return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()->getName() . '</small>';
-			})
+			->setRenderer(
+				static function (InvoiceCore $invoiceCore): string
+				{
+					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
+							->getName() . '</small>';
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('taxDate', 'Daň. plnění')
-			->setRenderer(function (InvoiceCore $invoiceCore): string {
-				if ($invoiceCore->isProforma()) {
-					$invoice = $invoiceCore->getInvoice();
-					if ($invoice !== null) {
-						$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
-						$str = '<small><a href="' . $link . '" title="Faktura"><i class="fas fa-file-invoice"></i>&nbsp;' . $invoice->getNumber() . '</a></small>';
-					} else {
-						$str = '&nbsp;';
-					}
-					return '<span class="text-info"><small>Záloha</small></span><br>' . $str;
-				}
-
-				$str = '<small>&nbsp;</small>';
-
-				/** @var FixInvoice $fixInvoice */
-				$fixInvoice = $invoiceCore->getFixInvoice();
-				if ($fixInvoice !== null) {
-					$link = $this->link('Invoice:show', ['id' => $fixInvoice->getId()]);
-					$str = '<small><a href="' . $link . '" title="Dobropis" style="color: rgb(194, 0, 64);"><i class="fas fa-file-invoice"></i>&nbsp;' . $fixInvoice->getNumber();
-					if (
-						$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
-						|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
-					) {
-						if ($fixInvoice->getAcceptStatus1() === InvoiceStatus::WAITING) {
-							$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-						} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::DENIED) {
-							$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-						} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED) {
-							$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
+			->setRenderer(
+				function (InvoiceCore $invoiceCore): string
+				{
+					if ($invoiceCore->isProforma()) {
+						$invoice = $invoiceCore->getInvoice();
+						if ($invoice !== null) {
+							$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
+							$str = '<small><a href="' . $link . '" title="Faktura"><i class="fas fa-file-invoice"></i>&nbsp;' . $invoice->getNumber(
+								) . '</a></small>';
+						} else {
+							$str = '&nbsp;';
 						}
 
-						if ($fixInvoice->getAcceptStatus2() === InvoiceStatus::WAITING) {
-							$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-						} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::DENIED) {
-							$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-						} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
-							$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
-						}
+						return '<span class="text-info"><small>Záloha</small></span><br>' . $str;
 					}
-					$str .= '</a></small>';
-				}
 
-				return $invoiceCore->getTaxDate()->format('d.m.Y') . '<br>' . $str;
-			})
+					$str = '<small>&nbsp;</small>';
+
+					/** @var FixInvoice $fixInvoice */
+					$fixInvoice = $invoiceCore->getFixInvoice();
+					if ($fixInvoice !== null) {
+						$link = $this->link('Invoice:show', ['id' => $fixInvoice->getId()]);
+						$str = '<small><a href="' . $link . '" title="Dobropis" style="color: rgb(194, 0, 64);"><i class="fas fa-file-invoice"></i>&nbsp;' . $fixInvoice->getNumber(
+							);
+						if (
+							$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
+							|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
+						) {
+							if ($fixInvoice->getAcceptStatus1() === InvoiceStatus::WAITING) {
+								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
+							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::DENIED) {
+								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
+							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED) {
+								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
+							}
+
+							if ($fixInvoice->getAcceptStatus2() === InvoiceStatus::WAITING) {
+								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
+							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::DENIED) {
+								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
+							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
+								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
+							}
+						}
+						$str .= '</a></small>';
+					}
+
+					return $invoiceCore->getTaxDate()->format('d.m.Y') . '<br>' . $str;
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('dueDate', 'Splatnost')
-			->setRenderer(function (InvoiceCore $invoiceCore): string {
-				$ret = $invoiceCore->getDueDate()->format('d.m.Y');
+			->setRenderer(
+				function (InvoiceCore $invoiceCore): string
+				{
+					$ret = $invoiceCore->getDueDate()->format('d.m.Y');
 
-				if ($invoiceCore->isPaid() && $invoiceCore->getPayDate() !== null) {
-					$ret .= '<br><small class="text-success"><i class="fas fa-coins text-warning" title="Uhrazeno"></i>&nbsp;' . $invoiceCore->getPayDate()->format('d.m.Y') . '</small>';
+					if ($invoiceCore->isPaid() && $invoiceCore->getPayDate() !== null) {
+						$ret .= '<br><small class="text-success"><i class="fas fa-coins text-warning" title="Uhrazeno"></i>&nbsp;' . $invoiceCore->getPayDate(
+							)->format('d.m.Y') . '</small>';
 
-					if ($invoiceCore instanceof InvoiceProforma) {
-						$payDocument = $invoiceCore->getPayDocument();
-						if ($payDocument !== null) {
-							$link = $this->link('Invoice:show', ['id' => $payDocument->getId()]);
-							$ret .= '&nbsp;<small><a href="' . $link . '" style="color: rgb(75, 0, 150);" title="Doklad k přijaté platbě"><i class="fas fa-file-invoice-dollar"></i></a></small>';
+						if ($invoiceCore instanceof InvoiceProforma) {
+							$payDocument = $invoiceCore->getPayDocument();
+							if ($payDocument !== null) {
+								$link = $this->link('Invoice:show', ['id' => $payDocument->getId()]);
+								$ret .= '&nbsp;<small><a href="' . $link . '" style="color: rgb(75, 0, 150);" title="Doklad k přijaté platbě"><i class="fas fa-file-invoice-dollar"></i></a></small>';
+							}
+						}
+					} else {
+						$ret .= '<br>';
+						$diff = $invoiceCore->getPayDateDiff();
+						if ($diff < -4) {
+							$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dní</small>';
+						} elseif ($diff < -1) {
+							$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dny</small>';
+						} elseif ($diff < 0) {
+							$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' den</small>';
+						} elseif ($diff === 0) {
+							$ret .= '<small class="text-success">Dnes</small>';
+						} elseif ($diff > 4) {
+							$ret .= '<small class="text-danger">' . $diff . ' dní po splatnosti</small>';
+						} elseif ($diff > 1) {
+							$ret .= '<small class="text-danger">' . $diff . ' dny po splatnosti</small>';
+						} else {
+							$ret .= '<small class="text-danger">' . $diff . ' den po splatnosti</small>';
 						}
 					}
-				} else {
-					$ret .= '<br>';
-					$diff = $invoiceCore->getPayDateDiff();
-					if ($diff < -4) {
-						$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dní</small>';
-					} elseif ($diff < -1) {
-						$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' dny</small>';
-					} elseif ($diff < 0) {
-						$ret .= '<small class="text-success">zbývá&nbsp;' . -$diff . ' den</small>';
-					} elseif ($diff === 0) {
-						$ret .= '<small class="text-success">Dnes</small>';
-					} elseif ($diff > 4) {
-						$ret .= '<small class="text-danger">' . $diff . ' dní po splatnosti</small>';
-					} elseif ($diff > 1) {
-						$ret .= '<small class="text-danger">' . $diff . ' dny po splatnosti</small>';
-					} else {
-						$ret .= '<small class="text-danger">' . $diff . ' den po splatnosti</small>';
-					}
-				}
 
-				return $ret;
-			})
+					return $ret;
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('price', 'Částka')
-			->setRenderer(static function (InvoiceCore $invoiceCore) use ($currency): string {
-				$totalPrice = $invoiceCore->getTotalPrice();
-				if ($invoiceCore instanceof Invoice) {
-					$fixInvoice = $invoiceCore->getFixInvoice();
+			->setRenderer(
+				static function (InvoiceCore $invoiceCore) use ($currency): string
+				{
+					$totalPrice = $invoiceCore->getTotalPrice();
+					if ($invoiceCore instanceof Invoice) {
+						$fixInvoice = $invoiceCore->getFixInvoice();
 
-					if ($fixInvoice !== null) {
-						$totalPrice += $fixInvoice->getTotalPrice();
+						if ($fixInvoice !== null) {
+							$totalPrice += $fixInvoice->getTotalPrice();
+						}
 					}
-				}
 
-				if ($totalPrice < 0) {
-					return '<b class="text-danger">' . Number::formatPrice($totalPrice, $invoiceCore->getCurrency(), 2) . '</b>'
+					if ($totalPrice < 0) {
+						return '<b class="text-danger">' . Number::formatPrice(
+								$totalPrice, $invoiceCore->getCurrency(), 2
+							) . '</b>'
+							. '<br>'
+							. '<small>'
+							. Number::formatPrice($totalPrice * $invoiceCore->getRate(), $currency, 2)
+							. '</small>';
+					}
+
+					return '<b>' . Number::formatPrice($totalPrice, $invoiceCore->getCurrency(), 2) . '</b>'
 						. '<br>'
 						. '<small>'
 						. Number::formatPrice($totalPrice * $invoiceCore->getRate(), $currency, 2)
 						. '</small>';
 				}
-
-				return '<b>' . Number::formatPrice($totalPrice, $invoiceCore->getCurrency(), 2) . '</b>'
-					. '<br>'
-					. '<small>'
-					. Number::formatPrice($totalPrice * $invoiceCore->getRate(), $currency, 2)
-					. '</small>';
-			})
+			)
 			->setAlign('right')
 			->setFitContent()
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('accept', 'Schválení')
-			->setRenderer(function (InvoiceCore $invoiceCore): string {
-				if ($invoiceCore->isSubmitted() === false) {
-					return '<span class="text-warning">Editace</span>';
-				}
+			->setRenderer(
+				function (InvoiceCore $invoiceCore): string
+				{
+					if ($invoiceCore->isSubmitted() === false) {
+						return '<span class="text-warning">Editace</span>';
+					}
 
-				$ret = '';
-				$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
+					$ret = '';
+					$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 
-				if ($invoiceCore->getAcceptStatus1() === 'denied') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+					if ($invoiceCore->getAcceptStatus1() === 'denied') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+					} elseif ($invoiceCore->getAcceptStatus1() === 'waiting') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+					} elseif ($invoiceCore->getAcceptStatus1() === 'accepted') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-				}
+					}
 
-				$ret .= '&nbsp;';
+					$ret .= '&nbsp;';
 
-				if ($invoiceCore->getAcceptStatus2() === 'denied') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
+					if ($invoiceCore->getAcceptStatus2() === 'denied') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-danger">
 								<i class="fas fa-times fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
+					} elseif ($invoiceCore->getAcceptStatus2() === 'waiting') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-warning">
 								<i class="fas fa-clock fa-fw text-white"></i>
 							</a>';
-				} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
-					$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
+					} elseif ($invoiceCore->getAcceptStatus2() === 'accepted') {
+						$ret .= '<a href="' . $link . '" class="btn btn-xs btn-success">
 								<i class="fas fa-check fa-fw text-white"></i>
 							</a>';
-				}
+					}
 
-				return $ret;
-			})
+					return $ret;
+				}
+			)
 			->setAlign('center')
 			->setTemplateEscaping(false);
 
 		$grid->addAction('detail', 'Detail')
-			->setRenderer(function (InvoiceCore $invoiceCore) {
-				$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
+			->setRenderer(
+				function (InvoiceCore $invoiceCore)
+				{
+					$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 
-				return '<a class="btn btn-info btn-xs" href="' . $link . '">
+					return '<a class="btn btn-info btn-xs" href="' . $link . '">
 							<i class="fas fa-eye fa-fw"></i>
 						</a>';
-			});
+				}
+			);
 
 		//filtr
 
@@ -1308,20 +1379,24 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			'unpaid' => 'Neuhrazené',
 		];
 		$grid->addFilterSelect('status', 'Stav:', $statusList, 'status')
-			->setCondition(static function (QueryBuilder $qb, string $status): QueryBuilder {
-				if ($status === 'unpaid') {
-					$qb->andWhere('invoice.payDate IS NULL');
-				} elseif ($status === 'paid') {
-					$qb->andWhere('invoice.payDate IS NOT NULL');
-				}
+			->setCondition(
+				static function (QueryBuilder $qb, string $status): QueryBuilder
+				{
+					if ($status === 'unpaid') {
+						$qb->andWhere('invoice.payDate IS NULL');
+					} elseif ($status === 'paid') {
+						$qb->andWhere('invoice.payDate IS NOT NULL');
+					}
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		$grid->setOuterFilterRendering();
 
 		return $grid;
 	}
+
 
 	/**
 	 * @return CompanyInvoiceStatisticsControl

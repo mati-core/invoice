@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
+
 
 use Baraja\Doctrine\UUID\UuidIdentifier;
 use Doctrine\ORM\Mapping as ORM;
@@ -11,14 +11,11 @@ use MatiCore\Unit\Unit;
 use Nette\SmartObject;
 
 /**
- * Class ExpenseInvoiceItem
- * @package MatiCore\Invoice
  * @ORM\Entity()
  * @ORM\Table(name="invoice__expense_item")
  */
 class ExpenseInvoiceItem
 {
-
 	use UuidIdentifier;
 	use SmartObject;
 
@@ -66,8 +63,10 @@ class ExpenseInvoiceItem
 	 */
 	private int $position;
 
+
 	/**
 	 * ExpenseInvoiceItem constructor.
+	 *
 	 * @param Expense $expense
 	 * @param string $description
 	 * @param float $quantity
@@ -76,8 +75,10 @@ class ExpenseInvoiceItem
 	 * @param float $pricePerItem
 	 * @param int $position
 	 */
-	public function __construct(Expense $expense, string $description, float $quantity, Unit $unit, float $vat, float $pricePerItem, int $position)
-	{
+	public function __construct(
+		Expense $expense, string $description, float $quantity, Unit $unit, float $vat, float $pricePerItem,
+		int $position
+	) {
 		$this->expense = $expense;
 		$this->description = $description;
 		$this->quantity = $quantity;
@@ -87,6 +88,7 @@ class ExpenseInvoiceItem
 		$this->position = $position;
 	}
 
+
 	/**
 	 * @return Expense
 	 */
@@ -95,37 +97,30 @@ class ExpenseInvoiceItem
 		return $this->expense;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
-	/**
-	 * @param string $description
-	 */
+
 	public function setDescription(string $description): void
 	{
 		$this->description = $description;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getQuantity(): float
 	{
 		return $this->quantity;
 	}
 
-	/**
-	 * @param float $quantity
-	 */
+
 	public function setQuantity(float $quantity): void
 	{
 		$this->quantity = $quantity;
 	}
+
 
 	/**
 	 * @return Unit
@@ -135,6 +130,7 @@ class ExpenseInvoiceItem
 		return $this->unit;
 	}
 
+
 	/**
 	 * @param Unit $unit
 	 */
@@ -143,57 +139,43 @@ class ExpenseInvoiceItem
 		$this->unit = $unit;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getVat(): float
 	{
 		return $this->vat;
 	}
 
-	/**
-	 * @param float $vat
-	 */
+
 	public function setVat(float $vat): void
 	{
 		$this->vat = $vat;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getPricePerItem(): float
 	{
 		return $this->pricePerItem;
 	}
 
-	/**
-	 * @param float $pricePerItem
-	 */
+
 	public function setPricePerItem(float $pricePerItem): void
 	{
 		$this->pricePerItem = $pricePerItem;
 	}
 
-	/**
-	 * @return int
-	 */
+
 	public function getPosition(): int
 	{
 		return $this->position;
 	}
 
-	/**
-	 * @param int $position
-	 */
+
 	public function setPosition(int $position): void
 	{
 		$this->position = $position;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPrice(): float
 	{
 		return $this->getPricePerItem() * $this->getQuantity();

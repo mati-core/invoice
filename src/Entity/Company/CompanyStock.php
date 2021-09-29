@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Company;
 
 
@@ -13,14 +12,11 @@ use MatiCore\Address\Entity\Address;
 use Nette\SmartObject;
 
 /**
- * Class CompanyStock
- * @package MatiCore\Company
  * @ORM\Entity()
  * @ORM\Table(name="company__company_stock")
  */
 class CompanyStock
 {
-
 	use SmartObject;
 	use UuidIdentifier;
 
@@ -55,8 +51,10 @@ class CompanyStock
 	 */
 	private string|null $note;
 
+
 	/**
 	 * CompanyStock constructor.
+	 *
 	 * @param Company $company
 	 * @param string $name
 	 * @param Address $address
@@ -68,6 +66,7 @@ class CompanyStock
 		$this->address = $address;
 	}
 
+
 	/**
 	 * @return Company
 	 */
@@ -75,6 +74,7 @@ class CompanyStock
 	{
 		return $this->company;
 	}
+
 
 	/**
 	 * @param Company $company
@@ -84,6 +84,7 @@ class CompanyStock
 		$this->company = $company;
 	}
 
+
 	/**
 	 * @return Address
 	 */
@@ -91,6 +92,7 @@ class CompanyStock
 	{
 		return $this->address;
 	}
+
 
 	/**
 	 * @param Address $address
@@ -100,6 +102,7 @@ class CompanyStock
 		$this->address = $address;
 	}
 
+
 	/**
 	 * @return Collection|CompanyContact[]
 	 */
@@ -107,6 +110,7 @@ class CompanyStock
 	{
 		return $this->contacts;
 	}
+
 
 	/**
 	 * @param Collection|CompanyContact[] $contacts
@@ -116,21 +120,18 @@ class CompanyStock
 		$this->contacts = $contacts;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * @param string $name
-	 */
+
 	public function setName(string $name): void
 	{
 		$this->name = $name;
 	}
+
 
 	/**
 	 * @return string|null
@@ -140,9 +141,7 @@ class CompanyStock
 		return $this->note;
 	}
 
-	/**
-	 * @param string|null $note
-	 */
+
 	public function setNote(?string $note): void
 	{
 		$this->note = $note;

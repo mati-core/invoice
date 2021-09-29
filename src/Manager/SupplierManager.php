@@ -13,30 +13,18 @@ use MatiCore\Address\Entity\Address;
 use MatiCore\Address\Entity\Country;
 use MatiCore\Currency\Currency;
 
-/**
- * Class SupplierManager
- * @package MatiCore\Supplier
- */
 class SupplierManager
 {
-
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * SupplierManager constructor.
-	 * @param EntityManager $entityManager
-	 */
+
 	public function __construct(EntityManager $entityManager)
 	{
 		$this->entityManager = $entityManager;
 	}
 
+
 	/**
-	 * @param string $id
-	 * @return Supplier
 	 * @throws NoResultException
 	 * @throws NonUniqueResultException
 	 */
@@ -50,6 +38,7 @@ class SupplierManager
 			->getQuery()
 			->getSingleResult();
 	}
+
 
 	/**
 	 * @return array
@@ -71,6 +60,7 @@ class SupplierManager
 		return $cache;
 	}
 
+
 	/**
 	 * @return Supplier[]
 	 */
@@ -90,6 +80,7 @@ class SupplierManager
 		return $cache;
 	}
 
+
 	/**
 	 * @param string $name
 	 * @param Currency $currency
@@ -98,8 +89,8 @@ class SupplierManager
 	 * @param Country $country
 	 * @return Supplier
 	 */
-	public function createSupplier(string $name, Currency $currency, string $street, string $city, Country $country): Supplier
-	{
+	public function createSupplier(string $name, Currency $currency, string $street, string $city, Country $country
+	): Supplier {
 		$address = new Address($street, $city);
 		$address->setCountry($country);
 
@@ -111,6 +102,7 @@ class SupplierManager
 
 		return $supplier;
 	}
+
 
 	/**
 	 * @param Supplier $supplier

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AdminModule\Presenters;
 
+
 use Baraja\Doctrine\EntityManagerException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -22,6 +23,7 @@ use Tracy\Debugger;
 
 /**
  * Class SupplierInnerPackagePresenter
+ *
  * @package App\AdminModule\Presenters
  */
 class SupplierInnerPackagePresenter extends BaseAdminPresenter
@@ -52,16 +54,21 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	private Supplier|null $editedSupplier;
 
+
 	public function actionDefault(): void
 	{
 		try {
 			$this->countryManager->get()->getCountryByIsoCode('CZE')->getId();
-		} catch (NonUniqueResultException|NoResultException $e) {
-			$this->flashMessage('Seznam zemí není nainstalován. <a href="' . $this->link('Country:install') . '">Instalovat..</a>', 'warning');
+		} catch (NonUniqueResultException | NoResultException $e) {
+			$this->flashMessage(
+				'Seznam zemí není nainstalován. <a href="' . $this->link('Country:install') . '">Instalovat..</a>',
+				'warning'
+			);
 		}
 
 		$this->template->suppliers = $this->supplierManager->get()->getSuppliers();
 	}
+
 
 	/**
 	 * @param string $id
@@ -72,11 +79,12 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 		try {
 			$this->editedSupplier = $this->supplierManager->get()->getSupplierById($id);
 			$this->template->supplier = $this->editedSupplier;
-		} catch (NonUniqueResultException|NoResultException $e) {
+		} catch (NonUniqueResultException | NoResultException $e) {
 			$this->flashMessage('Požadovaný dodavatel neexistuje.', 'error');
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -89,7 +97,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$this->supplierManager->get()->removeSupplier($supplier);
 
 			$this->flashMessage('Dodavatel ' . $supplier->getName() . ' byl úspěšně odebrán ze seznamu.', 'info');
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Požadovaný dodavatel neexistuje.', 'error');
 		} catch (SupplierException $e) {
 			$this->flashMessage($e->getMessage(), 'error');
@@ -97,6 +105,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->redirect('default');
 	}
+
 
 	/**
 	 * @param string $id
@@ -109,7 +118,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$supplier->setActive(!$supplier->isActive());
 
 			$this->entityManager->getUnitOfWork()->commit($supplier);
-		} catch (NonUniqueResultException|NoResultException $e) {
+		} catch (NonUniqueResultException | NoResultException $e) {
 			$this->flashMessage('Požadovaný dodavatel neexistuje.', 'error');
 		} catch (EntityManagerException $e) {
 			Debugger::log($e);
@@ -118,6 +127,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->redirect('default');
 	}
+
 
 	/**
 	 * @return Form
@@ -151,21 +161,24 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 			$form->addSubmit('submit', 'Create');
 
-			$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+			$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+			{
 
 				try {
 					$currency = $this->currencyManager->get()->getCurrencyById($values->currency);
-				} catch (NonUniqueResultException|NoResultException $e) {
+				} catch (NonUniqueResultException | NoResultException $e) {
 					$currency = $this->currencyManager->get()->getDefaultCurrency();
 				}
 
 				try {
 					$country = $this->countryManager->get()->getCountryById($values->country);
-				} catch (NoResultException|NonUniqueResultException $e) {
+				} catch (NoResultException | NonUniqueResultException $e) {
 					$country = $this->countryManager->get()->getCountryByIsoCode('CZE');
 				}
 
-				$supplier = $this->supplierManager->get()->createSupplier($values->name, $currency, $values->street ?? '', $values->city ?? '', $country);
+				$supplier = $this->supplierManager->get()->createSupplier(
+					$values->name, $currency, $values->street ?? '', $values->city ?? '', $country
+				);
 				$supplier->getAddress()->setCin($values->cin === '' ? null : $values->cin);
 				$supplier->getAddress()->setTin($values->tin === '' ? null : $values->tin);
 				$supplier->setDeliveryCompany(
@@ -186,7 +199,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$this->flashMessage($e->getMessage(), 'error');
 
 			$this->redirect('Supplier:default');
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Seznam států není nainstalován.', 'error');
 
 			$this->redirect('Supplier:default');
@@ -196,6 +209,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('Supplier:default');
 		}
 	}
+
 
 	/**
 	 * @return Form
@@ -239,8 +253,8 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$form->addSelect('country', 'Země', $this->countryManager->get()->getCountriesForForm())
 				->setDefaultValue(
 					$this->editedSupplier->getAddress()->getCountry()
-					? $this->editedSupplier->getAddress()->getCountry()->getId()
-					: ''
+						? $this->editedSupplier->getAddress()->getCountry()->getId()
+						: ''
 				);
 
 			$form->addSubmit('submit', 'Save');
@@ -249,11 +263,12 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			 * @param Form $form
 			 * @param ArrayHash $values
 			 */
-			$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+			$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+			{
 
 				try {
 					$currency = $this->currencyManager->get()->getCurrencyById($values->currency);
-				} catch (NonUniqueResultException|NoResultException $e) {
+				} catch (NonUniqueResultException | NoResultException $e) {
 					$currency = $this->currencyManager->get()->getDefaultCurrency();
 				}
 
@@ -261,7 +276,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 				try {
 					$country = $this->countryManager->get()->getCountryById($values->country);
-				} catch (NoResultException|NonUniqueResultException $e) {
+				} catch (NoResultException | NonUniqueResultException $e) {
 					$country = $this->countryManager->get()->getCountryByIsoCode('CZE');
 				}
 
@@ -289,7 +304,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 			$this->flashMessage($e->getMessage(), 'error');
 
 			$this->redirect('Supplier:default');
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Seznam států není nainstalován.', 'error');
 
 			$this->redirect('Supplier:default');

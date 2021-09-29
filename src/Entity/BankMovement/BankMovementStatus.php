@@ -5,11 +5,8 @@ declare(strict_types=1);
 
 namespace MatiCore\Invoice;
 
-/**
- * Class BankMovementStatus
- * @package MatiCore\Invoice
- */
-class BankMovementStatus{
+class BankMovementStatus
+{
 
 	/**
 	 * @var array<string>
@@ -41,22 +38,15 @@ class BankMovementStatus{
 		BankMovement::STATUS_SYSTEM_ERROR => 'text-danger',
 	];
 
-	/**
-	 * @param string $status
-	 * @return string
-	 */
+
 	public static function getName(string $status): string
 	{
 		return self::$names[$status] ?? 'Unknown';
 	}
 
-	/**
-	 * @param string $status
-	 * @return string
-	 */
-	public static function getColor(string $status) : string
+
+	public static function getColor(string $status): string
 	{
 		return self::$colors[$status] ?? 'text-info';
 	}
-
 }

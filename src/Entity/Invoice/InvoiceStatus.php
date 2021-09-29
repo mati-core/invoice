@@ -9,17 +9,27 @@ class InvoiceStatus
 {
 
 	public const CREATED = 'created';
+
 	public const WAITING = 'waiting';
+
 	public const ACCEPTED = 'accepted';
+
 	public const DENIED = 'denied';
+
 	public const SENT = 'sent';
+
 	public const CANCELLED = 'cancelled';
+
 	public const PAID = 'paid';
 
 	public const PAY_ALERT_NONE = 'none';
+
 	public const PAY_ALERT_ONE = 'one';
+
 	public const PAY_ALERT_TWO = 'two';
+
 	public const PAY_ALERT_THREE = 'three';
+
 
 	/**
 	 * @return array
@@ -40,6 +50,7 @@ class InvoiceStatus
 		];
 	}
 
+
 	/**
 	 * @param string $status
 	 * @return string
@@ -50,8 +61,10 @@ class InvoiceStatus
 
 		return $list[$status] ?? 'Unknown';
 	}
-	
-	public static function getColorByStatus(string $status): string{
+
+
+	public static function getColorByStatus(string $status): string
+	{
 		$list = [
 			self::CREATED => 'text-info',
 			self::WAITING => 'text-warning',

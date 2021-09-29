@@ -2,26 +2,23 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Class Invoice
- * @package MatiCore\Invoice
  * @ORM\Entity()
  */
 class FixInvoice extends InvoiceCore
 {
-
 	/**
 	 * @var Invoice|null
 	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\Invoice", mappedBy="fixInvoice")
 	 * @ORM\JoinColumn(name="fixed_invoice_id", referencedColumnName="id", nullable=true)
 	 */
 	private Invoice|null $invoice;
+
 
 	/**
 	 * @return Invoice|null
@@ -31,6 +28,7 @@ class FixInvoice extends InvoiceCore
 		return $this->invoice;
 	}
 
+
 	/**
 	 * @param Invoice|null $invoice
 	 */
@@ -39,31 +37,25 @@ class FixInvoice extends InvoiceCore
 		$this->invoice = $invoice;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isFix(): bool
 	{
 		return true;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getItemTotalPrice(): float
 	{
 		$totalPrice = parent::getItemTotalPrice();
 
-		foreach($this->getDepositInvoices() as $depositInvoice){
+		foreach ($this->getDepositInvoices() as $depositInvoice) {
 			$totalPrice += $depositInvoice->getItemTotalPrice();
 		}
 
 		return $totalPrice;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPriceWithoutTaxCZK(): float
 	{
 		$totalPrice = parent::getItemTotalPrice() * $this->getRate();
@@ -75,14 +67,12 @@ class FixInvoice extends InvoiceCore
 		return $totalPrice;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalTaxCZK(): float
 	{
 		$tax = 0.0;
 
-		foreach($this->getTaxList() as $invoiceTax){
+		foreach ($this->getTaxList() as $invoiceTax) {
 			$tax += ($invoiceTax->getTaxPrice() * $this->getRate());
 		}
 

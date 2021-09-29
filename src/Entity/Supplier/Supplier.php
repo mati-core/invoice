@@ -12,14 +12,11 @@ use MatiCore\Currency\Currency;
 use Nette\SmartObject;
 
 /**
- * Class Supplier
- * @package MatiCore\Supplier
  * @ORM\Entity()
  * @ORM\Table(name="supplier__supplier")
  */
 class Supplier
 {
-
 	use SmartObject;
 	use UuidIdentifier;
 
@@ -55,8 +52,10 @@ class Supplier
 	 */
 	private bool $active = true;
 
+
 	/**
 	 * Supplier constructor.
+	 *
 	 * @param string $name
 	 * @param Currency $currency
 	 * @param Address $address
@@ -68,21 +67,18 @@ class Supplier
 		$this->address = $address;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * @param string $name
-	 */
+
 	public function setName(string $name): void
 	{
 		$this->name = $name;
 	}
+
 
 	/**
 	 * @return string|null
@@ -92,13 +88,12 @@ class Supplier
 		return $this->deliveryCompany;
 	}
 
-	/**
-	 * @param string|null $deliveryCompany
-	 */
+
 	public function setDeliveryCompany(?string $deliveryCompany): void
 	{
 		$this->deliveryCompany = $deliveryCompany;
 	}
+
 
 	/**
 	 * @return Currency
@@ -108,6 +103,7 @@ class Supplier
 		return $this->currency;
 	}
 
+
 	/**
 	 * @param Currency $currency
 	 */
@@ -115,6 +111,7 @@ class Supplier
 	{
 		$this->currency = $currency;
 	}
+
 
 	/**
 	 * @return Address
@@ -124,6 +121,7 @@ class Supplier
 		return $this->address;
 	}
 
+
 	/**
 	 * @param Address $address
 	 */
@@ -132,17 +130,13 @@ class Supplier
 		$this->address = $address;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isActive(): bool
 	{
 		return $this->active;
 	}
 
-	/**
-	 * @param bool $active
-	 */
+
 	public function setActive(bool $active): void
 	{
 		$this->active = $active;

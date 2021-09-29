@@ -30,16 +30,8 @@ use Nette\Utils\DateTime;
 use Nette\Utils\Validators;
 use Tracy\Debugger;
 
-/**
- * Class InvoiceManager
- * @package App\Model
- */
 class InvoiceManager
 {
-
-	/**
-	 * @var string
-	 */
 	private string $tempDir;
 
 	/**
@@ -52,52 +44,23 @@ class InvoiceManager
 	 */
 	private array $params;
 
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var User
-	 */
 	private User $user;
 
-	/**
-	 * @var CurrencyManager
-	 */
 	private CurrencyManager $currencyManager;
 
-	/**
-	 * @var SignatureManager
-	 */
 	private SignatureManager $signatureManager;
 
-	/**
-	 * @var LinkGenerator
-	 */
 	private LinkGenerator $linkGenerator;
 
-	/**
-	 * @var EmailerAccessor
-	 */
 	private EmailerAccessor $emailEngine;
 
-	/**
-	 * @var ExportManagerAccessor
-	 */
 	private ExportManagerAccessor $exportManager;
 
+
 	/**
-	 * InvoiceManager constructor.
-	 * @param string $tempDir
 	 * @param array $params
-	 * @param EntityManager $entityManager
-	 * @param User $user
-	 * @param CurrencyManager $currencyManager
-	 * @param SignatureManager $signatureManager
-	 * @param LinkGenerator $linkGenerator
-	 * @param EmailerAccessor $emailEngine
-	 * @param ExportManagerAccessor $exportManager
 	 */
 	public function __construct(
 		string $tempDir,
@@ -109,8 +72,7 @@ class InvoiceManager
 		LinkGenerator $linkGenerator,
 		EmailerAccessor $emailEngine,
 		ExportManagerAccessor $exportManager
-	)
-	{
+	) {
 		$this->tempDir = $tempDir;
 		$this->params = $params;
 		$this->acceptSetting = $params['settings']['accept'] ?? null;
@@ -123,6 +85,7 @@ class InvoiceManager
 		$this->exportManager = $exportManager;
 	}
 
+
 	/**
 	 * @return array|null
 	 */
@@ -130,6 +93,7 @@ class InvoiceManager
 	{
 		return $this->acceptSetting;
 	}
+
 
 	/**
 	 * @return InvoiceCore[]
@@ -145,6 +109,7 @@ class InvoiceManager
 				->getQuery()
 				->getResult() ?? [];
 	}
+
 
 	/**
 	 * @param int $limit
@@ -164,6 +129,7 @@ class InvoiceManager
 				->getQuery()
 				->getResult() ?? [];
 	}
+
 
 	/**
 	 * @param \DateTime $startDate
@@ -187,11 +153,14 @@ class InvoiceManager
 				->setParameter('status1', InvoiceStatus::ACCEPTED)
 				->andWhere('i.acceptStatus2 = :status2')
 				->setParameter('status2', InvoiceStatus::ACCEPTED)
-				->andWhere('(i INSTANCE OF ' . Invoice::class . ' OR i INSTANCE OF ' . InvoiceProforma::class . ' OR i INSTANCE OF ' . InvoicePayDocument::class . ')')
+				->andWhere(
+					'(i INSTANCE OF ' . Invoice::class . ' OR i INSTANCE OF ' . InvoiceProforma::class . ' OR i INSTANCE OF ' . InvoicePayDocument::class . ')'
+				)
 				->orderBy('i.number', 'DESC')
 				->getQuery()
 				->getResult() ?? [];
 	}
+
 
 	/**
 	 * @return InvoiceCore[]
@@ -215,6 +184,7 @@ class InvoiceManager
 				->getResult() ?? [];
 	}
 
+
 	/**
 	 * @param string $id
 	 * @return InvoiceCore
@@ -231,6 +201,7 @@ class InvoiceManager
 			->getQuery()
 			->getSingleResult();
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -293,6 +264,7 @@ class InvoiceManager
 		$this->entityManager->getUnitOfWork()->commit($entities);
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @return InvoicePayDocument
@@ -302,7 +274,9 @@ class InvoiceManager
 	public function createPayDocumentFromInvoice(InvoiceCore $invoice): InvoicePayDocument
 	{
 		if (!$invoice->isReady()) {
-			throw new InvoiceException('Nelze vygenerovat fakturu, protože proforma faktury není odevzdána a schválena.');
+			throw new InvoiceException(
+				'Nelze vygenerovat fakturu, protože proforma faktury není odevzdána a schválena.'
+			);
 		}
 
 		if (!$invoice->isPaid()) {
@@ -437,7 +411,11 @@ class InvoiceManager
 		//Záznam do historie
 		$link = '/admin/invoice/show?id=' . $invoice->getId();
 
-		$history = new InvoiceHistory($pd, 'Vytvoření dokladu o přijetí platby na základě proformy č.: <a href="' . $link . '">' . $invoice->getNumber() . '</a>.');
+		$history = new InvoiceHistory(
+			$pd,
+			'Vytvoření dokladu o přijetí platby na základě proformy č.: <a href="' . $link . '">' . $invoice->getNumber(
+			) . '</a>.'
+		);
 		$history->setUser($user ?? null);
 		$this->entityManager->persist($history);
 
@@ -448,7 +426,10 @@ class InvoiceManager
 
 		$link = '/admin/invoice/show?id=' . $pd->getId();
 
-		$history = new InvoiceHistory($invoice, 'Vytvořen doklad o přijetí platby č.: <a href="' . $link . '">' . $pd->getNumber() . '</a> na základě tohoto dokumentu.');
+		$history = new InvoiceHistory(
+			$invoice, 'Vytvořen doklad o přijetí platby č.: <a href="' . $link . '">' . $pd->getNumber(
+			) . '</a> na základě tohoto dokumentu.'
+		);
 		$history->setUser($user ?? null);
 		$this->entityManager->persist($history);
 
@@ -464,6 +445,7 @@ class InvoiceManager
 
 		return $pd;
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -497,6 +479,7 @@ class InvoiceManager
 		];
 
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -534,6 +517,7 @@ class InvoiceManager
 
 		return $emails;
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -574,6 +558,7 @@ class InvoiceManager
 			];
 		} catch (MpdfException | CurrencyException $e) {
 			Debugger::log($e);
+
 			return false;
 		}
 
@@ -596,6 +581,7 @@ class InvoiceManager
 				}
 			} catch (MpdfException $e) {
 				Debugger::log($e);
+
 				return false;
 			}
 
@@ -621,32 +607,38 @@ class InvoiceManager
 			try {
 				$recipient = trim($recipient);
 				if ($invoice instanceof FixInvoice) {
-					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceFixEmail::class, [
-						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
-						'to' => $recipient,
-						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
-						'subject' => 'Opravný daňový doklad č.: ' . $invoice->getNumber(),
-						'invoice' => $invoice,
-						'invoiceData' => $invoiceData,
-					]);
+					$email = $this->emailEngine->get()->getEmailServiceByType(
+						InvoiceFixEmail::class, [
+							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
+							'to' => $recipient,
+							'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
+							'subject' => 'Opravný daňový doklad č.: ' . $invoice->getNumber(),
+							'invoice' => $invoice,
+							'invoiceData' => $invoiceData,
+						]
+					);
 				} elseif ($invoice instanceof InvoicePayDocument) {
-					$email = $this->emailEngine->get()->getEmailServiceByType(InvoicePayDocumentEmail::class, [
-						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
-						'to' => $recipient,
-						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
-						'subject' => 'Doklad o přijetí platby č.: ' . $invoice->getNumber(),
-						'invoice' => $invoice,
-						'invoiceData' => $invoiceData,
-					]);
+					$email = $this->emailEngine->get()->getEmailServiceByType(
+						InvoicePayDocumentEmail::class, [
+							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
+							'to' => $recipient,
+							'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
+							'subject' => 'Doklad o přijetí platby č.: ' . $invoice->getNumber(),
+							'invoice' => $invoice,
+							'invoiceData' => $invoiceData,
+						]
+					);
 				} else {
-					$email = $this->emailEngine->get()->getEmailServiceByType(InvoiceEmail::class, [
-						'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
-						'to' => $recipient,
-						'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
-						'subject' => 'Faktura č.: ' . $invoice->getNumber(),
-						'invoice' => $invoice,
-						'invoiceData' => $invoiceData,
-					]);
+					$email = $this->emailEngine->get()->getEmailServiceByType(
+						InvoiceEmail::class, [
+							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
+							'to' => $recipient,
+							'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
+							'subject' => 'Faktura č.: ' . $invoice->getNumber(),
+							'invoice' => $invoice,
+							'invoiceData' => $invoiceData,
+						]
+					);
 				}
 
 				foreach ($attachments as $attachment) {
@@ -671,7 +663,10 @@ class InvoiceManager
 				}
 			} catch (ConstantException | EntityManagerException | EmailException $e) {
 				Debugger::log($e);
-				$ih = new InvoiceHistory($invoice, '<span class="text-danger">Doklad se nepodařilo odeslat emailem na ' . $recipient . '</span>');
+				$ih = new InvoiceHistory(
+					$invoice,
+					'<span class="text-danger">Doklad se nepodařilo odeslat emailem na ' . $recipient . '</span>'
+				);
 				$ih->setUser($user);
 
 				$this->entityManager->persist($ih);
@@ -693,6 +688,7 @@ class InvoiceManager
 		return $status;
 	}
 
+
 	/**
 	 * @param InvoiceProforma $proforma
 	 * @return Invoice
@@ -702,7 +698,9 @@ class InvoiceManager
 	public function createInvoiceFromInvoiceProforma(InvoiceProforma $proforma): Invoice
 	{
 		if (!$proforma->isReady()) {
-			throw new InvoiceException('Nelze vygenerovat fakturu, protože proforma faktury není odevzdána a schválena.');
+			throw new InvoiceException(
+				'Nelze vygenerovat fakturu, protože proforma faktury není odevzdána a schválena.'
+			);
 		}
 
 		if (!$proforma->isPaid()) {
@@ -788,7 +786,8 @@ class InvoiceManager
 		$invoice->setSignImage($this->signatureManager->getSignatureLink($proforma->getCreateUser()));
 
 		//Poznamky
-		$textBeforeItems = 'Vystavení daňového dokladu na základě přijetí zálohové platby č.: ' . $proforma->getVariableSymbol();
+		$textBeforeItems = 'Vystavení daňového dokladu na základě přijetí zálohové platby č.: ' . $proforma->getVariableSymbol(
+			);
 		$invoice->setTextBeforeItems($textBeforeItems);
 		$invoice->setTextAfterItems($proforma->getTextAfterItems());
 
@@ -835,7 +834,10 @@ class InvoiceManager
 		} catch (InvalidLinkException $e) {
 			$link = '#';
 		}
-		$history = new InvoiceHistory($invoice, 'Vytvoření faktury na základě proformy č.: <a href="' . $link . '">' . $proforma->getNumber() . '</a>.');
+		$history = new InvoiceHistory(
+			$invoice,
+			'Vytvoření faktury na základě proformy č.: <a href="' . $link . '">' . $proforma->getNumber() . '</a>.'
+		);
 		$history->setUser($user ?? null);
 		$this->entityManager->persist($history);
 
@@ -848,7 +850,10 @@ class InvoiceManager
 			$link = '#';
 		}
 
-		$history = new InvoiceHistory($proforma, 'Vytvořena faktura č.: <a href="' . $link . '">' . $invoice->getNumber() . '</a> na základě této proformy.');
+		$history = new InvoiceHistory(
+			$proforma,
+			'Vytvořena faktura č.: <a href="' . $link . '">' . $invoice->getNumber() . '</a> na základě této proformy.'
+		);
 		$history->setUser($user ?? null);
 		$this->entityManager->persist($history);
 
@@ -858,6 +863,7 @@ class InvoiceManager
 
 		return $invoice;
 	}
+
 
 	/**
 	 * @param \DateTime|null $date
@@ -913,6 +919,7 @@ class InvoiceManager
 		return $number;
 	}
 
+
 	/**
 	 * @param string $number
 	 * @return InvoiceCore
@@ -930,6 +937,7 @@ class InvoiceManager
 			->getSingleResult();
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @return string
@@ -939,6 +947,7 @@ class InvoiceManager
 		return $this->exportManager->get()->getColorByInvoiceDocument($invoice);
 	}
 
+
 	/**
 	 * @param InvoiceCore $invoice
 	 * @return array<string|null>
@@ -947,6 +956,7 @@ class InvoiceManager
 	{
 		return $this->exportManager->get()->getInvoiceTemplateData($invoice);
 	}
+
 
 	/**
 	 * @param Company $company

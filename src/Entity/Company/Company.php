@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Company;
 
 
@@ -14,14 +13,11 @@ use MatiCore\Currency\Currency;
 use Nette\SmartObject;
 
 /**
- * Class Company
- * @package MatiCore\Company
  * @ORM\Entity()
  * @ORM\Table(name="company__company")
  */
 class Company
 {
-
 	use SmartObject;
 	use UuidIdentifier;
 
@@ -89,8 +85,10 @@ class Company
 	 */
 	private bool $blackList = false;
 
+
 	/**
 	 * Company constructor.
+	 *
 	 * @param Address $invoiceAddress
 	 * @param Currency $currency
 	 */
@@ -101,21 +99,18 @@ class Company
 		$this->name = $invoiceAddress->getCompanyName() ?? $invoiceAddress->getName();
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * @param string $name
-	 */
+
 	public function setName(string $name): void
 	{
 		$this->name = $name;
 	}
+
 
 	/**
 	 * @return Collection|CompanyStock[]
@@ -125,6 +120,7 @@ class Company
 		return $this->stocks;
 	}
 
+
 	/**
 	 * @param Collection|CompanyStock[] $stocks
 	 */
@@ -132,6 +128,7 @@ class Company
 	{
 		$this->stocks = $stocks;
 	}
+
 
 	/**
 	 * @return Currency
@@ -141,6 +138,7 @@ class Company
 		return $this->currency;
 	}
 
+
 	/**
 	 * @param Currency $currency
 	 */
@@ -149,6 +147,7 @@ class Company
 		$this->currency = $currency;
 	}
 
+
 	/**
 	 * @return Address
 	 */
@@ -156,6 +155,7 @@ class Company
 	{
 		return $this->invoiceAddress;
 	}
+
 
 	/**
 	 * @param Address $invoiceAddress
@@ -166,6 +166,7 @@ class Company
 		$this->name = $invoiceAddress->getCompanyName() ?? $invoiceAddress->getName();
 	}
 
+
 	/**
 	 * @return Collection|CompanyContact[]
 	 */
@@ -173,6 +174,7 @@ class Company
 	{
 		return $this->contacts;
 	}
+
 
 	/**
 	 * @param Collection|CompanyContact[] $contacts
@@ -182,89 +184,67 @@ class Company
 		$this->contacts = $contacts;
 	}
 
-	/**
-	 * @return int
-	 */
+
 	public function getContactCount(): int
 	{
 		return count($this->contacts);
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getNote(): string
 	{
 		return $this->note;
 	}
 
-	/**
-	 * @param string $note
-	 */
+
 	public function setNote(string $note): void
 	{
 		$this->note = $note;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isBlackList(): bool
 	{
 		return $this->blackList;
 	}
 
-	/**
-	 * @param bool $blackList
-	 */
+
 	public function setBlackList(bool $blackList): void
 	{
 		$this->blackList = $blackList;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getType(): string
 	{
 		return $this->type;
 	}
 
-	/**
-	 * @param string $type
-	 */
+
 	public function setType(string $type): void
 	{
 		$this->type = $type;
 	}
 
-	/**
-	 * @return int
-	 */
+
 	public function getInvoiceDueDayCount(): int
 	{
 		return $this->invoiceDueDayCount;
 	}
 
-	/**
-	 * @param int $invoiceDueDayCount
-	 */
+
 	public function setInvoiceDueDayCount(int $invoiceDueDayCount): void
 	{
 		$this->invoiceDueDayCount = $invoiceDueDayCount;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isSendInvoicesInOneFile(): bool
 	{
 		return $this->sendInvoicesInOneFile;
 	}
 
-	/**
-	 * @param bool $sendInvoicesInOneFile
-	 */
+
 	public function setSendInvoicesInOneFile(bool $sendInvoicesInOneFile): void
 	{
 		$this->sendInvoicesInOneFile = $sendInvoicesInOneFile;

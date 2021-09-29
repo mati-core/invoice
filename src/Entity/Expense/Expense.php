@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
@@ -14,8 +13,6 @@ use Nette\SmartObject;
 use Nette\Utils\DateTime;
 
 /**
- * Class Expense
- * @package MatiCore\Invoice
  * @ORM\Entity()
  * @ORM\Table(name="invoice__expense")
  * @ORM\InheritanceType("SINGLE_TABLE")
@@ -23,7 +20,6 @@ use Nette\Utils\DateTime;
  */
 class Expense
 {
-
 	use UuidIdentifier;
 	use SmartObject;
 
@@ -131,8 +127,10 @@ class Expense
 	 */
 	protected bool $deleted = false;
 
+
 	/**
 	 * Expense constructor.
+	 *
 	 * @param string $number
 	 * @param string $description
 	 * @param Currency $currency
@@ -140,8 +138,9 @@ class Expense
 	 * @param \DateTime $date
 	 * @throws \Exception
 	 */
-	public function __construct(string $number, string $description, Currency $currency, float $totalPrice, \DateTime $date)
-	{
+	public function __construct(
+		string $number, string $description, Currency $currency, float $totalPrice, \DateTime $date
+	) {
 		$this->number = $number;
 		$this->description = $description;
 		$this->currency = $currency;
@@ -150,13 +149,12 @@ class Expense
 		$this->createDate = DateTime::from('NOW');
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getNumber(): string
 	{
 		return $this->number;
 	}
+
 
 	/**
 	 * @return string|null
@@ -166,29 +164,24 @@ class Expense
 		return $this->category;
 	}
 
-	/**
-	 * @param string|null $category
-	 */
+
 	public function setCategory(?string $category): void
 	{
 		$this->category = $category;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
-	/**
-	 * @param string $description
-	 */
+
 	public function setDescription(string $description): void
 	{
 		$this->description = $description;
 	}
+
 
 	/**
 	 * @return Currency
@@ -198,6 +191,7 @@ class Expense
 		return $this->currency;
 	}
 
+
 	/**
 	 * @param Currency $currency
 	 */
@@ -206,53 +200,42 @@ class Expense
 		$this->currency = $currency;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getRate(): float
 	{
 		return $this->rate;
 	}
 
-	/**
-	 * @param float $rate
-	 */
+
 	public function setRate(float $rate): void
 	{
 		$this->rate = $rate;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPrice(): float
 	{
 		return $this->totalPrice;
 	}
 
-	/**
-	 * @param float $totalPrice
-	 */
+
 	public function setTotalPrice(float $totalPrice): void
 	{
 		$this->totalPrice = $totalPrice;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalTax(): float
 	{
 		return $this->totalTax;
 	}
 
-	/**
-	 * @param float $totalTax
-	 */
+
 	public function setTotalTax(float $totalTax): void
 	{
 		$this->totalTax = $totalTax;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -262,6 +245,7 @@ class Expense
 		return $this->date;
 	}
 
+
 	/**
 	 * @param \DateTime $date
 	 */
@@ -269,6 +253,7 @@ class Expense
 	{
 		$this->date = $date;
 	}
+
 
 	/**
 	 * @return \DateTime|null
@@ -278,6 +263,7 @@ class Expense
 		return $this->dueDate;
 	}
 
+
 	/**
 	 * @param \DateTime|null $dueDate
 	 */
@@ -286,37 +272,30 @@ class Expense
 		$this->dueDate = $dueDate;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isPaid(): bool
 	{
 		return $this->paid;
 	}
 
-	/**
-	 * @param bool $paid
-	 */
+
 	public function setPaid(bool $paid): void
 	{
 		$this->paid = $paid;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isHidden(): bool
 	{
 		return $this->hidden;
 	}
 
-	/**
-	 * @param bool $hidden
-	 */
+
 	public function setHidden(bool $hidden): void
 	{
 		$this->hidden = $hidden;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -326,6 +305,7 @@ class Expense
 		return $this->createDate;
 	}
 
+
 	/**
 	 * @param \DateTime $createDate
 	 */
@@ -333,6 +313,7 @@ class Expense
 	{
 		$this->createDate = $createDate;
 	}
+
 
 	/**
 	 * @return BaseUser|null
@@ -342,6 +323,7 @@ class Expense
 		return $this->createUser;
 	}
 
+
 	/**
 	 * @param BaseUser|null $createUser
 	 */
@@ -349,6 +331,7 @@ class Expense
 	{
 		$this->createUser = $createUser;
 	}
+
 
 	/**
 	 * @return string|null
@@ -358,13 +341,12 @@ class Expense
 		return $this->payMethod;
 	}
 
-	/**
-	 * @param string|null $payMethod
-	 */
+
 	public function setPayMethod(?string $payMethod): void
 	{
 		$this->payMethod = $payMethod;
 	}
+
 
 	/**
 	 * @return \DateTime|null
@@ -374,6 +356,7 @@ class Expense
 		return $this->payDate;
 	}
 
+
 	/**
 	 * @param \DateTime|null $payDate
 	 */
@@ -381,6 +364,7 @@ class Expense
 	{
 		$this->payDate = $payDate;
 	}
+
 
 	/**
 	 * @return string|null
@@ -390,25 +374,19 @@ class Expense
 		return $this->note;
 	}
 
-	/**
-	 * @param string|null $note
-	 */
+
 	public function setNote(?string $note): void
 	{
 		$this->note = $note;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isDeleted(): bool
 	{
 		return $this->deleted;
 	}
 
-	/**
-	 * @param bool $deleted
-	 */
+
 	public function setDeleted(bool $deleted): void
 	{
 		$this->deleted = $deleted;

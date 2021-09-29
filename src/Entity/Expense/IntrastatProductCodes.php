@@ -5,13 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-/**
- * Class IntrastatProductCodes
- * @package MatiCore\Invoice
- */
 class IntrastatProductCodes
 {
-
 	/**
 	 * @return string[]
 	 */

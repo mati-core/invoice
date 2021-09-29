@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Company;
 
 
@@ -15,36 +14,21 @@ use h4kuna\Ares\Data;
 use h4kuna\Ares\Exceptions\IdentificationNumberNotFoundException;
 use MatiCore\Currency\Number;
 use MatiCore\Invoice\InvoiceCore;
-use MatiCore\Invoice\InvoiceItem;
 use Nette\Localization\Translator;
 
-/**
- * Class CompanyManager
- * @package MatiCore\Company
- */
 class CompanyManager
 {
-
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var Translator
-	 */
 	private Translator $translator;
 
-	/**
-	 * CompanyManager constructor.
-	 * @param EntityManager $entityManager
-	 * @param Translator $translator
-	 */
+
 	public function __construct(EntityManager $entityManager, Translator $translator)
 	{
 		$this->entityManager = $entityManager;
 		$this->translator = $translator;
 	}
+
 
 	/**
 	 * @param string $id
@@ -63,6 +47,7 @@ class CompanyManager
 			->getSingleResult();
 	}
 
+
 	/**
 	 * @param string $id
 	 * @return CompanyStock
@@ -79,6 +64,7 @@ class CompanyManager
 			->getQuery()
 			->getSingleResult();
 	}
+
 
 	/**
 	 * @param string $cin
@@ -98,6 +84,7 @@ class CompanyManager
 			->getSingleResult();
 	}
 
+
 	/**
 	 * @return Company[]
 	 */
@@ -116,6 +103,7 @@ class CompanyManager
 
 		return $cache;
 	}
+
 
 	/**
 	 * @return array
@@ -142,6 +130,7 @@ class CompanyManager
 		return $cache;
 	}
 
+
 	/**
 	 * @param string $in
 	 * @return Data
@@ -153,6 +142,7 @@ class CompanyManager
 
 		return $ares->loadData($in);
 	}
+
 
 	/**
 	 * @return array
@@ -172,6 +162,7 @@ class CompanyManager
 		return $list;
 	}
 
+
 	/**
 	 * @return string
 	 */
@@ -179,6 +170,7 @@ class CompanyManager
 	{
 		return CompanyType::getDefault();
 	}
+
 
 	/**
 	 * @param Company $company
@@ -193,6 +185,7 @@ class CompanyManager
 		}
 	}
 
+
 	/**
 	 * @param CompanyStock $companyStock
 	 * @throws CompanyException
@@ -205,6 +198,7 @@ class CompanyManager
 			CompanyException::isStockUsed();
 		}
 	}
+
 
 	/**
 	 * @param string $id
@@ -222,6 +216,7 @@ class CompanyManager
 			->getQuery()
 			->getSingleResult();
 	}
+
 
 	/**
 	 * @param Company $company
@@ -265,9 +260,12 @@ class CompanyManager
 			}
 		}
 
-		usort($list, static function ($a, $b) {
+		usort(
+			$list, static function ($a, $b)
+		{
 			return strcmp($a['name'], $b['name']);
-		});
+		}
+		);
 
 		return $list;
 	}

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
@@ -24,8 +23,6 @@ use Nette\Utils\DateTime;
 use Nette\Utils\Strings;
 
 /**
- * Class Invoice
- * @package MatiCore\Invoice
  * @ORM\Entity()
  * @ORM\Table(name="invoice__invoice")
  * @ORM\InheritanceType("SINGLE_TABLE")
@@ -33,14 +30,17 @@ use Nette\Utils\Strings;
  */
 class InvoiceCore
 {
-
 	use SmartObject;
 	use UuidIdentifier;
 
 	public const PAY_METHOD_BANK = 'bank';
+
 	public const PAY_METHOD_CASH = 'cash';
+
 	public const PAY_METHOD_CARD = 'card';
+
 	public const PAY_METHOD_DELIVERY = 'delivery';
+
 	public const PAY_DEPOSIT = 'deposit';
 
 	/**
@@ -412,6 +412,7 @@ class InvoiceCore
 	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected string|null $textBeforeItems;
+
 	/**
 	 * @var string|null
 	 * @ORM\Column(type="text", nullable=true)
@@ -510,8 +511,10 @@ class InvoiceCore
 	 */
 	private array|Collection $depositInvoices;
 
+
 	/**
 	 * InvoiceCore constructor.
+	 *
 	 * @param string $number
 	 */
 	public function __construct(string $number)
@@ -524,21 +527,18 @@ class InvoiceCore
 		$this->depositInvoices = new ArrayCollection;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getStatus(): string
 	{
 		return $this->status;
 	}
 
-	/**
-	 * @param string $status
-	 */
+
 	public function setStatus(string $status): void
 	{
 		$this->status = $status;
 	}
+
 
 	/**
 	 * @return Company|null
@@ -548,6 +548,7 @@ class InvoiceCore
 		return $this->company;
 	}
 
+
 	/**
 	 * @param Company|null $company
 	 */
@@ -555,6 +556,7 @@ class InvoiceCore
 	{
 		$this->company = $company;
 	}
+
 
 	/**
 	 * @return CompanyStock|null
@@ -564,6 +566,7 @@ class InvoiceCore
 		return $this->companyStock;
 	}
 
+
 	/**
 	 * @param CompanyStock|null $companyStock
 	 */
@@ -572,101 +575,78 @@ class InvoiceCore
 		$this->companyStock = $companyStock;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getBankAccount(): string
 	{
 		return $this->bankAccount;
 	}
 
-	/**
-	 * @param string $bankAccount
-	 */
+
 	public function setBankAccount(string $bankAccount): void
 	{
 		$this->bankAccount = $bankAccount;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getBankCode(): string
 	{
 		return $this->bankCode;
 	}
 
-	/**
-	 * @param string $bankCode
-	 */
+
 	public function setBankCode(string $bankCode): void
 	{
 		$this->bankCode = $bankCode;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCompanyName(): string
 	{
 		return $this->companyName;
 	}
 
-	/**
-	 * @param string $companyName
-	 */
+
 	public function setCompanyName(string $companyName): void
 	{
 		$this->companyName = $companyName;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCompanyAddress(): string
 	{
 		return $this->companyAddress;
 	}
 
-	/**
-	 * @param string $companyAddress
-	 */
+
 	public function setCompanyAddress(string $companyAddress): void
 	{
 		$this->companyAddress = $companyAddress;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCompanyCity(): string
 	{
 		return $this->companyCity;
 	}
 
-	/**
-	 * @param string $companyCity
-	 */
+
 	public function setCompanyCity(string $companyCity): void
 	{
 		$this->companyCity = $companyCity;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCompanyPostalCode(): string
 	{
 		return $this->companyPostalCode;
 	}
 
-	/**
-	 * @param string $companyPostalCode
-	 */
+
 	public function setCompanyPostalCode(string $companyPostalCode): void
 	{
 		$this->companyPostalCode = $companyPostalCode;
 	}
+
 
 	/**
 	 * @return Country
@@ -676,6 +656,7 @@ class InvoiceCore
 		return $this->companyCountry;
 	}
 
+
 	/**
 	 * @param Country $companyCountry
 	 */
@@ -683,6 +664,7 @@ class InvoiceCore
 	{
 		$this->companyCountry = $companyCountry;
 	}
+
 
 	/**
 	 * @return string|null
@@ -692,13 +674,12 @@ class InvoiceCore
 		return $this->companyCin;
 	}
 
-	/**
-	 * @param string|null $companyCin
-	 */
+
 	public function setCompanyCin(?string $companyCin): void
 	{
 		$this->companyCin = $companyCin;
 	}
+
 
 	/**
 	 * @return string|null
@@ -708,13 +689,12 @@ class InvoiceCore
 		return $this->companyTin;
 	}
 
-	/**
-	 * @param string|null $companyTin
-	 */
+
 	public function setCompanyTin(?string $companyTin): void
 	{
 		$this->companyTin = $companyTin;
 	}
+
 
 	/**
 	 * @return string|null
@@ -724,77 +704,60 @@ class InvoiceCore
 		return $this->companyLogo;
 	}
 
-	/**
-	 * @param string|null $companyLogo
-	 */
+
 	public function setCompanyLogo(?string $companyLogo): void
 	{
 		$this->companyLogo = $companyLogo;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCustomerName(): string
 	{
 		return $this->customerName;
 	}
 
-	/**
-	 * @param string $customerName
-	 */
+
 	public function setCustomerName(string $customerName): void
 	{
 		$this->customerName = $customerName;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCustomerAddress(): string
 	{
 		return $this->customerAddress;
 	}
 
-	/**
-	 * @param string $customerAddress
-	 */
+
 	public function setCustomerAddress(string $customerAddress): void
 	{
 		$this->customerAddress = $customerAddress;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCustomerCity(): string
 	{
 		return $this->customerCity;
 	}
 
-	/**
-	 * @param string $customerCity
-	 */
+
 	public function setCustomerCity(string $customerCity): void
 	{
 		$this->customerCity = $customerCity;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getCustomerPostalCode(): string
 	{
 		return $this->customerPostalCode;
 	}
 
-	/**
-	 * @param string $customerPostalCode
-	 */
+
 	public function setCustomerPostalCode(string $customerPostalCode): void
 	{
 		$this->customerPostalCode = $customerPostalCode;
 	}
+
 
 	/**
 	 * @return Country
@@ -804,6 +767,7 @@ class InvoiceCore
 		return $this->customerCountry;
 	}
 
+
 	/**
 	 * @param Country $customerCountry
 	 */
@@ -811,6 +775,7 @@ class InvoiceCore
 	{
 		$this->customerCountry = $customerCountry;
 	}
+
 
 	/**
 	 * @return string|null
@@ -820,13 +785,12 @@ class InvoiceCore
 		return $this->customerCin;
 	}
 
-	/**
-	 * @param string|null $customerCin
-	 */
+
 	public function setCustomerCin(?string $customerCin): void
 	{
 		$this->customerCin = $customerCin;
 	}
+
 
 	/**
 	 * @return string|null
@@ -836,13 +800,12 @@ class InvoiceCore
 		return $this->customerTin;
 	}
 
-	/**
-	 * @param string|null $customerTin
-	 */
+
 	public function setCustomerTin(?string $customerTin): void
 	{
 		$this->customerTin = $customerTin;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -852,6 +815,7 @@ class InvoiceCore
 		return $this->rateDate;
 	}
 
+
 	/**
 	 * @param \DateTime $rateDate
 	 */
@@ -859,6 +823,7 @@ class InvoiceCore
 	{
 		$this->rateDate = $rateDate;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -868,6 +833,7 @@ class InvoiceCore
 		return $this->createDate;
 	}
 
+
 	/**
 	 * @param \DateTime $createDate
 	 */
@@ -875,6 +841,7 @@ class InvoiceCore
 	{
 		$this->createDate = $createDate;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -884,6 +851,7 @@ class InvoiceCore
 		return $this->editDate;
 	}
 
+
 	/**
 	 * @param \DateTime $editDate
 	 */
@@ -891,6 +859,7 @@ class InvoiceCore
 	{
 		$this->editDate = $editDate;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -900,6 +869,7 @@ class InvoiceCore
 		return $this->date;
 	}
 
+
 	/**
 	 * @param \DateTime $date
 	 */
@@ -907,6 +877,7 @@ class InvoiceCore
 	{
 		$this->date = $date;
 	}
+
 
 	/**
 	 * @return \DateTime
@@ -916,6 +887,7 @@ class InvoiceCore
 		return $this->taxDate;
 	}
 
+
 	/**
 	 * @param \DateTime $taxDate
 	 */
@@ -924,21 +896,18 @@ class InvoiceCore
 		$this->taxDate = $taxDate;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getPayMethod(): string
 	{
 		return $this->payMethod;
 	}
 
-	/**
-	 * @param string $payMethod
-	 */
+
 	public function setPayMethod(string $payMethod): void
 	{
 		$this->payMethod = $payMethod;
 	}
+
 
 	/**
 	 * @return string[]
@@ -948,6 +917,7 @@ class InvoiceCore
 		return $this->files;
 	}
 
+
 	/**
 	 * @param string[] $files
 	 */
@@ -956,13 +926,12 @@ class InvoiceCore
 		$this->files = $files;
 	}
 
-	/**
-	 * @param string $file
-	 */
+
 	public function addFile(string $file): void
 	{
 		$this->files[] = $file;
 	}
+
 
 	/**
 	 * @param string|null $domain
@@ -977,29 +946,24 @@ class InvoiceCore
 		return $this->signImage;
 	}
 
-	/**
-	 * @param string|null $signImage
-	 */
+
 	public function setSignImage(?string $signImage): void
 	{
 		$this->signImage = $signImage;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isClosed(): bool
 	{
 		return $this->closed;
 	}
 
-	/**
-	 * @param bool $closed
-	 */
+
 	public function setClosed(bool $closed): void
 	{
 		$this->closed = $closed;
 	}
+
 
 	/**
 	 * @return BaseUser
@@ -1009,6 +973,7 @@ class InvoiceCore
 		return $this->editUser;
 	}
 
+
 	/**
 	 * @param BaseUser $editUser
 	 */
@@ -1017,6 +982,7 @@ class InvoiceCore
 		$this->editUser = $editUser;
 	}
 
+
 	/**
 	 * @param InvoiceItem $item
 	 */
@@ -1024,6 +990,7 @@ class InvoiceCore
 	{
 		$this->items[] = $item;
 	}
+
 
 	/**
 	 * @param InvoiceItem $item
@@ -1039,6 +1006,7 @@ class InvoiceCore
 		}
 	}
 
+
 	/**
 	 * @return InvoiceHistory[]|Collection
 	 */
@@ -1046,6 +1014,7 @@ class InvoiceCore
 	{
 		return $this->history;
 	}
+
 
 	/**
 	 * @param InvoiceHistory $history
@@ -1055,6 +1024,7 @@ class InvoiceCore
 		$this->history[] = $history;
 	}
 
+
 	/**
 	 * @return InvoiceComment[]|Collection
 	 */
@@ -1062,6 +1032,7 @@ class InvoiceCore
 	{
 		return $this->comments;
 	}
+
 
 	/**
 	 * @param InvoiceComment $comment
@@ -1071,6 +1042,7 @@ class InvoiceCore
 		$this->comments[] = $comment;
 	}
 
+
 	/**
 	 * @return string|null
 	 */
@@ -1079,13 +1051,12 @@ class InvoiceCore
 		return $this->textBeforeItems;
 	}
 
-	/**
-	 * @param string|null $textBeforeItems
-	 */
+
 	public function setTextBeforeItems(?string $textBeforeItems): void
 	{
 		$this->textBeforeItems = $textBeforeItems;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1095,29 +1066,24 @@ class InvoiceCore
 		return $this->textAfterItems;
 	}
 
-	/**
-	 * @param string|null $textAfterItems
-	 */
+
 	public function setTextAfterItems(?string $textAfterItems): void
 	{
 		$this->textAfterItems = $textAfterItems;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isProforma(): bool
 	{
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isFix(): bool
 	{
 		return false;
 	}
+
 
 	/**
 	 * @return BaseUser|null
@@ -1127,6 +1093,7 @@ class InvoiceCore
 		return $this->acceptStatus1User;
 	}
 
+
 	/**
 	 * @param BaseUser|null $acceptStatus1User
 	 */
@@ -1134,6 +1101,7 @@ class InvoiceCore
 	{
 		$this->acceptStatus1User = $acceptStatus1User;
 	}
+
 
 	/**
 	 * @return BaseUser|null
@@ -1143,6 +1111,7 @@ class InvoiceCore
 		return $this->acceptStatus2User;
 	}
 
+
 	/**
 	 * @param BaseUser|null $acceptStatus2User
 	 */
@@ -1150,6 +1119,7 @@ class InvoiceCore
 	{
 		$this->acceptStatus2User = $acceptStatus2User;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1159,13 +1129,12 @@ class InvoiceCore
 		return $this->acceptStatus1Description;
 	}
 
-	/**
-	 * @param string|null $acceptStatus1Description
-	 */
+
 	public function setAcceptStatus1Description(?string $acceptStatus1Description): void
 	{
 		$this->acceptStatus1Description = $acceptStatus1Description;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1175,29 +1144,24 @@ class InvoiceCore
 		return $this->acceptStatus2Description;
 	}
 
-	/**
-	 * @param string|null $acceptStatus2Description
-	 */
+
 	public function setAcceptStatus2Description(?string $acceptStatus2Description): void
 	{
 		$this->acceptStatus2Description = $acceptStatus2Description;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isLate(): bool
 	{
 		return $this->isPaid() === false && $this->getPayDateDiff() > 0;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isPaid(): bool
 	{
 		return $this->getPayDate() !== null;
 	}
+
 
 	/**
 	 * @return \DateTime|null
@@ -1207,6 +1171,7 @@ class InvoiceCore
 		return $this->payDate;
 	}
 
+
 	/**
 	 * @param \DateTime|null $payDate
 	 */
@@ -1214,6 +1179,7 @@ class InvoiceCore
 	{
 		$this->payDate = $payDate;
 	}
+
 
 	/**
 	 * @return int
@@ -1237,6 +1203,7 @@ class InvoiceCore
 		return (int) round($diff / 86400, 0);
 	}
 
+
 	/**
 	 * @return \DateTime
 	 */
@@ -1245,20 +1212,6 @@ class InvoiceCore
 		return $this->dueDate;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getDueDateFormatted(): string
-	{
-		$dueDate = $this->getDueDate();
-		$date = $this->getDate();
-
-		if($dueDate <= $date){
-			return 'Ihned';
-		}
-
-		return $this->getDueDate()->format('d.m.Y');
-	}
 
 	/**
 	 * @param \DateTime $dueDate
@@ -1268,6 +1221,20 @@ class InvoiceCore
 		$this->dueDate = $dueDate;
 	}
 
+
+	public function getDueDateFormatted(): string
+	{
+		$dueDate = $this->getDueDate();
+		$date = $this->getDate();
+
+		if ($dueDate <= $date) {
+			return 'Ihned';
+		}
+
+		return $this->getDueDate()->format('d.m.Y');
+	}
+
+
 	/**
 	 * @return InvoiceTax[]|Collection
 	 */
@@ -1276,6 +1243,7 @@ class InvoiceCore
 		return $this->taxList;
 	}
 
+
 	/**
 	 * @param InvoiceTax $invoiceTax
 	 */
@@ -1283,6 +1251,7 @@ class InvoiceCore
 	{
 		$this->taxList[] = $invoiceTax;
 	}
+
 
 	/**
 	 * @param InvoiceTax $invoiceTax
@@ -1298,10 +1267,12 @@ class InvoiceCore
 		}
 	}
 
+
 	public function clearTaxList(): void
 	{
 		$this->taxList = [];
 	}
+
 
 	/**
 	 * @return InvoiceTax[]
@@ -1318,7 +1289,9 @@ class InvoiceCore
 					$price = $it->getPrice() + ($item->getTotalPrice() + $item->getSalePrice());
 					$it->setPrice($price);
 				} else {
-					$taxTable[md5((string) $item->getVat())] = new InvoiceTax($this, $item->getVat(), ($item->getTotalPrice() + $item->getSalePrice()));
+					$taxTable[md5((string) $item->getVat())] = new InvoiceTax(
+						$this, $item->getVat(), ($item->getTotalPrice() + $item->getSalePrice())
+					);
 				}
 			}
 		}
@@ -1326,21 +1299,18 @@ class InvoiceCore
 		return $taxTable;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isTaxEnabled(): bool
 	{
 		return $this->taxEnabled;
 	}
 
-	/**
-	 * @param bool $taxEnabled
-	 */
+
 	public function setTaxEnabled(bool $taxEnabled): void
 	{
 		$this->taxEnabled = $taxEnabled;
 	}
+
 
 	/**
 	 * @return InvoiceItem[]|Collection
@@ -1350,25 +1320,19 @@ class InvoiceCore
 		return $this->items;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getRate(): float
 	{
 		return $this->rate;
 	}
 
-	/**
-	 * @param float $rate
-	 */
+
 	public function setRate(float $rate): void
 	{
 		$this->rate = $rate;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getAuthorName(): string
 	{
 		$user = $this->getCreateUser();
@@ -1378,8 +1342,9 @@ class InvoiceCore
 		$str = ($f === null ?: $f[0] . '-');
 		$str .= ($s[0] ?? '') . ($s[1] ?? '') . ($s[2] ?? '');
 
-		return Strings::upper( $str );
+		return Strings::upper($str);
 	}
+
 
 	/**
 	 * @return BaseUser
@@ -1389,6 +1354,7 @@ class InvoiceCore
 		return $this->createUser;
 	}
 
+
 	/**
 	 * @param BaseUser $createUser
 	 */
@@ -1396,6 +1362,7 @@ class InvoiceCore
 	{
 		$this->createUser = $createUser;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1405,34 +1372,6 @@ class InvoiceCore
 		return base64_encode($this->generateQRCode());
 	}
 
-	/**
-	 * @return string
-	 */
-	private function generateQRCode(): string
-	{
-		$renderer = new ImageRenderer(
-			new RendererStyle(300),
-			new SvgImageBackEnd()
-		);
-		$writer = new Writer($renderer);
-
-
-		return $writer->writeString($this->getQRMessage(), 'UTF-8');
-	}
-
-	/**
-	 * @return string
-	 */
-	private function getQRMessage(): string
-	{
-		return 'SPD*1.0'
-			. '*ACC:' . str_replace(' ', '', $this->getIban())
-			. '+' . str_replace(' ', '', $this->getSwift())
-			. '*AM:' . $this->getTotalPrice()
-			. '*CC:' . $this->getCurrency()->getCode()
-			. '*X-VS:' . $this->getVariableSymbol()
-			. '*MSG:QR platba faktura ' . $this->getNumber();
-	}
 
 	/**
 	 * @return string|null
@@ -1442,13 +1381,12 @@ class InvoiceCore
 		return $this->iban;
 	}
 
-	/**
-	 * @param string|null $iban
-	 */
+
 	public function setIban(?string $iban): void
 	{
 		$this->iban = $iban;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1458,29 +1396,24 @@ class InvoiceCore
 		return $this->swift;
 	}
 
-	/**
-	 * @param string|null $swift
-	 */
+
 	public function setSwift(?string $swift): void
 	{
 		$this->swift = $swift;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPrice(): float
 	{
 		return $this->totalPrice;
 	}
 
-	/**
-	 * @param float $totalPrice
-	 */
+
 	public function setTotalPrice(float $totalPrice): void
 	{
 		$this->totalPrice = $totalPrice;
 	}
+
 
 	/**
 	 * @return Currency
@@ -1490,6 +1423,7 @@ class InvoiceCore
 		return $this->currency;
 	}
 
+
 	/**
 	 * @param Currency $currency
 	 */
@@ -1498,33 +1432,25 @@ class InvoiceCore
 		$this->currency = $currency;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getNumber(): string
 	{
 		return $this->number;
 	}
 
-	/**
-	 * @param string $number
-	 */
+
 	public function setNumber(string $number): void
 	{
 		$this->number = $number;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getVariableSymbol(): string
 	{
 		return $this->variableSymbol;
 	}
 
-	/**
-	 * @param string $variableSymbol
-	 */
+
 	public function setVariableSymbol(string $variableSymbol): void
 	{
 		$this->variableSymbol = $variableSymbol;
@@ -1539,10 +1465,12 @@ class InvoiceCore
 		return $this->depositingInvoices;
 	}
 
+
 	public function clearDepositingInvoices(): void
 	{
 		$this->depositingInvoices = new ArrayCollection;
 	}
+
 
 	/**
 	 * @param InvoiceCore $invoice
@@ -1558,6 +1486,7 @@ class InvoiceCore
 		}
 	}
 
+
 	/**
 	 * @param InvoiceCore|null $depositingInvoice
 	 */
@@ -1566,10 +1495,12 @@ class InvoiceCore
 		$this->depositingInvoices[] = $depositingInvoice;
 	}
 
+
 	public function clearDepositInvoices(): void
 	{
 		$this->depositInvoices = new ArrayCollection;
 	}
+
 
 	/**
 	 * @param InvoiceCore $depositInvoice
@@ -1579,9 +1510,7 @@ class InvoiceCore
 		$this->depositInvoices[] = $depositInvoice;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPriceDiff(): float
 	{
 		if ($this->getCurrency()->getCode() !== 'CZK') {
@@ -1591,9 +1520,7 @@ class InvoiceCore
 		return round($this->getTotalPrice() - ($this->getItemTotalPrice() + $this->getTotalTax()), 2);
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getItemTotalPrice(): float
 	{
 		$totalPrice = 0;
@@ -1605,29 +1532,24 @@ class InvoiceCore
 		return $totalPrice;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalTax(): float
 	{
 		return $this->totalTax;
 	}
 
-	/**
-	 * @return float
-	 */
+
+	public function setTotalTax(float $totalTax): void
+	{
+		$this->totalTax = $totalTax;
+	}
+
+
 	public function getTotalTaxCZK(): float
 	{
 		return $this->getTotalTax() * $this->getRate();
 	}
 
-	/**
-	 * @param float $totalTax
-	 */
-	public function setTotalTax(float $totalTax): void
-	{
-		$this->totalTax = $totalTax;
-	}
 
 	/**
 	 * @return InvoiceCore[]|Collection
@@ -1637,37 +1559,30 @@ class InvoiceCore
 		return $this->depositInvoices;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPriceWithoutTax(): float
 	{
 		return $this->getItemTotalPrice();
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPriceWithoutTaxCZK(): float
 	{
 		return $this->getTotalPriceWithoutTax() * $this->getRate();
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getBankName(): string
 	{
 		return $this->bankName;
 	}
 
-	/**
-	 * @param string $bankName
-	 */
+
 	public function setBankName(string $bankName): void
 	{
 		$this->bankName = $bankName;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1677,13 +1592,12 @@ class InvoiceCore
 		return $this->orderNumber;
 	}
 
-	/**
-	 * @param string|null $orderNumber
-	 */
+
 	public function setOrderNumber(?string $orderNumber): void
 	{
 		$this->orderNumber = $orderNumber;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1693,13 +1607,12 @@ class InvoiceCore
 		return $this->rentNumber;
 	}
 
-	/**
-	 * @param string|null $rentNumber
-	 */
+
 	public function setRentNumber(?string $rentNumber): void
 	{
 		$this->rentNumber = $rentNumber;
 	}
+
 
 	/**
 	 * @return string|null
@@ -1709,89 +1622,68 @@ class InvoiceCore
 		return $this->contractNumber;
 	}
 
-	/**
-	 * @param string|null $contractNumber
-	 */
+
 	public function setContractNumber(?string $contractNumber): void
 	{
 		$this->contractNumber = $contractNumber;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isReady(): bool
 	{
-		return $this->isSubmitted() && $this->getAcceptStatus1() === InvoiceStatus::ACCEPTED && $this->getAcceptStatus2() === InvoiceStatus::ACCEPTED;
+		return $this->isSubmitted() && $this->getAcceptStatus1() === InvoiceStatus::ACCEPTED && $this->getAcceptStatus2(
+			) === InvoiceStatus::ACCEPTED;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isSubmitted(): bool
 	{
 		return $this->submitted;
 	}
 
-	/**
-	 * @param bool $submitted
-	 */
+
 	public function setSubmitted(bool $submitted): void
 	{
 		$this->submitted = $submitted;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getAcceptStatus1(): string
 	{
 		return $this->acceptStatus1;
 	}
 
-	/**
-	 * @param string $acceptStatus1
-	 */
+
 	public function setAcceptStatus1(string $acceptStatus1): void
 	{
 		$this->acceptStatus1 = $acceptStatus1;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getAcceptStatus2(): string
 	{
 		return $this->acceptStatus2;
 	}
 
-	/**
-	 * @param string $acceptStatus2
-	 */
+
 	public function setAcceptStatus2(string $acceptStatus2): void
 	{
 		$this->acceptStatus2 = $acceptStatus2;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isDeleted(): bool
 	{
 		return $this->deleted;
 	}
 
-	/**
-	 * @param bool $deleted
-	 */
+
 	public function setDeleted(bool $deleted): void
 	{
 		$this->deleted = $deleted;
 	}
 
-	/**
-	 * @param string $email
-	 */
+
 	public function addEmail(string $email): void
 	{
 		$emails = $this->getEmailList();
@@ -1804,6 +1696,7 @@ class InvoiceCore
 			implode(';', $emails)
 		);
 	}
+
 
 	/**
 	 * @return string[]
@@ -1822,37 +1715,30 @@ class InvoiceCore
 		return $emails;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getEmails(): string
 	{
 		return $this->emails ?? '';
 	}
 
-	/**
-	 * @param string|null $emails
-	 */
+
 	public function setEmails(?string $emails): void
 	{
 		$this->emails = $emails;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getPayAlertStatus(): string
 	{
 		return $this->payAlertStatus;
 	}
 
-	/**
-	 * @param string $payAlertStatus
-	 */
+
 	public function setPayAlertStatus(string $payAlertStatus): void
 	{
 		$this->payAlertStatus = $payAlertStatus;
 	}
+
 
 	/**
 	 * @return InvoicePayDocument|null
@@ -1862,6 +1748,7 @@ class InvoiceCore
 		return $this->payDocument;
 	}
 
+
 	/**
 	 * @param InvoicePayDocument|null $payDocument
 	 */
@@ -1870,29 +1757,24 @@ class InvoiceCore
 		$this->payDocument = $payDocument;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isPayDocument(): bool
 	{
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
+
 	public function isDisableStatistics(): bool
 	{
 		return $this->disableStatistics;
 	}
 
-	/**
-	 * @param bool $disableStatistics
-	 */
+
 	public function setDisableStatistics(bool $disableStatistics): void
 	{
 		$this->disableStatistics = $disableStatistics;
 	}
+
 
 	/**
 	 * @return FixInvoice|null
@@ -1900,6 +1782,31 @@ class InvoiceCore
 	public function getFixInvoice(): ?FixInvoice
 	{
 		return null;
+	}
+
+
+	private function generateQRCode(): string
+	{
+		$renderer = new ImageRenderer(
+			new RendererStyle(300),
+			new SvgImageBackEnd()
+		);
+		$writer = new Writer($renderer);
+
+
+		return $writer->writeString($this->getQRMessage(), 'UTF-8');
+	}
+
+
+	private function getQRMessage(): string
+	{
+		return 'SPD*1.0'
+			. '*ACC:' . str_replace(' ', '', $this->getIban())
+			. '+' . str_replace(' ', '', $this->getSwift())
+			. '*AM:' . $this->getTotalPrice()
+			. '*CC:' . $this->getCurrency()->getCode()
+			. '*X-VS:' . $this->getVariableSymbol()
+			. '*MSG:QR platba faktura ' . $this->getNumber();
 	}
 
 }

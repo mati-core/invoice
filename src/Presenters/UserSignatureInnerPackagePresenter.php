@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
-use MatiCore\Invoice\SignatureManager;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Form\FormFactoryTrait;
+use MatiCore\Invoice\SignatureManager;
 use MatiCore\User\BaseUser;
 use MatiCore\User\IUser;
 use Nette\Application\AbortException;
 use Nette\Application\UI\Form;
-use Nette\Utils\ArrayHash;
 use Nette\Http\FileUpload;
+use Nette\Utils\ArrayHash;
 
 /**
  * Class UserSignatureInnerPackagePresenter
+ *
  * @package App\AdminModule\Presenters
  */
 class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
@@ -36,10 +37,12 @@ class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	private BaseUser|IUser|null $editedUser;
 
+
 	public function actionDefault(): void
 	{
 		$this->template->users = $this->userManager->get()->getAllUsers();
 	}
+
 
 	/**
 	 * @param string $id
@@ -49,11 +52,12 @@ class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
 	{
 		try {
 			$this->editedUser = $this->userManager->get()->getUserById($id);
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Uživatel neexistuje.', 'error');
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @return Form
@@ -67,7 +71,8 @@ class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				/** @var FileUpload $upload */
 				$upload = $values->signature;
@@ -88,6 +93,7 @@ class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @param BaseUser $user

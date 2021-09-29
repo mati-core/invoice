@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
@@ -13,15 +12,6 @@ use Doctrine\ORM\NoResultException;
 use MatiCore\Address\CountryManager;
 use MatiCore\Currency\CurrencyException;
 use MatiCore\Currency\CurrencyManager;
-use MatiCore\Invoice\Expense;
-use MatiCore\Invoice\ExpenseCategory;
-use MatiCore\Invoice\ExpenseDeliveryType;
-use MatiCore\Invoice\ExpenseException;
-use MatiCore\Invoice\ExpenseHistory;
-use MatiCore\Invoice\ExpenseInvoice;
-use MatiCore\Invoice\ExpenseInvoiceItem;
-use MatiCore\Invoice\ExpenseManagerAccessor;
-use MatiCore\Invoice\ExpensePayMethod;
 use MatiCore\Supplier\SupplierManagerAccessor;
 use MatiCore\Unit\UnitException;
 use MatiCore\Unit\UnitManager;
@@ -30,58 +20,23 @@ use Nette\Security\User;
 use Nette\Utils\DateTime;
 use Tracy\Debugger;
 
-/**
- * Class ExpenseHelper
- * @package MatiCore\Expense
- */
 class ExpenseHelper
 {
-
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var CurrencyManager
-	 */
 	private CurrencyManager $currencyManager;
 
-	/**
-	 * @var UnitManager
-	 */
 	private UnitManager $unitManager;
 
-	/**
-	 * @var ExpenseManagerAccessor
-	 */
 	private ExpenseManagerAccessor $expenseManager;
 
-	/**
-	 * @var CountryManager
-	 */
 	private CountryManager $countryManager;
 
-	/**
-	 * @var SupplierManagerAccessor
-	 */
 	private SupplierManagerAccessor $supplierManager;
 
-	/**
-	 * @var User
-	 */
 	private User $user;
 
-	/**
-	 * ExpenseHelper constructor.
-	 * @param EntityManager $entityManager
-	 * @param UnitManager $unitManager
-	 * @param ExpenseManagerAccessor $expenseManager
-	 * @param CurrencyManager $currencyManager
-	 * @param User $user
-	 * @param CountryManager $countryManager
-	 * @param SupplierManagerAccessor $supplierManager
-	 */
+
 	public function __construct(
 		EntityManager $entityManager,
 		UnitManager $unitManager,
@@ -90,8 +45,7 @@ class ExpenseHelper
 		User $user,
 		CountryManager $countryManager,
 		SupplierManagerAccessor $supplierManager
-	)
-	{
+	) {
 		$this->entityManager = $entityManager;
 		$this->unitManager = $unitManager;
 		$this->expenseManager = $expenseManager;
@@ -100,6 +54,7 @@ class ExpenseHelper
 		$this->supplierManager = $supplierManager;
 		$this->user = $user;
 	}
+
 
 	/**
 	 * @return array
@@ -172,6 +127,7 @@ class ExpenseHelper
 			'itemTotalPrice' => 0.0,
 		];
 	}
+
 
 	/**
 	 * @param string $id
@@ -302,6 +258,7 @@ class ExpenseHelper
 		];
 	}
 
+
 	public function getType(Expense $expense): string
 	{
 		if ($expense instanceof ExpenseInvoice) {
@@ -322,6 +279,7 @@ class ExpenseHelper
 
 		return 'default';
 	}
+
 
 	/**
 	 * @param array $expenseData
@@ -366,7 +324,10 @@ class ExpenseHelper
 		} elseif ($expenseData['type'] === 'invoice') {
 			$number = $this->expenseManager->get()->getNextNumber();
 
-			$expense = new ExpenseInvoice($number, $expenseData['description'], $currency, (float) $expenseData['price'], $date, $expenseData['customer']['name']);
+			$expense = new ExpenseInvoice(
+				$number, $expenseData['description'], $currency, (float) $expenseData['price'], $date,
+				$expenseData['customer']['name']
+			);
 			$expense->setCategory($expenseData['category']);
 
 			$expense->setCreateUser($user);
@@ -378,7 +339,9 @@ class ExpenseHelper
 		} else {
 			$number = $this->expenseManager->get()->getNextNumber();
 
-			$expense = new Expense($number, $expenseData['description'], $currency, (float) $expenseData['price'], $date);
+			$expense = new Expense(
+				$number, $expenseData['description'], $currency, (float) $expenseData['price'], $date
+			);
 
 			if ($expenseData['type'] === 'tax') {
 				$expense->setCategory(ExpenseCategory::DPH);
@@ -448,7 +411,9 @@ class ExpenseHelper
 			$expense->setTotalTax($expenseData['tax'] ?? 0.0);
 
 			//DOKLAD
-			$expense->setSupplierInvoiceNumber($expenseData['invoiceNumber'] === '' ? null : $expenseData['invoiceNumber']);
+			$expense->setSupplierInvoiceNumber(
+				$expenseData['invoiceNumber'] === '' ? null : $expenseData['invoiceNumber']
+			);
 			$expense->setVariableSymbol($expenseData['variableSymbol'] === '' ? null : $expenseData['variableSymbol']);
 			$expense->setDeliveryType((int) $expenseData['deliveryType']);
 			$expense->setWeight((float) str_replace(',', '.', $expenseData['weight']));
@@ -462,9 +427,15 @@ class ExpenseHelper
 			}
 
 			$expense->setSupplierName($expenseData['customer']['name']);
-			$expense->setSupplierStreet($expenseData['customer']['address'] === '' ? null : $expenseData['customer']['address']);
-			$expense->setSupplierCity($expenseData['customer']['city'] === '' ? null : $expenseData['customer']['city']);
-			$expense->setSupplierZipCode($expenseData['customer']['zipCode'] === '' ? null : $expenseData['customer']['zipCode']);
+			$expense->setSupplierStreet(
+				$expenseData['customer']['address'] === '' ? null : $expenseData['customer']['address']
+			);
+			$expense->setSupplierCity(
+				$expenseData['customer']['city'] === '' ? null : $expenseData['customer']['city']
+			);
+			$expense->setSupplierZipCode(
+				$expenseData['customer']['zipCode'] === '' ? null : $expenseData['customer']['zipCode']
+			);
 			$expense->setSupplierCountry($country);
 			$expense->setSupplierCin($expenseData['customer']['cin'] === '' ? null : $expenseData['customer']['cin']);
 			$expense->setSupplierTin($expenseData['customer']['tin'] === '' ? null : $expenseData['customer']['tin']);
@@ -473,7 +444,11 @@ class ExpenseHelper
 			$expense->setSupplierSWIFT(null);
 
 			//DATUM
-			$expense->setDatePrint($expenseData['datePrint'] === '' || $expenseData['datePrint'] === null ? null : DateTime::from($expenseData['datePrint']));
+			$expense->setDatePrint(
+				$expenseData['datePrint'] === '' || $expenseData['datePrint'] === null ? null : DateTime::from(
+					$expenseData['datePrint']
+				)
+			);
 
 			//POLOZKY
 			foreach ($expense->getItems() as $item) {
@@ -515,6 +490,7 @@ class ExpenseHelper
 
 		return $expenseData;
 	}
+
 
 	/**
 	 * @param string $id

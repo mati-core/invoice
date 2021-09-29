@@ -29,39 +29,19 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Tracy\Debugger;
 use Throwable;
+use Tracy\Debugger;
 
-/**
- * Class InvoicePayCheckCommand
- * @package MatiCore\Invoice\Command
- */
 class InvoicePayCheckCommand extends Command
 {
-
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var CurrencyManagerAccessor
-	 */
 	private CurrencyManagerAccessor $currencyManager;
 
-	/**
-	 * @var LinkGenerator
-	 */
 	private LinkGenerator $linkGenerator;
 
-	/**
-	 * @var InvoiceManagerAccessor
-	 */
 	private InvoiceManagerAccessor $invoiceManager;
 
-	/**
-	 * @var BankMovementCronLogAccessor
-	 */
 	private BankMovementCronLogAccessor $logger;
 
 	/**
@@ -74,28 +54,18 @@ class InvoicePayCheckCommand extends Command
 	 */
 	private array $allowedSenders;
 
-	/**
-	 * @var string
-	 */
 	private string $tempDir;
 
-	/**
-	 * @var SymfonyStyle|null
-	 */
 	private SymfonyStyle|null $io;
 
+
 	/**
-	 * InvoicePayCheckCommand constructor.
-	 * @param string $tempDir
 	 * @param array $params
-	 * @param EntityManager $entityManager
-	 * @param CurrencyManagerAccessor $currencyManager
-	 * @param LinkGenerator $linkGenerator
-	 * @param InvoiceManagerAccessor $invoiceManager
-	 * @param BankMovementCronLogAccessor $logger
 	 */
-	public function __construct(string $tempDir, array $params, EntityManager $entityManager, CurrencyManagerAccessor $currencyManager, LinkGenerator $linkGenerator, InvoiceManagerAccessor $invoiceManager, BankMovementCronLogAccessor $logger)
-	{
+	public function __construct(
+		string $tempDir, array $params, EntityManager $entityManager, CurrencyManagerAccessor $currencyManager,
+		LinkGenerator $linkGenerator, InvoiceManagerAccessor $invoiceManager, BankMovementCronLogAccessor $logger
+	) {
 		parent::__construct();
 		$this->params = $params;
 		$this->allowedSenders = $this->params['payEmail']['allowedSenders'] ?? [];
@@ -108,16 +78,84 @@ class InvoicePayCheckCommand extends Command
 	}
 
 
+	/**
+	 * @return array
+	 * @throws BankMailException
+	 */
+	public function parseDataEUR(string $content): array
+	{
+		$data = [];
+
+		$lines = explode("\n", $content);
+
+		if (preg_match('/^dne\s(\d+\.\d+\.\d{4})\sbyl\sna\súčtu\s(\d+)/u', $lines[0], $m) && isset($m[1], $m[2])) {
+			$data['date'] = DateTime::from($m[1] . ' 00:00:00');
+			$data['bankAccount'] = $m[2] . '/0300';
+		} else {
+			throw new BankMailException('Can not parse date and bank account from line 3.');
+		}
+
+		if (preg_match('/^Částka:\s\+([\d|\s]+,\d+)\s([A-Z]{3})/u', $lines[6], $m) && isset($m[1], $m[2])) {
+			$price = str_replace(["\xc2\xa0", ','], ['', '.'], $m[1]);
+			$data['price'] = (float) $price;
+			$data['currencyCode'] = $m[2];
+		} else {
+			throw new BankMailException('Can not parse price and currency from line 9.');
+		}
+
+		if (preg_match(
+				'/^Účet\sprotistrany:\s([A-Z]{2}\d{2}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4})/u', $lines[7],
+				$m
+			) && isset($m[1])) {
+			$data['customerBankAccount'] = $m[1];
+		} else {
+			throw new BankMailException(
+				'Can not parse customer bank account from line 10. LINE:' . $lines[7] . '|' . $data['date']->format(
+					'Y-m-d'
+				)
+			);
+		}
+
+		if (preg_match('/^Název\sprotistrany:\s(.*)/u', $lines[8], $m) && isset($m[1])) {
+			$data['customerName'] = $m[1];
+		} else {
+			throw new BankMailException('Can not parse customer name from line 11.');
+		}
+
+		$continue = true;
+		$limit = 10;
+		$line = 9;
+
+		do {
+			if (preg_match('/^Číslo\stransakce\sČSOB:[\D]*(\d+)/u', $lines[$line], $m) && isset($m[1])) {
+				$data['transactionID'] = $m[1];
+			}
+
+			if (preg_match('/^Účel\splatby:[\D]*(\d+)/u', $lines[$line], $m) && isset($m[1])) {
+				$data['variableSymbol'] = $m[1];
+				$continue = false;
+			}
+
+			$line++;
+			$limit--;
+		} while ($continue && $limit > 0 && isset($lines[$line]));
+
+		if (!isset($data['variableSymbol'])) {
+			$data['variableSymbol'] = $data['transactionID'] ?? md5(
+					$data['date'] . $data['price'] . $data['currencyCode'] . $data['customerBankAccount'] . $data['customerName']
+				);
+		}
+
+		return $data;
+	}
+
+
 	protected function configure(): void
 	{
 		$this->setName('app:invoice:pay')->setDescription('Check invoice paid.');
 	}
 
-	/**
-	 * @param InputInterface $input
-	 * @param OutputInterface $output
-	 * @return int
-	 */
+
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		try {
@@ -160,11 +198,8 @@ class InvoicePayCheckCommand extends Command
 				foreach ($mailsIds as $mailId) {
 					try {
 						$output->writeln('Email: ' . $mailId);
-
 						$mail = $mailBox->getMail($mailId);
-
 						$this->processEmail($mail);
-
 						$output->writeln('Email: ' . $mailId . ' DONE');
 					} catch (BankMailException $e) {
 						Debugger::log($e);
@@ -193,10 +228,7 @@ class InvoicePayCheckCommand extends Command
 		}
 	}
 
-	/**
-	 * @param IncomingMail $mail
-	 * @throws BankMailException
-	 */
+
 	private function processEmail(IncomingMail $mail): void
 	{
 		$from = $mail->fromAddress;
@@ -221,7 +253,9 @@ class InvoicePayCheckCommand extends Command
 				$data = $this->parseData($content);
 				$data['messageId'] = sha1($mail->messageId);
 				$this->addBankMovement($data);
-			} elseif (preg_match('/^dne\s(\d+\.\d+\.\d{4})\sbyl\sna\súčtu\s(\d+)/u', $line, $m) && isset($m[1], $m[2])) {
+			} elseif (preg_match(
+					'/^dne\s(\d+\.\d+\.\d{4})\sbyl\sna\súčtu\s(\d+)/u', $line, $m
+				) && isset($m[1], $m[2])) {
 				$payCount++;
 				$content = $line;
 				$lineNumber = $key;
@@ -240,8 +274,8 @@ class InvoicePayCheckCommand extends Command
 		$this->io->writeln('Pay count: ' . $payCount);
 	}
 
+
 	/**
-	 * @param string $content
 	 * @return array
 	 * @throws BankMailException
 	 */
@@ -264,7 +298,9 @@ class InvoicePayCheckCommand extends Command
 			$data['price'] = (float) $price;
 			$data['currencyCode'] = $m[2];
 		} else {
-			throw new BankMailException('Can not parse price and currency from line 9. | '.$lines[6] . ' | '. $data['date']->format('Y-m-d'));
+			throw new BankMailException(
+				'Can not parse price and currency from line 9. | ' . $lines[6] . ' | ' . $data['date']->format('Y-m-d')
+			);
 		}
 
 		if (preg_match('/^Účet\sprotistrany:\s(\d+\/\d+)/u', $lines[7], $m) && isset($m[1])) {
@@ -325,6 +361,7 @@ class InvoicePayCheckCommand extends Command
 		return $data;
 	}
 
+
 	/**
 	 * @param array $data
 	 * @throws \Exception
@@ -341,10 +378,10 @@ class InvoicePayCheckCommand extends Command
 				->getSingleResult();
 
 			$this->io->note('Skipped bank movement already exists.');
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException $e) {
 			try {
 				$currency = $this->currencyManager->get()->getCurrencyByIsoCode($data['currencyCode']);
-			} catch (NoResultException|NonUniqueResultException $e) {
+			} catch (NoResultException | NonUniqueResultException $e) {
 				$currency = $this->currencyManager->get()->getDefaultCurrency();
 			}
 
@@ -370,8 +407,8 @@ class InvoicePayCheckCommand extends Command
 		}
 	}
 
+
 	/**
-	 * @param BankMovement $bm
 	 * @throws \Exception
 	 */
 	private function processBankMovement(BankMovement $bm): void
@@ -403,10 +440,6 @@ class InvoicePayCheckCommand extends Command
 
 				$link = '/admin/invoice/detail-bank-movement?id=' . $bm->getId();
 
-				/*$link = $this->linkGenerator->link('Admin:Invoice:detailBankMovement', [
-					'id' => $bm->getId(),
-				]);*/
-
 				$txt = 'Faktura uhrazena dne '
 					. $bm->getDate()->format('d.m.Y')
 					. ' <a href="' . $link . '">převodem</a>.';
@@ -424,76 +457,13 @@ class InvoicePayCheckCommand extends Command
 
 				$bm->setStatus(BankMovement::STATUS_SUCCESS);
 			}
-		} catch (NoResultException|NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException $e) {
 			$bm->setStatus(BankMovement::STATUS_BAD_VARIABLE_SYMBOL);
-		} catch (EntityManagerException|InvoiceException $e) {
+		} catch (EntityManagerException | InvoiceException $e) {
 			Debugger::log($e);
 			$bm->setStatus(BankMovement::STATUS_SYSTEM_ERROR);
 		}
 
 		$this->entityManager->getUnitOfWork()->commit($bm);
-	}
-
-	/**
-	 * @param string $content
-	 * @return array
-	 * @throws BankMailException
-	 */
-	public function parseDataEUR(string $content): array
-	{
-		$data = [];
-
-		$lines = explode("\n", $content);
-
-		if (preg_match('/^dne\s(\d+\.\d+\.\d{4})\sbyl\sna\súčtu\s(\d+)/u', $lines[0], $m) && isset($m[1], $m[2])) {
-			$data['date'] = DateTime::from($m[1] . ' 00:00:00');
-			$data['bankAccount'] = $m[2] . '/0300';
-		} else {
-			throw new BankMailException('Can not parse date and bank account from line 3.');
-		}
-
-		if (preg_match('/^Částka:\s\+([\d|\s]+,\d+)\s([A-Z]{3})/u', $lines[6], $m) && isset($m[1], $m[2])) {
-			$price = str_replace(["\xc2\xa0", ','], ['', '.'], $m[1]);
-			$data['price'] = (float) $price;
-			$data['currencyCode'] = $m[2];
-		} else {
-			throw new BankMailException('Can not parse price and currency from line 9.');
-		}
-
-		if (preg_match('/^Účet\sprotistrany:\s([A-Z]{2}\d{2}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4})/u', $lines[7], $m) && isset($m[1])) {
-			$data['customerBankAccount'] = $m[1];
-		} else {
-			throw new BankMailException('Can not parse customer bank account from line 10. LINE:'. $lines[7].'|'.$data['date']->format('Y-m-d'));
-		}
-
-		if (preg_match('/^Název\sprotistrany:\s(.*)/u', $lines[8], $m) && isset($m[1])) {
-			$data['customerName'] = $m[1];
-		} else {
-			throw new BankMailException('Can not parse customer name from line 11.');
-		}
-
-		$continue = true;
-		$limit = 10;
-		$line = 9;
-
-		do {
-			if (preg_match('/^Číslo\stransakce\sČSOB:[\D]*(\d+)/u', $lines[$line], $m) && isset($m[1])) {
-				$data['transactionID'] = $m[1];
-			}
-
-			if (preg_match('/^Účel\splatby:[\D]*(\d+)/u', $lines[$line], $m) && isset($m[1])) {
-				$data['variableSymbol'] = $m[1];
-				$continue = false;
-			}
-
-			$line++;
-			$limit--;
-		} while ($continue && $limit > 0 && isset($lines[$line]));
-
-		if (!isset($data['variableSymbol'])) {
-			$data['variableSymbol'] = $data['transactionID'] ?? md5($data['date'] . $data['price'] . $data['currencyCode'] . $data['customerBankAccount'] . $data['customerName']);
-		}
-
-		return $data;
 	}
 }

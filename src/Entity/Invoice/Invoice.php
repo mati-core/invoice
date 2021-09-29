@@ -2,19 +2,16 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
+
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Class Invoice
- * @package MatiCore\Invoice
  * @ORM\Entity()
  */
 class Invoice extends InvoiceCore
 {
-
 	/**
 	 * @var InvoiceProforma|null
 	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoiceProforma", mappedBy="invoice")
@@ -29,6 +26,7 @@ class Invoice extends InvoiceCore
 	 */
 	private FixInvoice|null $fixInvoice = null;
 
+
 	/**
 	 * @return FixInvoice|null
 	 */
@@ -36,6 +34,7 @@ class Invoice extends InvoiceCore
 	{
 		return $this->fixInvoice;
 	}
+
 
 	/**
 	 * @param FixInvoice|null $fixInvoice
@@ -45,6 +44,7 @@ class Invoice extends InvoiceCore
 		$this->fixInvoice = $fixInvoice;
 	}
 
+
 	/**
 	 * @return InvoiceProforma|null
 	 */
@@ -52,6 +52,7 @@ class Invoice extends InvoiceCore
 	{
 		return $this->proforma;
 	}
+
 
 	/**
 	 * @param InvoiceProforma|null $proforma
@@ -61,17 +62,13 @@ class Invoice extends InvoiceCore
 		$this->proforma = $proforma;
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getTotalPriceWithoutTaxCZK(): float
 	{
 		return $this->getItemTotalPrice() * $this->getRate();
 	}
 
-	/**
-	 * @return float
-	 */
+
 	public function getItemTotalPrice(): float
 	{
 		$totalPrice = parent::getItemTotalPrice();

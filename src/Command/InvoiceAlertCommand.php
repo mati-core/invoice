@@ -32,10 +32,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Tracy\Debugger;
 
-/**
- * Class InvoiceAlertCommand
- * @package MatiCore\Invoice
- */
 class InvoiceAlertCommand extends Command
 {
 
@@ -69,16 +65,20 @@ class InvoiceAlertCommand extends Command
 	 */
 	private SymfonyStyle|null $io;
 
+
 	/**
 	 * InvoiceAlertCommand constructor.
+	 *
 	 * @param string $tempDir
 	 * @param array $params
 	 * @param EntityManager $entityManager
 	 * @param EmailerAccessor $emailEngine
 	 * @param ExportManagerAccessor $exportManager
 	 */
-	public function __construct(string $tempDir, array $params, EntityManager $entityManager, EmailerAccessor $emailEngine, ExportManagerAccessor $exportManager)
-	{
+	public function __construct(
+		string $tempDir, array $params, EntityManager $entityManager, EmailerAccessor $emailEngine,
+		ExportManagerAccessor $exportManager
+	) {
 		parent::__construct();
 		$this->tempDir = $tempDir;
 		$this->params = $params;
@@ -87,10 +87,12 @@ class InvoiceAlertCommand extends Command
 		$this->exportManager = $exportManager;
 	}
 
+
 	protected function configure(): void
 	{
 		$this->setName('app:invoice:alert')->setDescription('Send alert for unpaid invoices.');
 	}
+
 
 	/**
 	 * @param InputInterface $input
@@ -124,7 +126,8 @@ class InvoiceAlertCommand extends Command
 				$date2 = $nowDate->modifyClone($this->params['alertEmail']['secondAlert']['sendAt']);
 				$date3 = $nowDate->modifyClone($this->params['alertEmail']['thirdAlert']['sendAt']);
 
-				if ($invoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED && $invoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
+				if ($invoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED && $invoice->getAcceptStatus2(
+					) === InvoiceStatus::ACCEPTED) {
 					$payStatus = $invoice->getPayAlertStatus();
 					try {
 						if (
@@ -178,6 +181,7 @@ class InvoiceAlertCommand extends Command
 		return 0;
 	}
 
+
 	/**
 	 * @param int $numberOfAlert
 	 * @param Invoice|InvoiceProforma $invoice
@@ -206,15 +210,21 @@ class InvoiceAlertCommand extends Command
 		}
 
 		if ($numberOfAlert === 3) {
-			$newDueDate = DateTime::from($invoice->getDueDate())->modify($this->params['alertEmail']['thirdAlert']['dueDate']);
+			$newDueDate = DateTime::from($invoice->getDueDate())->modify(
+				$this->params['alertEmail']['thirdAlert']['dueDate']
+			);
 			$name = $this->params['export']['alertThree']['filename'] . $invoice->getNumber() . '.pdf';
 			$emailType = InvoiceAlertThreeEmail::class;
 		} elseif ($numberOfAlert === 2) {
-			$newDueDate = DateTime::from($invoice->getDueDate())->modify($this->params['alertEmail']['secondAlert']['dueDate']);
+			$newDueDate = DateTime::from($invoice->getDueDate())->modify(
+				$this->params['alertEmail']['secondAlert']['dueDate']
+			);
 			$name = $this->params['export']['alertTwo']['filename'] . $invoice->getNumber() . '.pdf';
 			$emailType = InvoiceAlertTwoEmail::class;
 		} else {
-			$newDueDate = DateTime::from($invoice->getDueDate())->modify($this->params['alertEmail']['firstAlert']['dueDate']);
+			$newDueDate = DateTime::from($invoice->getDueDate())->modify(
+				$this->params['alertEmail']['firstAlert']['dueDate']
+			);
 			$name = $this->params['export']['alertOne']['filename'] . $invoice->getNumber() . '.pdf';
 			$emailType = InvoiceAlertOneEmail::class;
 		}
@@ -224,13 +234,16 @@ class InvoiceAlertCommand extends Command
 		// Upominka
 		try {
 			$tmp = $this->tempDir . '/' . $name;
-			$this->exportManager->get()->exportInvoiceAlertToPDF($numberOfAlert, $invoice, $newDueDate, Destination::FILE, $tmp);
+			$this->exportManager->get()->exportInvoiceAlertToPDF(
+				$numberOfAlert, $invoice, $newDueDate, Destination::FILE, $tmp
+			);
 			$attachments[] = [
 				'file' => $tmp,
 				'name' => $name,
 			];
 		} catch (MpdfException $e) {
 			Debugger::log($e);
+
 			return;
 		}
 
@@ -250,25 +263,28 @@ class InvoiceAlertCommand extends Command
 			];
 		} catch (MpdfException | CurrencyException $e) {
 			Debugger::log($e);
+
 			return;
 		}
 
 		foreach ($emails as $recipient) {
 			$recipient = trim($recipient);
 			if ($recipient !== null && $recipient !== '') {
-				$email = $this->emailEngine->get()->getEmailServiceByType($emailType, [
-					'from' => $senderName . ' <' . $sender . '>',
-					'to' => $recipient,
-					'replyTo' => $replyTo,
-					'subject' => $numberOfAlert . '. upomínka - Faktura č.: ' . $invoice->getNumber(),
-					'number' => $invoice->getNumber(),
-					'totalPrice' => str_replace(
-						' ',
-						'&nbsp;',
-						Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)
-					),
-					'newDueDate' => $newDueDate->format('d.m.Y'),
-				]);
+				$email = $this->emailEngine->get()->getEmailServiceByType(
+					$emailType, [
+						'from' => $senderName . ' <' . $sender . '>',
+						'to' => $recipient,
+						'replyTo' => $replyTo,
+						'subject' => $numberOfAlert . '. upomínka - Faktura č.: ' . $invoice->getNumber(),
+						'number' => $invoice->getNumber(),
+						'totalPrice' => str_replace(
+							' ',
+							'&nbsp;',
+							Number::formatPrice($invoice->getTotalPrice(), $invoice->getCurrency(), 2)
+						),
+						'newDueDate' => $newDueDate->format('d.m.Y'),
+					]
+				);
 
 				foreach ($attachments as $attachment) {
 					$email->getMessage()->addAttachmentPath($attachment['file'], $attachment['name']);
@@ -289,6 +305,7 @@ class InvoiceAlertCommand extends Command
 		}
 	}
 
+
 	/**
 	 * @param Invoice|InvoiceProforma $invoice
 	 * @throws ConstantException
@@ -299,6 +316,7 @@ class InvoiceAlertCommand extends Command
 		$this->sendAlert(1, $invoice);
 	}
 
+
 	/**
 	 * @param Invoice|InvoiceProforma $invoice
 	 * @throws ConstantException
@@ -308,6 +326,7 @@ class InvoiceAlertCommand extends Command
 	{
 		$this->sendAlert(2, $invoice);
 	}
+
 
 	/**
 	 * @param Invoice|InvoiceProforma $invoice

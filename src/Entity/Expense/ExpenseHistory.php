@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
@@ -13,14 +12,11 @@ use Nette\SmartObject;
 use Nette\Utils\DateTime;
 
 /**
- * Class ExpenseHistory
- * @package MatiCore\Invoice
  * @ORM\Entity()
  * @ORM\Table(name="invoice__expense_history")
  */
 class ExpenseHistory
 {
-
 	use SmartObject;
 	use UuidIdentifier;
 
@@ -50,8 +46,10 @@ class ExpenseHistory
 	 */
 	private \DateTime $date;
 
+
 	/**
 	 * ExpenseHistory constructor.
+	 *
 	 * @param Expense $expense
 	 * @param string $description
 	 * @throws \Exception
@@ -63,6 +61,7 @@ class ExpenseHistory
 		$this->date = DateTime::from('NOW');
 	}
 
+
 	/**
 	 * @return Expense
 	 */
@@ -70,6 +69,7 @@ class ExpenseHistory
 	{
 		return $this->expense;
 	}
+
 
 	/**
 	 * @return BaseUser|null
@@ -79,6 +79,7 @@ class ExpenseHistory
 		return $this->user;
 	}
 
+
 	/**
 	 * @param BaseUser|null $user
 	 */
@@ -87,13 +88,12 @@ class ExpenseHistory
 		$this->user = $user;
 	}
 
-	/**
-	 * @return string
-	 */
+
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
+
 
 	/**
 	 * @return \DateTime

@@ -36,15 +36,11 @@ use Ublaboo\DataGrid\Exception\DataGridException;
 
 /**
  * Class ExpenseInnerPackagePresenter
+ *
  * @package App\AdminModule\Presenters
  */
 class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 {
-
-	/**
-	 * @var string
-	 */
-	protected string $pageRight = 'page__invoice';
 
 	/**
 	 * @var CurrencyManagerAccessor
@@ -76,12 +72,18 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 	 */
 	public SupplierManagerAccessor $supplierManager;
 
+	/**
+	 * @var string
+	 */
+	protected string $pageRight = 'page__invoice';
+
 	use FormFactoryTrait;
 
 	/**
 	 * @var Expense|null
 	 */
 	private Expense|null $expense;
+
 
 	/**
 	 * @param string|null $expenseId
@@ -96,6 +98,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 		$this->template->supplierList = $this->supplierManager->get()->getSuppliers();
 		$this->template->productCodes = IntrastatProductCodes::getList();
 	}
+
 
 	/**
 	 * @param string $id
@@ -113,6 +116,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 			$this->redirect('default');
 		}
 	}
+
 
 	/**
 	 * @param string $name
@@ -149,93 +153,120 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 		}
 
 		$grid->addColumnText('number', 'Číslo')
-			->setRenderer(function (Expense $expense): string {
-				$link = $this->link('show', ['id' => $expense->getId()]);
+			->setRenderer(
+				function (Expense $expense): string
+				{
+					$link = $this->link('show', ['id' => $expense->getId()]);
 
-				return '<a href="' . $link . '">' . $expense->getNumber() . '</a>'
-					. '<br><small>' . ExpenseCategory::getName($expense->getCategory()) . '</small>';
-			})
+					return '<a href="' . $link . '">' . $expense->getNumber() . '</a>'
+						. '<br><small>' . ExpenseCategory::getName($expense->getCategory()) . '</small>';
+				}
+			)
 			->setTemplateEscaping(false)
 			->setFitContent();
 
 		$grid->addColumnText('supplier', 'Název')
-			->setRenderer(static function (Expense $e): string {
-				if ($e instanceof ExpenseInvoice) {
-					$ret = $e->getSupplierName();
-				} else {
-					$ret = '&nbsp;';
-				}
+			->setRenderer(
+				static function (Expense $e): string
+				{
+					if ($e instanceof ExpenseInvoice) {
+						$ret = $e->getSupplierName();
+					} else {
+						$ret = '&nbsp;';
+					}
 
-				return '<span class="text-info">' . $ret . '</span><br><small>' . $e->getDescription() . '</small>';
-			})
+					return '<span class="text-info">' . $ret . '</span><br><small>' . $e->getDescription() . '</small>';
+				}
+			)
 			->setTemplateEscaping(false);
 
 		$grid->addColumnText('date', 'Zadáno')
-			->setRenderer(static function (Expense $e): string {
-				return $e->getCreateDate()->format('d.m.Y') . '<br><small>' . ($e->getCreateUser() === null ? '-' : $e->getCreateUser()->getName()) . '</small>';
-			})
+			->setRenderer(
+				static function (Expense $e): string
+				{
+					return $e->getCreateDate()->format('d.m.Y') . '<br><small>' . ($e->getCreateUser(
+						) === null ? '-' : $e->getCreateUser()->getName()) . '</small>';
+				}
+			)
 			->setTemplateEscaping(false)
 			->setFitContent();
 
 		$grid->addColumnText('vs', 'Faktura')
-			->setRenderer(static function (Expense $e): string {
-				if ($e instanceof ExpenseInvoice) {
-					return $e->getSupplierInvoiceNumber() . '<br><small>VS: ' . $e->getVariableSymbol() . '</small>';
+			->setRenderer(
+				static function (Expense $e): string
+				{
+					if ($e instanceof ExpenseInvoice) {
+						return $e->getSupplierInvoiceNumber() . '<br><small>VS: ' . $e->getVariableSymbol(
+							) . '</small>';
+					}
+
+					return '&nbsp;<br><small>&nbsp;</small>';
 				}
-				return '&nbsp;<br><small>&nbsp;</small>';
-			})
+			)
 			->setTemplateEscaping(false)
 			->setFitContent();
 
 		$grid->addColumnText('pay', 'Splatnost')
-			->setRenderer(static function (Expense $e): string {
-				if ($e->getDueDate() === null) {
-					$ret = '-';
-				} else {
-					$ret = $e->getDueDate()->format('d.m.Y');
+			->setRenderer(
+				static function (Expense $e): string
+				{
+					if ($e->getDueDate() === null) {
+						$ret = '-';
+					} else {
+						$ret = $e->getDueDate()->format('d.m.Y');
+					}
+
+					$ret .= '<br><small>';
+
+					if ($e->isPaid() === true) {
+						$ret .= '<span class="text-success">Uhrazeno</span>';
+					} else {
+						$ret .= '<span class="text-warning">čeká</span>';
+					}
+
+					return $ret . '</small>';
 				}
-
-				$ret .= '<br><small>';
-
-				if ($e->isPaid() === true) {
-					$ret .= '<span class="text-success">Uhrazeno</span>';
-				} else {
-					$ret .= '<span class="text-warning">čeká</span>';
-				}
-
-				return $ret . '</small>';
-			})
+			)
 			->setTemplateEscaping(false)
 			->setFitContent();
 
 		$grid->addColumnText('price', 'Částka')
-			->setRenderer(static function (Expense $e) use ($currency): string {
-				$totalPrice = $e->getTotalPrice();
+			->setRenderer(
+				static function (Expense $e) use ($currency): string
+				{
+					$totalPrice = $e->getTotalPrice();
 
-				return '<b>' . Number::formatPrice($totalPrice, $e->getCurrency(), 2) . '</b>'
-					. '<br>'
-					. '<small>'
-					. Number::formatPrice($totalPrice * $e->getRate(), $currency, 2)
-					. '</small>';
-			})
+					return '<b>' . Number::formatPrice($totalPrice, $e->getCurrency(), 2) . '</b>'
+						. '<br>'
+						. '<small>'
+						. Number::formatPrice($totalPrice * $e->getRate(), $currency, 2)
+						. '</small>';
+				}
+			)
 			->setAlign('right')
 			->setFitContent()
 			->setTemplateEscaping(false);
 
 		$grid->addAction('show', 'Zobrazit')
-			->setRenderer(function (Expense $e): string {
-				$link = $this->link('Expense:show', ['id' => $e->getId()]);
+			->setRenderer(
+				function (Expense $e): string
+				{
+					$link = $this->link('Expense:show', ['id' => $e->getId()]);
 
-				return '<a href="' . $link . '" class="btn btn-xs btn-info"><i class="fas fa-eye"></i></a>';
-			});
+					return '<a href="' . $link . '" class="btn btn-xs btn-info"><i class="fas fa-eye"></i></a>';
+				}
+			);
 
 		if ($this->checkAccess('page__invoice__accepted_delete')) {
 			$grid->addAction('delete', 'Delete')
-				->setRenderer(function (Expense $expense) {
-					$link = $this->link('delete!', ['id' => $expense->getId()]);
+				->setRenderer(
+					function (Expense $expense)
+					{
+						$link = $this->link('delete!', ['id' => $expense->getId()]);
 
-					return '<btn-delete redirect="' . $link . '"></btn-delete>';
-				});
+						return '<btn-delete redirect="' . $link . '"></btn-delete>';
+					}
+				);
 		}
 
 		//filtr
@@ -253,33 +284,42 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 
 		//Dodavatel
 		$grid->addFilterText('supplierName', 'Dodavatel:')
-			->setCondition(static function (QueryBuilder $qb, string $txt): QueryBuilder {
-				$qb->innerJoin(ExpenseInvoice::class, 'eia', 'WITH', 'eia.id = e.id');
-				$qb->andWhere('eia.supplierName LIKE :supplierName')
-					->setParameter('supplierName', '%' . $txt . '%');
+			->setCondition(
+				static function (QueryBuilder $qb, string $txt): QueryBuilder
+				{
+					$qb->innerJoin(ExpenseInvoice::class, 'eia', 'WITH', 'eia.id = e.id');
+					$qb->andWhere('eia.supplierName LIKE :supplierName')
+						->setParameter('supplierName', '%' . $txt . '%');
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		//Cislo orig faktury
 		$grid->addFilterText('invoiceNumber', 'Číslo faktury:')
-			->setCondition(static function (QueryBuilder $qb, string $txt): QueryBuilder {
-				$qb->innerJoin(ExpenseInvoice::class, 'eib', 'WITH', 'eib.id = e.id');
-				$qb->andWhere('eib.supplierInvoiceNumber LIKE :invoiceNumber')
-					->setParameter('invoiceNumber', '%' . $txt . '%');
+			->setCondition(
+				static function (QueryBuilder $qb, string $txt): QueryBuilder
+				{
+					$qb->innerJoin(ExpenseInvoice::class, 'eib', 'WITH', 'eib.id = e.id');
+					$qb->andWhere('eib.supplierInvoiceNumber LIKE :invoiceNumber')
+						->setParameter('invoiceNumber', '%' . $txt . '%');
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		//vs
 		$grid->addFilterText('vs', 'Variabilní symbol:')
-			->setCondition(static function (QueryBuilder $qb, string $txt): QueryBuilder {
-				$qb->innerJoin(ExpenseInvoice::class, 'eic', 'WITH', 'eic.id = e.id');
-				$qb->andWhere('eic.variableSymbol LIKE :vs')
-					->setParameter('vs', '%' . $txt . '%');
+			->setCondition(
+				static function (QueryBuilder $qb, string $txt): QueryBuilder
+				{
+					$qb->innerJoin(ExpenseInvoice::class, 'eic', 'WITH', 'eic.id = e.id');
+					$qb->andWhere('eic.variableSymbol LIKE :vs')
+						->setParameter('vs', '%' . $txt . '%');
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		//Popis
 		$grid->addFilterText('description', 'Popis:');
@@ -292,22 +332,25 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 			'overDate' => 'Po splatnosti',
 		];
 		$grid->addFilterSelect('status', 'Stav:', $statusList, 'status')
-			->setCondition(static function (QueryBuilder $qb, string $status): QueryBuilder {
-				if ($status === 'unpaid') {
-					$qb->andWhere('e.paid = :f')
-						->setParameter('f', false);
-				} elseif ($status === 'paid') {
-					$qb->andWhere('e.paid = :t')
-						->setParameter('t', true);
-				} elseif ($status === 'overDate') {
-					$qb->andWhere('e.paid = :f')
-						->setParameter('f', false);
-					$qb->andWhere('e.dueDate < :now')
-						->setParameter('now', DateTime::from('NOW')->format('Y-m-d'));
-				}
+			->setCondition(
+				static function (QueryBuilder $qb, string $status): QueryBuilder
+				{
+					if ($status === 'unpaid') {
+						$qb->andWhere('e.paid = :f')
+							->setParameter('f', false);
+					} elseif ($status === 'paid') {
+						$qb->andWhere('e.paid = :t')
+							->setParameter('t', true);
+					} elseif ($status === 'overDate') {
+						$qb->andWhere('e.paid = :f')
+							->setParameter('f', false);
+						$qb->andWhere('e.dueDate < :now')
+							->setParameter('now', DateTime::from('NOW')->format('Y-m-d'));
+					}
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		//Category
 		if ($this->checkAccess('page__expense__admin')) {
@@ -320,19 +363,23 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 
 		//polozka
 		$grid->addFilterText('itemName', 'Položka:')
-			->setCondition(static function (QueryBuilder $qb, string $txt): QueryBuilder {
-				$qb->innerJoin(ExpenseInvoice::class, 'eid', 'WITH', 'eid.id = e.id');
-				$qb->join(ExpenseInvoiceItem::class, 'item', 'WITH', 'eid.id = item.expense');
-				$qb->andWhere('item.description LIKE :itemDescription')
-					->setParameter('itemDescription', '%' . $txt . '%');
+			->setCondition(
+				static function (QueryBuilder $qb, string $txt): QueryBuilder
+				{
+					$qb->innerJoin(ExpenseInvoice::class, 'eid', 'WITH', 'eid.id = e.id');
+					$qb->join(ExpenseInvoiceItem::class, 'item', 'WITH', 'eid.id = item.expense');
+					$qb->andWhere('item.description LIKE :itemDescription')
+						->setParameter('itemDescription', '%' . $txt . '%');
 
-				return $qb;
-			});
+					return $qb;
+				}
+			);
 
 		$grid->setOuterFilterRendering();
 
 		return $grid;
 	}
+
 
 	/**
 	 * @return array
@@ -404,6 +451,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 		];
 	}
 
+
 	/**
 	 * @return Form
 	 */
@@ -417,7 +465,8 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void {
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
 			try {
 				$this->expense->setPaid(true);
 				$this->expense->setPayDate($values->date);
@@ -444,6 +493,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 
 		return $form;
 	}
+
 
 	/**
 	 * @param string $id

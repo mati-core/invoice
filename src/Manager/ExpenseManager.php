@@ -10,30 +10,18 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Tracy\Debugger;
 
-/**
- * Class ExpenseManager
- * @package MatiCore\Invoice
- */
 class ExpenseManager
 {
-
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * ExpenseManager constructor.
-	 * @param EntityManager $entityManager
-	 */
+
 	public function __construct(EntityManager $entityManager)
 	{
 		$this->entityManager = $entityManager;
 	}
 
+
 	/**
-	 * @param string $id
-	 * @return Expense
 	 * @throws NoResultException
 	 * @throws NonUniqueResultException
 	 */
@@ -47,6 +35,7 @@ class ExpenseManager
 			->getQuery()
 			->getSingleResult();
 	}
+
 
 	/**
 	 * @param Expense $expense
@@ -63,6 +52,7 @@ class ExpenseManager
 				->getQuery()
 				->getResult() ?? [];
 	}
+
 
 	/**
 	 * @return string

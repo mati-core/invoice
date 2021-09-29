@@ -16,28 +16,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Tracy\Debugger;
 
-/**
- * Class InvoiceTaxListFixCommand
- * @package MatiCore\Invoice\Command
- */
 class InvoiceTaxListFixCommand extends Command
 {
-
-
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var SymfonyStyle|null
-	 */
 	private SymfonyStyle|null $io;
 
-	/**
-	 * CartServiceFixCommand constructor.
-	 * @param EntityManager $entityManager
-	 */
+
 	public function __construct(EntityManager $entityManager)
 	{
 		parent::__construct();
@@ -47,14 +32,11 @@ class InvoiceTaxListFixCommand extends Command
 
 	protected function configure(): void
 	{
-		$this->setName('app:invoice:fixTaxList')->setDescription('Fix tax list in invoices.');
+		$this->setName('app:invoice:fixTaxList')
+			->setDescription('Fix tax list in invoices.');
 	}
 
-	/**
-	 * @param InputInterface $input
-	 * @param OutputInterface $output
-	 * @return int
-	 */
+
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		try {
@@ -105,16 +87,16 @@ class InvoiceTaxListFixCommand extends Command
 		}
 	}
 
+
 	/**
-	 * @param InvoiceCore $invoice
 	 * @throws EntityManagerException
 	 */
 	private function processFixInvoice(InvoiceCore $invoice): void
 	{
-		if(count($invoice->getTaxList()) === 0){
+		if (count($invoice->getTaxList()) === 0) {
 			$taxTable = $invoice->getTaxTable();
 
-			foreach($taxTable as $invoiceTax){
+			foreach ($taxTable as $invoiceTax) {
 				$this->entityManager->persist($invoiceTax);
 				$invoice->addTax($invoiceTax);
 			}

@@ -2,21 +2,19 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
-/**
- * Class ExpensePayMethod
- * @package MatiCore\Invoice
- */
 class ExpensePayMethod
 {
-
 	public const UNKNOWN = null;
+
 	public const CASH = 'cash';
+
 	public const BANK = 'bank';
+
 	public const CARD = 'card';
+
 
 	/**
 	 * @return array
@@ -29,6 +27,7 @@ class ExpensePayMethod
 			self::CARD => 'Kartou',
 		];
 	}
+
 
 	/**
 	 * @param string|null $type
