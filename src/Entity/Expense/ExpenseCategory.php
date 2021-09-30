@@ -36,10 +36,6 @@ class ExpenseCategory
 	public const UVER = 'uver';
 
 
-	/**
-	 * @param string $key
-	 * @return string
-	 */
 	public static function getName(string $key): string
 	{
 		return self::getListAll()[$key] ?? 'unknown';
@@ -106,5 +102,4 @@ class ExpenseCategory
 			self::ODVOD_STATU => 'Odvod státu',
 		];
 	}
-
 }

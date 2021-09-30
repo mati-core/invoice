@@ -81,40 +81,35 @@ class SupplierManager
 	}
 
 
-	/**
-	 * @param string $name
-	 * @param Currency $currency
-	 * @param string $street
-	 * @param string $city
-	 * @param Country $country
-	 * @return Supplier
-	 */
-	public function createSupplier(string $name, Currency $currency, string $street, string $city, Country $country
+	public function createSupplier(
+		string $name,
+		Currency $currency,
+		string $street,
+		string $city,
+		Country $country
 	): Supplier {
 		$address = new Address($street, $city);
 		$address->setCountry($country);
 
 		$this->entityManager->persist($address);
-
 		$supplier = new Supplier($name, $currency, $address);
-
-		$this->entityManager->persist($supplier)->flush();
+		$this->entityManager->persist($supplier);
+		$this->entityManager->flush();
 
 		return $supplier;
 	}
 
 
 	/**
-	 * @param Supplier $supplier
 	 * @throws SupplierException
 	 */
 	public function removeSupplier(Supplier $supplier): void
 	{
 		try {
-			$this->entityManager->remove($supplier)->flush();
-		} catch (EntityManagerException $e) {
+			$this->entityManager->remove($supplier);
+			$this->entityManager->flush();
+		} catch (EntityManagerException) {
 			SupplierException::isUsed();
 		}
 	}
-
 }

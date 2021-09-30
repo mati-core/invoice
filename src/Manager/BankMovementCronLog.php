@@ -26,12 +26,13 @@ class BankMovementCronLog
 	public function setLog(bool $status): void
 	{
 		FileSystem::write(
-			$this->logDir . '/bankMovementCron.log', Json::encode(
-			[
-				'date' => date('d.m.Y H:i:s'),
-				'status' => $status,
-			]
-		)
+			$this->logDir . '/bankMovementCron.log',
+			Json::encode(
+				[
+					'date' => date('d.m.Y H:i:s'),
+					'status' => $status,
+				]
+			)
 		);
 	}
 

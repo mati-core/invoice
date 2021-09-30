@@ -43,345 +43,233 @@ class InvoiceCore
 
 	public const PAY_DEPOSIT = 'deposit';
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $status = InvoiceStatus::CREATED;
 
 	/**
 	 * Relace na spolecnost
 	 *
-	 * @var Company|null
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company")
-	 * @ORM\JoinColumn(name="company_id", referencedColumnName="id", nullable=true)
-	 */
+	 * @ORM\JoinColumn(name="company_id", referencedColumnName="id", nullable=true) */
 	protected Company|null $company = null;
 
 	/**
 	 * Relace na pobocku spolecnosti
 	 *
-	 * @var CompanyStock|null
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock")
-	 * @ORM\JoinColumn(name="company_stock_id", referencedColumnName="id", nullable=true)
-	 */
+	 * @ORM\JoinColumn(name="company_stock_id", referencedColumnName="id", nullable=true) */
 	protected CompanyStock|null $companyStock = null;
 
 	/**
 	 * Cislo faktury
 	 *
-	 * @var string
-	 * @ORM\Column(type="string", unique=true)
-	 */
+	 * @ORM\Column(type="string", unique=true) */
 	protected string $number;
 
 	/**
 	 * Cislo bankovniho uctu
 	 *
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	 * @ORM\Column(type="string") */
 	protected string $bankAccount;
 
 	/**
 	 * Kod banky
 	 *
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	 * @ORM\Column(type="string") */
 	protected string $bankCode;
 
 	/**
 	 * Nazev banky
 	 *
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	 * @ORM\Column(type="string") */
 	protected string $bankName;
 
 	/**
 	 * IBAN
 	 *
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	 * @ORM\Column(type="string", nullable=true) */
 	protected string|null $iban;
 
 	/**
 	 * SWIFT
 	 *
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	 * @ORM\Column(type="string", nullable=true) */
 	protected string|null $swift;
 
 	/**
 	 * Variabilni symbol
 	 *
-	 * @var string
-	 * @ORM\Column(type="string", unique=true)
-	 */
+	 * @ORM\Column(type="string", unique=true) */
 	protected string $variableSymbol;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $companyName;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $companyAddress;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $companyCity;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $companyPostalCode;
 
-	/**
-	 * @var Country
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
-	 * @ORM\JoinColumn(name="company_country_id", referencedColumnName="id")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
+	 * @ORM\JoinColumn(name="company_country_id", referencedColumnName="id") */
 	protected Country $companyCountry;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $companyCin;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $companyTin;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $companyLogo;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $customerName;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $customerAddress;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $customerCity;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $customerPostalCode;
 
-	/**
-	 * @var Country
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
-	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
+	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id") */
 	protected Country $customerCountry;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $customerCin;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $customerTin;
 
 	/**
 	 * Cislo objednavky
 	 *
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	 * @ORM\Column(type="string", nullable=true) */
 	protected string|null $orderNumber;
 
 	/**
 	 * Cislo najemni smlouvy
 	 *
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	 * @ORM\Column(type="string", nullable=true) */
 	protected string|null $rentNumber;
 
 	/**
 	 * Cislo zakazky
 	 *
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	 * @ORM\Column(type="string", nullable=true) */
 	protected string|null $contractNumber;
 
 	/**
 	 * @var InvoiceTax[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceTax", mappedBy="invoice")
-	 */
+	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceTax", mappedBy="invoice") */
 	protected array|Collection $taxList;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	protected bool $taxEnabled = false;
 
 	/**
 	 * Celkova castka
 	 *
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	 * @ORM\Column(type="float") */
 	protected float $totalPrice;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	protected float $totalTax;
 
-	/**
-	 * @var Currency
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
+	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id") */
 	protected Currency $currency;
 
 	/**
 	 * Smenny kurz
 	 *
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	 * @ORM\Column(type="float") */
 	protected float $rate = 1.0;
 
 	/**
 	 * Datum smenneho kurzu
 	 *
-	 * @var \DateTime
-	 * @ORM\Column(type="date")
-	 */
+	 * @ORM\Column(type="date") */
 	protected \DateTime $rateDate;
 
 	/**
 	 * Datum vytvoreni
 	 *
-	 * @var \DateTime
-	 * @ORM\Column(type="datetime")
-	 */
+	 * @ORM\Column(type="datetime") */
 	protected \DateTime $createDate;
 
 	/**
 	 * Datum posledni editace
 	 *
-	 * @var \DateTime
-	 * @ORM\Column(type="datetime")
-	 */
+	 * @ORM\Column(type="datetime") */
 	protected \DateTime $editDate;
 
 	/**
 	 * Datum vystaveni
 	 *
-	 * @var \DateTime
-	 * @ORM\Column(type="date")
-	 */
+	 * @ORM\Column(type="date") */
 	protected \DateTime $date;
 
 	/**
 	 * Datum splatnosti
 	 *
-	 * @var \DateTime
-	 * @ORM\Column(type="date")
-	 */
+	 * @ORM\Column(type="date") */
 	protected \DateTime $dueDate;
 
 	/**
 	 * Datum zdanitelneho plneni
 	 *
-	 * @var \DateTime
-	 * @ORM\Column(type="date")
-	 */
+	 * @ORM\Column(type="date") */
 	protected \DateTime $taxDate;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $payMethod = self::PAY_METHOD_BANK;
 
 	/**
 	 * Datum uhrazeni
 	 *
-	 * @var \DateTime|null
-	 * @ORM\Column(type="date", nullable=true)
-	 */
+	 * @ORM\Column(type="date", nullable=true) */
 	protected \DateTime|null $payDate;
 
 	/**
 	 * Soubor
 	 *
 	 * @var string[]
-	 * @ORM\Column(type="json_array")
-	 */
+	 * @ORM\Column(type="json") */
 	protected array $files = [];
 
 	/**
 	 * Obrazek podpisu
 	 *
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	 * @ORM\Column(type="string", nullable=true) */
 	protected string|null $signImage;
 
 	/**
 	 * Dokoncena (zakazana editace)
 	 *
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	 * @ORM\Column(type="boolean") */
 	protected bool $closed = false;
 
 	/**
 	 * Autor faktury
 	 *
-	 * @var BaseUser
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="create_user_id", referencedColumnName="id")
-	 */
+	 * @ORM\JoinColumn(name="create_user_id", referencedColumnName="id") */
 	protected BaseUser $createUser;
 
 	/**
 	 * Autor posledni zmeny
 	 *
-	 * @var BaseUser
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="edit_user_id", referencedColumnName="id")
-	 */
+	 * @ORM\JoinColumn(name="edit_user_id", referencedColumnName="id") */
 	protected BaseUser $editUser;
 
 	/**
@@ -389,109 +277,64 @@ class InvoiceCore
 	 *
 	 * @var InvoiceItem[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceItem", mappedBy="invoice", fetch="EXTRA_LAZY")
-	 * @ORM\OrderBy({"position"="ASC"})
-	 */
+	 * @ORM\OrderBy({"position"="ASC"}) */
 	protected array|Collection $items;
 
 	/**
 	 * @var InvoiceHistory[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceHistory", mappedBy="invoice", fetch="EXTRA_LAZY")
-	 * @ORM\OrderBy({"date"="DESC"})
-	 */
+	 * @ORM\OrderBy({"date"="DESC"}) */
 	protected array|Collection $history;
 
 	/**
 	 * @var InvoiceComment[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceComment", mappedBy="invoice", fetch="EXTRA_LAZY")
-	 * @ORM\OrderBy({"date"="DESC"})
-	 */
+	 * @ORM\OrderBy({"date"="DESC"}) */
 	protected array|Collection $comments;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="text", nullable=true)
-	 */
+	/** @ORM\Column(type="text", nullable=true) */
 	protected string|null $textBeforeItems;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="text", nullable=true)
-	 */
+	/** @ORM\Column(type="text", nullable=true) */
 	protected string|null $textAfterItems;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	protected bool $submitted = false;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $acceptStatus1 = InvoiceStatus::WAITING;
 
-	/**
-	 * @var BaseUser|null
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="accept_user_1_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
+	 * @ORM\JoinColumn(name="accept_user_1_id", referencedColumnName="id", nullable=true) */
 	protected BaseUser|null $acceptStatus1User;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $acceptStatus1Description;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $acceptStatus2 = InvoiceStatus::WAITING;
 
-	/**
-	 * @var BaseUser|null
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="accept_user_2_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
+	 * @ORM\JoinColumn(name="accept_user_2_id", referencedColumnName="id", nullable=true) */
 	protected BaseUser|null $acceptStatus2User;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $acceptStatus2Description;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	protected bool $deleted = false;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="text", nullable=true)
-	 */
+	/** @ORM\Column(type="text", nullable=true) */
 	protected string|null $emails;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $payAlertStatus = InvoiceStatus::PAY_ALERT_NONE;
 
-	/**
-	 * @var InvoicePayDocument|null
-	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoicePayDocument", inversedBy="invoice")
-	 * @ORM\JoinColumn(name="pay_document_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoicePayDocument", inversedBy="invoice")
+	 * @ORM\JoinColumn(name="pay_document_id", referencedColumnName="id", nullable=true) */
 	protected InvoicePayDocument|null $payDocument;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	protected bool $disableStatistics = false;
 
 	/**
@@ -499,24 +342,17 @@ class InvoiceCore
 	 *
 	 * @var InvoiceCore[]|Collection|null
 	 * @ORM\ManyToMany(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="depositInvoices", fetch="EXTRA_LAZY")
-	 * @ORM\JoinTable(name="invoice__invoice_deposit")
-	 */
+	 * @ORM\JoinTable(name="invoice__invoice_deposit") */
 	private array|Collection|null $depositingInvoices;
 
 	/**
 	 * Odecteni zalohy
 	 *
 	 * @var InvoiceCore[]|Collection
-	 * @ORM\ManyToMany(targetEntity="\MatiCore\Invoice\InvoiceCore", mappedBy="depositingInvoices", fetch="EXTRA_LAZY")
-	 */
+	 * @ORM\ManyToMany(targetEntity="\MatiCore\Invoice\InvoiceCore", mappedBy="depositingInvoices", fetch="EXTRA_LAZY") */
 	private array|Collection $depositInvoices;
 
 
-	/**
-	 * InvoiceCore constructor.
-	 *
-	 * @param string $number
-	 */
 	public function __construct(string $number)
 	{
 		$this->number = $number;
@@ -540,36 +376,24 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return Company|null
-	 */
 	public function getCompany(): ?Company
 	{
 		return $this->company;
 	}
 
 
-	/**
-	 * @param Company|null $company
-	 */
 	public function setCompany(?Company $company): void
 	{
 		$this->company = $company;
 	}
 
 
-	/**
-	 * @return CompanyStock|null
-	 */
 	public function getCompanyStock(): ?CompanyStock
 	{
 		return $this->companyStock;
 	}
 
 
-	/**
-	 * @param CompanyStock|null $companyStock
-	 */
 	public function setCompanyStock(?CompanyStock $companyStock): void
 	{
 		$this->companyStock = $companyStock;
@@ -648,27 +472,18 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return Country
-	 */
 	public function getCompanyCountry(): Country
 	{
 		return $this->companyCountry;
 	}
 
 
-	/**
-	 * @param Country $companyCountry
-	 */
 	public function setCompanyCountry(Country $companyCountry): void
 	{
 		$this->companyCountry = $companyCountry;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getCompanyCin(): ?string
 	{
 		return $this->companyCin;
@@ -681,9 +496,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getCompanyTin(): ?string
 	{
 		return $this->companyTin;
@@ -696,9 +508,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getCompanyLogo(): ?string
 	{
 		return $this->companyLogo;
@@ -759,27 +568,18 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return Country
-	 */
 	public function getCustomerCountry(): Country
 	{
 		return $this->customerCountry;
 	}
 
 
-	/**
-	 * @param Country $customerCountry
-	 */
 	public function setCustomerCountry(Country $customerCountry): void
 	{
 		$this->customerCountry = $customerCountry;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getCustomerCin(): ?string
 	{
 		return $this->customerCin;
@@ -792,9 +592,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getCustomerTin(): ?string
 	{
 		return $this->customerTin;
@@ -807,90 +604,60 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getRateDate(): \DateTime
 	{
 		return $this->rateDate;
 	}
 
 
-	/**
-	 * @param \DateTime $rateDate
-	 */
 	public function setRateDate(\DateTime $rateDate): void
 	{
 		$this->rateDate = $rateDate;
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getCreateDate(): \DateTime
 	{
 		return $this->createDate;
 	}
 
 
-	/**
-	 * @param \DateTime $createDate
-	 */
 	public function setCreateDate(\DateTime $createDate): void
 	{
 		$this->createDate = $createDate;
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getEditDate(): \DateTime
 	{
 		return $this->editDate;
 	}
 
 
-	/**
-	 * @param \DateTime $editDate
-	 */
 	public function setEditDate(\DateTime $editDate): void
 	{
 		$this->editDate = $editDate;
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getDate(): \DateTime
 	{
 		return $this->date;
 	}
 
 
-	/**
-	 * @param \DateTime $date
-	 */
 	public function setDate(\DateTime $date): void
 	{
 		$this->date = $date;
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getTaxDate(): \DateTime
 	{
 		return $this->taxDate;
 	}
 
 
-	/**
-	 * @param \DateTime $taxDate
-	 */
 	public function setTaxDate(\DateTime $taxDate): void
 	{
 		$this->taxDate = $taxDate;
@@ -933,10 +700,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @param string|null $domain
-	 * @return string|null
-	 */
 	public function getSignImage(string $domain = null): ?string
 	{
 		if ($domain !== null && $this->signImage !== null) {
@@ -965,42 +728,29 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return BaseUser
-	 */
 	public function getEditUser(): BaseUser
 	{
 		return $this->editUser;
 	}
 
 
-	/**
-	 * @param BaseUser $editUser
-	 */
 	public function setEditUser(BaseUser $editUser): void
 	{
 		$this->editUser = $editUser;
 	}
 
 
-	/**
-	 * @param InvoiceItem $item
-	 */
 	public function addItem(InvoiceItem $item): void
 	{
 		$this->items[] = $item;
 	}
 
 
-	/**
-	 * @param InvoiceItem $item
-	 */
 	public function removeItem(InvoiceItem $item): void
 	{
 		foreach ($this->items as $k => $v) {
 			if ($v->getId() === $item->getId()) {
 				unset($this->items[$k]);
-
 				break;
 			}
 		}
@@ -1016,9 +766,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @param InvoiceHistory $history
-	 */
 	public function addHistory(InvoiceHistory $history): void
 	{
 		$this->history[] = $history;
@@ -1034,18 +781,12 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @param InvoiceComment $comment
-	 */
 	public function addComments(InvoiceComment $comment): void
 	{
 		$this->comments[] = $comment;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getTextBeforeItems(): ?string
 	{
 		return $this->textBeforeItems;
@@ -1058,9 +799,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getTextAfterItems(): ?string
 	{
 		return $this->textAfterItems;
@@ -1085,45 +823,30 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return BaseUser|null
-	 */
 	public function getAcceptStatus1User(): ?BaseUser
 	{
 		return $this->acceptStatus1User;
 	}
 
 
-	/**
-	 * @param BaseUser|null $acceptStatus1User
-	 */
 	public function setAcceptStatus1User(?BaseUser $acceptStatus1User): void
 	{
 		$this->acceptStatus1User = $acceptStatus1User;
 	}
 
 
-	/**
-	 * @return BaseUser|null
-	 */
 	public function getAcceptStatus2User(): ?BaseUser
 	{
 		return $this->acceptStatus2User;
 	}
 
 
-	/**
-	 * @param BaseUser|null $acceptStatus2User
-	 */
 	public function setAcceptStatus2User(?BaseUser $acceptStatus2User): void
 	{
 		$this->acceptStatus2User = $acceptStatus2User;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getAcceptStatus1Description(): ?string
 	{
 		return $this->acceptStatus1Description;
@@ -1136,9 +859,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getAcceptStatus2Description(): ?string
 	{
 		return $this->acceptStatus2Description;
@@ -1163,18 +883,12 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return \DateTime|null
-	 */
 	public function getPayDate(): ?\DateTime
 	{
 		return $this->payDate;
 	}
 
 
-	/**
-	 * @param \DateTime|null $payDate
-	 */
 	public function setPayDate(?\DateTime $payDate): void
 	{
 		$this->payDate = $payDate;
@@ -1182,7 +896,6 @@ class InvoiceCore
 
 
 	/**
-	 * @return int
 	 * @throws \Exception
 	 */
 	public function getPayDateDiff(): int
@@ -1193,7 +906,6 @@ class InvoiceCore
 			$date = DateTime::from('NOW');
 		}
 		$payDate = $this->getDueDate();
-
 		if ($date->format('Y-m-d') === $payDate->format('Y-m-d')) {
 			return 0;
 		}
@@ -1204,18 +916,12 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getDueDate(): \DateTime
 	{
 		return $this->dueDate;
 	}
 
 
-	/**
-	 * @param \DateTime $dueDate
-	 */
 	public function setDueDate(\DateTime $dueDate): void
 	{
 		$this->dueDate = $dueDate;
@@ -1244,18 +950,12 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @param InvoiceTax $invoiceTax
-	 */
 	public function addTax(InvoiceTax $invoiceTax): void
 	{
 		$this->taxList[] = $invoiceTax;
 	}
 
 
-	/**
-	 * @param InvoiceTax $invoiceTax
-	 */
 	public function removeTax(InvoiceTax $invoiceTax): void
 	{
 		foreach ($this->taxList as $key => $tax) {
@@ -1346,36 +1046,24 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return BaseUser
-	 */
 	public function getCreateUser(): BaseUser
 	{
 		return $this->createUser;
 	}
 
 
-	/**
-	 * @param BaseUser $createUser
-	 */
 	public function setCreateUser(BaseUser $createUser): void
 	{
 		$this->createUser = $createUser;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getQRCode(): ?string
 	{
 		return base64_encode($this->generateQRCode());
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getIban(): ?string
 	{
 		return $this->iban;
@@ -1388,9 +1076,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSwift(): ?string
 	{
 		return $this->swift;
@@ -1415,18 +1100,12 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return Currency
-	 */
 	public function getCurrency(): Currency
 	{
 		return $this->currency;
 	}
 
 
-	/**
-	 * @param Currency $currency
-	 */
 	public function setCurrency(Currency $currency): void
 	{
 		$this->currency = $currency;
@@ -1472,9 +1151,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 */
 	public function removeDepositingInvoice(InvoiceCore $invoice): void
 	{
 		foreach ($this->depositingInvoices as $key => $depositingInvoice) {
@@ -1487,9 +1163,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @param InvoiceCore|null $depositingInvoice
-	 */
 	public function addDepositingInvoice(?InvoiceCore $depositingInvoice): void
 	{
 		$this->depositingInvoices[] = $depositingInvoice;
@@ -1502,9 +1175,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @param InvoiceCore $depositInvoice
-	 */
 	public function addDepositInvoice(InvoiceCore $depositInvoice): void
 	{
 		$this->depositInvoices[] = $depositInvoice;
@@ -1584,9 +1254,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getOrderNumber(): ?string
 	{
 		return $this->orderNumber;
@@ -1599,9 +1266,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getRentNumber(): ?string
 	{
 		return $this->rentNumber;
@@ -1614,9 +1278,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getContractNumber(): ?string
 	{
 		return $this->contractNumber;
@@ -1740,18 +1401,12 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return InvoicePayDocument|null
-	 */
 	public function getPayDocument(): ?InvoicePayDocument
 	{
 		return $this->payDocument;
 	}
 
 
-	/**
-	 * @param InvoicePayDocument|null $payDocument
-	 */
 	public function setPayDocument(?InvoicePayDocument $payDocument): void
 	{
 		$this->payDocument = $payDocument;
@@ -1776,9 +1431,6 @@ class InvoiceCore
 	}
 
 
-	/**
-	 * @return FixInvoice|null
-	 */
 	public function getFixInvoice(): ?FixInvoice
 	{
 		return null;

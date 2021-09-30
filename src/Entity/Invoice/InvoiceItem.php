@@ -20,92 +20,51 @@ class InvoiceItem
 	use SmartObject;
 	use UuidIdentifier;
 
-	/**
-	 * @var InvoiceCore
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="items")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="items") */
 	private InvoiceCore $invoice;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $description;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $code;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $quantity;
 
-	/**
-	 * @var Unit
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Unit\Unit")
-	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Unit\Unit")
+	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id") */
 	private Unit $unit;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $vat = 21.0;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $pricePerItem;
 
-	/**
-	 * @var float|null
-	 * @ORM\Column(type="float", nullable=true)
-	 */
+	/** @ORM\Column(type="float", nullable=true) */
 	private float|null $buyPrice;
 
-	/**
-	 * @var Currency|null
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="buy_curreny_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
+	 * @ORM\JoinColumn(name="buy_curreny_id", referencedColumnName="id", nullable=true) */
 	private Currency|null $buyCurrency;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
+	/** @ORM\Column(type="integer") */
 	private int $position = 0;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
+	/** @ORM\Column(type="integer") */
 	private int $sale = 0;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $saleDescription = 'Sleva';
 
 
-	/**
-	 * InvoiceItem constructor.
-	 *
-	 * @param InvoiceCore $invoice
-	 * @param string $description
-	 * @param float $quantity
-	 * @param Unit $unit
-	 * @param float $pricePerItem
-	 */
 	public function __construct(
-		InvoiceCore $invoice, string $description, float $quantity, Unit $unit, float $pricePerItem
+		InvoiceCore $invoice,
+		string $description,
+		float $quantity,
+		Unit $unit,
+		float $pricePerItem
 	) {
 		$this->invoice = $invoice;
 		$this->description = $description;
@@ -115,18 +74,12 @@ class InvoiceItem
 	}
 
 
-	/**
-	 * @return InvoiceCore
-	 */
 	public function getInvoice(): InvoiceCore
 	{
 		return $this->invoice;
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 */
 	public function setInvoice(InvoiceCore $invoice): void
 	{
 		$this->invoice = $invoice;
@@ -145,9 +98,6 @@ class InvoiceItem
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getCode(): ?string
 	{
 		return $this->code;
@@ -160,18 +110,12 @@ class InvoiceItem
 	}
 
 
-	/**
-	 * @return Unit
-	 */
 	public function getUnit(): Unit
 	{
 		return $this->unit;
 	}
 
 
-	/**
-	 * @param Unit $unit
-	 */
 	public function setUnit(Unit $unit): void
 	{
 		$this->unit = $unit;
@@ -198,9 +142,6 @@ class InvoiceItem
 	}
 
 
-	/**
-	 * @return float|null
-	 */
 	public function getBuyPrice(): ?float
 	{
 		return $this->buyPrice;
@@ -213,30 +154,18 @@ class InvoiceItem
 	}
 
 
-	/**
-	 * @return Currency|null
-	 */
 	public function getBuyCurrency(): ?Currency
 	{
 		return $this->buyCurrency;
 	}
 
 
-	/**
-	 * @param Currency|null $buyCurrency
-	 */
 	public function setBuyCurrency(?Currency $buyCurrency): void
 	{
 		$this->buyCurrency = $buyCurrency;
 	}
 
 
-	/**
-	 * @param Currency $currency
-	 * @param float $rate
-	 * @param float $reverseRate
-	 * @return float
-	 */
 	public function getBuyPriceInCurrency(Currency $currency, float $rate = 26.0, float $reverseRate = 30.0): float
 	{
 		$price = $this->getBuyPrice();
@@ -244,11 +173,12 @@ class InvoiceItem
 		if ($price === null || $price <= 0.0) {
 			return 0.0;
 		}
-
-		if ($this->getBuyCurrency() === null || $currency->getId() === $this->getBuyCurrency()->getId()) {
+		if (
+			$this->getBuyCurrency() === null
+			|| $currency->getId() === $this->getBuyCurrency()->getId()
+		) {
 			return $price;
 		}
-
 		if ($currency->getCode() === 'CZK') {
 			$price *= $reverseRate;
 		} else {
@@ -259,10 +189,6 @@ class InvoiceItem
 	}
 
 
-	/**
-	 * @param Currency $currency
-	 * @return float
-	 */
 	public function getTotalBuyPriceInCurrency(Currency $currency): float
 	{
 		return $this->getQuantity() * $this->getBuyPriceInCurrency($currency);
@@ -353,5 +279,4 @@ class InvoiceItem
 
 		return $totalPrice + (($totalPrice / 100) * $this->getVat());
 	}
-
 }

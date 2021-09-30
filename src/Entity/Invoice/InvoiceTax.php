@@ -18,32 +18,16 @@ class InvoiceTax
 	use SmartObject;
 	use UuidIdentifier;
 
-	/**
-	 * @var InvoiceCore
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="taxList")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="taxList") */
 	private InvoiceCore $invoice;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $tax;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $price;
 
 
-	/**
-	 * InvoiceTax constructor.
-	 *
-	 * @param InvoiceCore $invoice
-	 * @param float $tax
-	 * @param float $price
-	 */
 	public function __construct(InvoiceCore $invoice, float $tax, float $price)
 	{
 		$this->invoice = $invoice;
@@ -80,5 +64,4 @@ class InvoiceTax
 	{
 		return ($this->price / 100) * $this->tax;
 	}
-
 }

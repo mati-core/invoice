@@ -25,25 +25,21 @@ use Nette\Utils\DateTime;
 class ExpenseEndpoint extends BaseEndpoint
 {
 	/**
-	 * @var User
 	 * @inject
 	 */
 	public User $user;
 
 	/**
-	 * @var ExpenseHelper
 	 * @inject
 	 */
 	public ExpenseHelper $expenseHelper;
 
 	/**
-	 * @var CompanyManagerAccessor
 	 * @inject
 	 */
 	public CompanyManagerAccessor $companyManager;
 
 	/**
-	 * @var CurrencyManagerAccessor
 	 * @inject
 	 */
 	public CurrencyManagerAccessor $currencyManager;

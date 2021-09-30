@@ -46,7 +46,10 @@ class ExportManager
 	 * @param array $config
 	 */
 	public function __construct(
-		string $tempDir, array $config, EntityManager $entityManager, ITemplateFactory $templateFactory,
+		string $tempDir,
+		array $config,
+		EntityManager $entityManager,
+		ITemplateFactory $templateFactory,
 		CurrencyManager $currencyManager
 	) {
 		$this->tempDir = $tempDir;
@@ -59,9 +62,7 @@ class ExportManager
 
 	/**
 	 * @param array $invoices
-	 * @return string|null
-	 * @throws CurrencyException
-	 * @throws MpdfException
+	 * @throws CurrencyException|MpdfException
 	 */
 	public function exportInvoicesToPDF(array $invoices): ?string
 	{
@@ -90,10 +91,6 @@ class ExportManager
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 * @return string
-	 */
 	public function getExportInvoiceFileName(InvoiceCore $invoice): string
 	{
 		if ($invoice instanceof Invoice) {
@@ -111,15 +108,12 @@ class ExportManager
 
 
 	/**
-	 * @param InvoiceCore $invoice
-	 * @param string $destination
-	 * @param string|null $file
-	 * @return string|null
-	 * @throws CurrencyException
-	 * @throws MpdfException
+	 * @throws CurrencyException|MpdfException
 	 */
 	public function exportInvoiceToPDF(
-		InvoiceCore $invoice, string $destination = Destination::DOWNLOAD, ?string $file = null
+		InvoiceCore $invoice,
+		string $destination = Destination::DOWNLOAD,
+		?string $file = null
 	): ?string {
 		$name = $this->getExportInvoiceFileName($invoice);
 
@@ -194,12 +188,12 @@ class ExportManager
 
 	/**
 	 * @param array $files
-	 * @param string $destination
-	 * @param string $file
-	 * @return string|null
 	 * @throws MpdfException
 	 */
-	public function mergePDF(array $files, string $destination = Destination::DOWNLOAD, string $file = 'attachment.pdf'
+	public function mergePDF(
+		array $files,
+		string $destination = Destination::DOWNLOAD,
+		string $file = 'attachment.pdf'
 	): ?string {
 		$pdf = new Mpdf();
 
@@ -237,18 +231,15 @@ class ExportManager
 
 
 	/**
-	 * @param int $alertNumber
-	 * @param InvoiceCore $invoice
-	 * @param \DateTime $newDueDate
-	 * @param string $destination
-	 * @param string|null $file
-	 * @return string|null
 	 * @throws MpdfException
 	 */
 	public function exportInvoiceAlertToPDF(
-		int $alertNumber, InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD,
+		int $alertNumber,
+		InvoiceCore $invoice,
+		\DateTime $newDueDate,
+		string $destination = Destination::DOWNLOAD,
 		?string $file = null
-	) {
+	): void {
 		$template = $this->templateFactory->createTemplate();
 		$template->invoice = $invoice;
 		$template->newDueDate = $newDueDate;
@@ -305,45 +296,39 @@ class ExportManager
 
 
 	/**
-	 * @param InvoiceCore $invoice
-	 * @param \DateTime $newDueDate
-	 * @param string $destination
-	 * @param string|null $file
-	 * @return string|null
 	 * @throws MpdfException
 	 */
 	public function exportInvoiceAlertOneToPDF(
-		InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null
+		InvoiceCore $invoice,
+		\DateTime $newDueDate,
+		string $destination = Destination::DOWNLOAD,
+		?string $file = null
 	): ?string {
 		return $this->exportInvoiceAlertToPDF(1, $invoice, $newDueDate, $destination, $file);
 	}
 
 
 	/**
-	 * @param InvoiceCore $invoice
-	 * @param \DateTime $newDueDate
-	 * @param string $destination
-	 * @param string|null $file
-	 * @return string|null
 	 * @throws MpdfException
 	 */
 	public function exportInvoiceAlertTwoToPDF(
-		InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null
+		InvoiceCore $invoice,
+		\DateTime $newDueDate,
+		string $destination = Destination::DOWNLOAD,
+		?string $file = null
 	): ?string {
 		return $this->exportInvoiceAlertToPDF(2, $invoice, $newDueDate, $destination, $file);
 	}
 
 
 	/**
-	 * @param InvoiceCore $invoice
-	 * @param \DateTime $newDueDate
-	 * @param string $destination
-	 * @param string|null $file
-	 * @return string|null
 	 * @throws MpdfException
 	 */
 	public function exportInvoiceAlertThreeToPDF(
-		InvoiceCore $invoice, \DateTime $newDueDate, string $destination = Destination::DOWNLOAD, ?string $file = null
+		InvoiceCore $invoice,
+		\DateTime $newDueDate,
+		string $destination = Destination::DOWNLOAD,
+		?string $file = null
 	): ?string {
 		return $this->exportInvoiceAlertToPDF(3, $invoice, $newDueDate, $destination, $file);
 	}
@@ -351,14 +336,12 @@ class ExportManager
 
 	/**
 	 * @param InvoiceCore[] $invoices
-	 * @param string $destination
-	 * @param string|null $file
-	 * @return string|null
-	 * @throws CurrencyException
-	 * @throws MpdfException
+	 * @throws CurrencyException|MpdfException
 	 */
 	public function exportInvoiceSummaryToPDF(
-		array $invoices, string $destination = Destination::DOWNLOAD, ?string $file = null
+		array $invoices,
+		string $destination = Destination::DOWNLOAD,
+		?string $file = null
 	): ?string {
 		$name = $this->config['summary']['filename'] . date('Ymd_His') . '.pdf';
 
@@ -427,7 +410,6 @@ class ExportManager
 
 
 	/**
-	 * @param \DateTime $date
 	 * @throws \Exception
 	 */
 	public function exportIntrastatToXLS(\DateTime $date): void
@@ -461,39 +443,30 @@ class ExportManager
 		if ($sheet->getColumnDimension('B') !== null) {
 			$sheet->getColumnDimension('B')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('C') !== null) {
 			$sheet->getColumnDimension('C')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('D') !== null) {
 			$sheet->getColumnDimension('D')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('E') !== null) {
 			$sheet->getColumnDimension('E')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('F') !== null) {
 			$sheet->getColumnDimension('F')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('G') !== null) {
 			$sheet->getColumnDimension('G')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('H') !== null) {
 			$sheet->getColumnDimension('H')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('I') !== null) {
 			$sheet->getColumnDimension('I')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('J') !== null) {
 			$sheet->getColumnDimension('J')->setAutoSize(true);
 		}
-
 		if ($sheet->getColumnDimension('K') !== null) {
 			$sheet->getColumnDimension('K')->setAutoSize(true);
 		}
@@ -564,7 +537,6 @@ class ExportManager
 		ob_clean();
 
 		$writer = new Xlsx($spreadsheet);
-
 		$fileName = $this->config['intrastat']['filename'] . $date->format('Y_m') . '.xlsx';
 
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -577,20 +549,14 @@ class ExportManager
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 * @return string
-	 */
 	public function getColorByInvoiceDocument(InvoiceCore $invoice): string
 	{
 		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['color'])) {
 			return $this->config['fixInvoice']['color'];
 		}
-
 		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['color'])) {
 			return $this->config['payDocument']['color'];
 		}
-
 		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['color'])) {
 			return $this->config['proforma']['color'];
 		}
@@ -599,47 +565,32 @@ class ExportManager
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getFooterEmail(): ?string
 	{
 		return $this->config['email'] ?? null;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getFooterPhone(): ?string
 	{
 		return $this->config['phone'] ?? null;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getCompanyDescription(): ?string
 	{
 		return $this->config['companyDescription'] ?? null;
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 * @return string|null
-	 */
 	public function getDescription(InvoiceCore $invoice): ?string
 	{
 		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['description'])) {
 			return $this->config['fixInvoice']['description'];
 		}
-
 		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['description'])) {
 			return $this->config['payDocument']['description'];
 		}
-
 		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['description'])) {
 			return $this->config['proforma']['description'];
 		}
@@ -648,20 +599,14 @@ class ExportManager
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 * @return string|null
-	 */
 	public function getAdditionalDescription(InvoiceCore $invoice): ?string
 	{
 		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['additionalDescription'])) {
 			return $this->config['fixInvoice']['additionalDescription'];
 		}
-
 		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['additionalDescription'])) {
 			return $this->config['payDocument']['additionalDescription'];
 		}
-
 		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['additionalDescription'])) {
 			return $this->config['proforma']['additionalDescription'];
 		}
@@ -671,7 +616,6 @@ class ExportManager
 
 
 	/**
-	 * @param InvoiceCore $invoice
 	 * @return array<string|null>
 	 */
 	public function getInvoiceTemplateData(InvoiceCore $invoice): array
@@ -686,21 +630,12 @@ class ExportManager
 	}
 
 
-	/**
-	 * @param string|null $txt
-	 * @param int $charToRow
-	 * @param int $skip
-	 * @param float $lineWeight
-	 * @return int
-	 */
 	private function getTextPBI(?string $txt, int $charToRow = 70, int $skip = 0, float $lineWeight = 1.5): int
 	{
 		$index = 0.0;
-
 		if ($txt !== null) {
 			$lines = explode("\n", $txt);
 			$index += count($lines) / $lineWeight;
-
 			foreach ($lines as $line) {
 				$charCount = strlen($line);
 				while ($charCount > $charToRow) {
@@ -711,7 +646,6 @@ class ExportManager
 		}
 
 		$index -= $skip;
-
 		if ($index < 0) {
 			$index = 0;
 		}

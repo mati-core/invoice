@@ -7,32 +7,22 @@ namespace MatiCore\Invoice;
 
 class InvoiceStatus
 {
-
-	public const CREATED = 'created';
-
-	public const WAITING = 'waiting';
-
-	public const ACCEPTED = 'accepted';
-
-	public const DENIED = 'denied';
-
-	public const SENT = 'sent';
-
-	public const CANCELLED = 'cancelled';
-
-	public const PAID = 'paid';
-
-	public const PAY_ALERT_NONE = 'none';
-
-	public const PAY_ALERT_ONE = 'one';
-
-	public const PAY_ALERT_TWO = 'two';
-
-	public const PAY_ALERT_THREE = 'three';
+	public const
+		CREATED = 'created',
+		WAITING = 'waiting',
+		ACCEPTED = 'accepted',
+		DENIED = 'denied',
+		SENT = 'sent',
+		CANCELLED = 'cancelled',
+		PAID = 'paid',
+		PAY_ALERT_NONE = 'none',
+		PAY_ALERT_ONE = 'one',
+		PAY_ALERT_TWO = 'two',
+		PAY_ALERT_THREE = 'three';
 
 
 	/**
-	 * @return array
+	 * @return array<string, string>
 	 */
 	public static function getList(): array
 	{
@@ -51,10 +41,6 @@ class InvoiceStatus
 	}
 
 
-	/**
-	 * @param string $status
-	 * @return string
-	 */
 	public static function getNameByStatus(string $status): string
 	{
 		$list = self::getList();

@@ -19,64 +19,38 @@ class ExpenseInvoiceItem
 	use UuidIdentifier;
 	use SmartObject;
 
-	/**
-	 * @var Expense
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\ExpenseInvoice", inversedBy="items")
-	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\ExpenseInvoice", inversedBy="items")
+	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id") */
 	private Expense $expense;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $description;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $quantity;
 
 	/**
-	 * @var Unit
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Unit\Unit")
-	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id")
-	 */
+	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id") */
 	private Unit $unit;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $vat;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $pricePerItem;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
+	/** @ORM\Column(type="integer") */
 	private int $position;
 
 
-	/**
-	 * ExpenseInvoiceItem constructor.
-	 *
-	 * @param Expense $expense
-	 * @param string $description
-	 * @param float $quantity
-	 * @param Unit $unit
-	 * @param float $vat
-	 * @param float $pricePerItem
-	 * @param int $position
-	 */
 	public function __construct(
-		Expense $expense, string $description, float $quantity, Unit $unit, float $vat, float $pricePerItem,
+		Expense $expense,
+		string $description,
+		float $quantity,
+		Unit $unit,
+		float $vat,
+		float $pricePerItem,
 		int $position
 	) {
 		$this->expense = $expense;
@@ -89,9 +63,6 @@ class ExpenseInvoiceItem
 	}
 
 
-	/**
-	 * @return Expense
-	 */
 	public function getExpense(): Expense
 	{
 		return $this->expense;
@@ -122,18 +93,12 @@ class ExpenseInvoiceItem
 	}
 
 
-	/**
-	 * @return Unit
-	 */
 	public function getUnit(): Unit
 	{
 		return $this->unit;
 	}
 
 
-	/**
-	 * @param Unit $unit
-	 */
 	public function setUnit(Unit $unit): void
 	{
 		$this->unit = $unit;

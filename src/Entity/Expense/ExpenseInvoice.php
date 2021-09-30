@@ -16,124 +16,68 @@ use MatiCore\Currency\Currency;
  */
 class ExpenseInvoice extends Expense
 {
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierInvoiceNumber = null;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $variableSymbol = null;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	protected string $supplierName;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierCin = null;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierTin = null;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierStreet = null;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierCity = null;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierZipCode = null;
 
-	/**
-	 * @var Country
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
-	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
+	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id", nullable=true) */
 	protected Country $supplierCountry;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierBankAccount = null;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierIBAN = null;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $supplierSWIFT = null;
 
 	/**
 	 * @var ExpenseInvoiceItem[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\ExpenseInvoiceItem", mappedBy="expense")
-	 * @ORM\OrderBy({"position"="ASC"})
-	 */
+	 * @ORM\OrderBy({"position"="ASC"}) */
 	protected array|Collection $items;
 
-	/**
-	 * @var \DateTime|null
-	 * @ORM\Column(type="date", nullable=true)
-	 */
+	/** @ORM\Column(type="date", nullable=true) */
 	protected \DateTime|null $datePrint = null;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
+	/** @ORM\Column(type="integer") */
 	protected int $deliveryType = ExpenseDeliveryType::ROAD;
 
-	/**
-	 * @var float
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	protected float $weight = 0.0;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	protected string|null $productCode = null;
 
 
-	/**
-	 * ExpenseInvoice constructor.
-	 *
-	 * @param string $number
-	 * @param string $description
-	 * @param Currency $currency
-	 * @param float $totalPrice
-	 * @param \DateTime $date
-	 * @param string $supplierName
-	 * @throws \Exception
-	 */
 	public function __construct(
-		string $number, string $description, Currency $currency, float $totalPrice, \DateTime $date,
+		string $number,
+		string $description,
+		Currency $currency,
+		float $totalPrice,
+		\DateTime $date,
 		string $supplierName
 	) {
 		parent::__construct($number, $description, $currency, $totalPrice, $date);
@@ -142,9 +86,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getVariableSymbol(): ?string
 	{
 		return $this->variableSymbol;
@@ -157,9 +98,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierInvoiceNumber(): ?string
 	{
 		return $this->supplierInvoiceNumber;
@@ -184,9 +122,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierCin(): ?string
 	{
 		return $this->supplierCin;
@@ -199,9 +134,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierTin(): ?string
 	{
 		return $this->supplierTin;
@@ -214,9 +146,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierStreet(): ?string
 	{
 		return $this->supplierStreet;
@@ -229,9 +158,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierCity(): ?string
 	{
 		return $this->supplierCity;
@@ -244,9 +170,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierZipCode(): ?string
 	{
 		return $this->supplierZipCode;
@@ -259,27 +182,18 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return Country
-	 */
 	public function getSupplierCountry(): Country
 	{
 		return $this->supplierCountry;
 	}
 
 
-	/**
-	 * @param Country $supplierCountry
-	 */
 	public function setSupplierCountry(Country $supplierCountry): void
 	{
 		$this->supplierCountry = $supplierCountry;
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierBankAccount(): ?string
 	{
 		return $this->supplierBankAccount;
@@ -292,9 +206,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierIBAN(): ?string
 	{
 		return $this->supplierIBAN;
@@ -307,9 +218,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getSupplierSWIFT(): ?string
 	{
 		return $this->supplierSWIFT;
@@ -340,27 +248,18 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @param ExpenseInvoiceItem $item
-	 */
 	public function addItem(ExpenseInvoiceItem $item): void
 	{
 		$this->items[] = $item;
 	}
 
 
-	/**
-	 * @return \DateTime|null
-	 */
 	public function getDatePrint(): ?\DateTime
 	{
 		return $this->datePrint;
 	}
 
 
-	/**
-	 * @param \DateTime|null $datePrint
-	 */
 	public function setDatePrint(?\DateTime $datePrint): void
 	{
 		$this->datePrint = $datePrint;
@@ -444,9 +343,6 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getProductCode(): ?string
 	{
 		return $this->productCode;

@@ -318,7 +318,6 @@ class InvoiceHelper
 
 
 	/**
-	 * @param string $id
 	 * @return array|null
 	 * @throws UnitException
 	 */
@@ -330,16 +329,17 @@ class InvoiceHelper
 
 			$date = $invoice instanceof FixInvoice ? $invoice->getDate() : DateTime::from('NOW');
 			$taxDate = $invoice instanceof FixInvoice ? $invoice->getTaxDate() : DateTime::from('NOW');
-			$dueDate = $invoice instanceof FixInvoice ? $invoice->getDueDate() : DateTime::from($date)->modify(
-				'+30 days'
-			);
+			$dueDate = $invoice instanceof FixInvoice
+				? $invoice->getDueDate()
+				: DateTime::from($date)->modify('+30 days');
 
-			$textBeforeItems = $invoice instanceof FixInvoice ? $invoice->getTextBeforeItems(
-				) ?? '' : 'Opravný daňový doklad k daňovému dokladu č. ' . $invoice->getNumber();
+			$textBeforeItems = $invoice instanceof FixInvoice
+				? $invoice->getTextBeforeItems() ?? '' : 'Opravný daňový doklad k daňovému dokladu č. ' . $invoice->getNumber();
 			$textAfterItems = $invoice instanceof FixInvoice ? $invoice->getTextBeforeItems() ?? '' : '';
 
-			$invoiceId = $invoice instanceof FixInvoice && $invoice->getInvoice() !== null ? $invoice->getInvoice()
-				->getId() : $invoice->getId();
+			$invoiceId = $invoice instanceof FixInvoice && $invoice->getInvoice() !== null
+				? $invoice->getInvoice()->getId()
+				: $invoice->getId();
 
 			$ret = [
 				'id' => $invoice instanceof FixInvoice ? $invoice->getId() : null,
@@ -525,11 +525,8 @@ class InvoiceHelper
 
 	/**
 	 * @param array $invoiceData
-	 * @param BaseUser|null $user
 	 * @return array
-	 * @throws CurrencyException
-	 * @throws UnitException
-	 * @throws UserException
+	 * @throws CurrencyException|UnitException|UserException
 	 */
 	public function saveInvoice(array $invoiceData, ?BaseUser $user = null): array
 	{
@@ -743,7 +740,7 @@ class InvoiceHelper
 
 		//Persistnuti faktury
 		$this->entityManager->persist($invoice);
-		$this->entityManager->getUnitOfWork()->commit($invoice);
+		$this->entityManager->flush();
 
 		//Historie faktury
 		$invoiceHistory = new InvoiceHistory($invoice, $changeDescription);
@@ -852,7 +849,6 @@ class InvoiceHelper
 
 	/**
 	 * @param array $invoiceData
-	 * @param string $depositNumber
 	 * @return array
 	 * @throws InvoiceException
 	 */
@@ -860,7 +856,6 @@ class InvoiceHelper
 	{
 		try {
 			$depositInvoice = $this->invoiceManager->get()->getInvoiceByCode($depositNumber);
-
 			if ($invoiceData['customer']['cin'] === '' && $invoiceData['customer']['name'] === '') {
 				$invoiceData['customer'] = [
 					'id' => null,
@@ -914,7 +909,6 @@ class InvoiceHelper
 
 
 	/**
-	 * @param Company $company
 	 * @return array
 	 */
 	public function getDepositList(Company $company): array
@@ -943,15 +937,9 @@ class InvoiceHelper
 	}
 
 
-	/**
-	 * @param \DateTime $dateTax
-	 * @param \DateTime $dateDue
-	 * @return string
-	 */
 	private function getDueDayCount(\DateTime $dateTax, \DateTime $dateDue): string
 	{
 		$diff = (int) $dateDue->diff($dateTax)->format('%a');
-
 		$available = [
 			0 => '0',
 			7 => '7',
@@ -965,7 +953,6 @@ class InvoiceHelper
 
 
 	/**
-	 * @param InvoiceCore $invoice
 	 * @throws EntityManagerException
 	 */
 	private function clearInvoiceItems(InvoiceCore $invoice): void
@@ -978,14 +965,11 @@ class InvoiceHelper
 
 
 	/**
-	 * @param string $unitId
-	 * @return Unit
 	 * @throws UnitException
 	 */
 	private function getUnit(string $unitId): Unit
 	{
 		static $cache;
-
 		if ($cache === null) {
 			$cache = $this->unitManager->get()->getUnits();
 		}

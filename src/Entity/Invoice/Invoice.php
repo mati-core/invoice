@@ -12,51 +12,33 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Invoice extends InvoiceCore
 {
-	/**
-	 * @var InvoiceProforma|null
-	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoiceProforma", mappedBy="invoice")
-	 * @ORM\JoinColumn(name="proforma_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoiceProforma", mappedBy="invoice")
+	 * @ORM\JoinColumn(name="proforma_id", referencedColumnName="id", nullable=true) */
 	private InvoiceProforma|null $proforma = null;
 
-	/**
-	 * @var FixInvoice|null
-	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\FixInvoice", mappedBy="invoice")
-	 * @ORM\JoinColumn(name="fixing_invoice_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\OneToOne(targetEntity="\MatiCore\Invoice\FixInvoice", mappedBy="invoice")
+	 * @ORM\JoinColumn(name="fixing_invoice_id", referencedColumnName="id", nullable=true) */
 	private FixInvoice|null $fixInvoice = null;
 
 
-	/**
-	 * @return FixInvoice|null
-	 */
 	public function getFixInvoice(): ?FixInvoice
 	{
 		return $this->fixInvoice;
 	}
 
 
-	/**
-	 * @param FixInvoice|null $fixInvoice
-	 */
 	public function setFixInvoice(?FixInvoice $fixInvoice): void
 	{
 		$this->fixInvoice = $fixInvoice;
 	}
 
 
-	/**
-	 * @return InvoiceProforma|null
-	 */
 	public function getProforma(): ?InvoiceProforma
 	{
 		return $this->proforma;
 	}
 
 
-	/**
-	 * @param InvoiceProforma|null $proforma
-	 */
 	public function setProforma(?InvoiceProforma $proforma): void
 	{
 		$this->proforma = $proforma;

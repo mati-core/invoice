@@ -29,13 +29,8 @@ class ExpensePayMethod
 	}
 
 
-	/**
-	 * @param string|null $type
-	 * @return string
-	 */
 	public static function getName(?string $type): string
 	{
 		return self::getList()[$type] ?? 'Neuvedeno';
 	}
-
 }

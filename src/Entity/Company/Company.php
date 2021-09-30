@@ -21,28 +21,22 @@ class Company
 	use SmartObject;
 	use UuidIdentifier;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $name;
 
 	/**
 	 * @var CompanyStock[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyStock", mappedBy="company")
-	 * @ORM\OrderBy({"name"="ASC"})
-	 */
+	 * @ORM\OrderBy({"name"="ASC"}) */
 	private array|Collection $stocks;
 
 	/**
-	 * @var Currency
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
 	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id")
 	 */
 	private Currency $currency;
 
 	/**
-	 * @var Address
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Address")
 	 * @ORM\JoinColumn(name="invoice_address_id", referencedColumnName="id")
 	 */
@@ -51,47 +45,25 @@ class Company
 	/**
 	 * @var CompanyContact[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyContact", mappedBy="company")
-	 * @ORM\OrderBy({"lastName"="ASC","firstName"="ASC"})
-	 */
+	 * @ORM\OrderBy({"lastName"="ASC","firstName"="ASC"}) */
 	private array|Collection $contacts;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	private bool $sendInvoicesInOneFile = false;
 
-	/**
-	 * @var int
-	 * @ORM\Column(type="integer")
-	 */
+	/** @ORM\Column(type="integer") */
 	private int $invoiceDueDayCount = 14;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string $note;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string $type = CompanyType::STANDARD;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	private bool $blackList = false;
 
 
-	/**
-	 * Company constructor.
-	 *
-	 * @param Address $invoiceAddress
-	 * @param Currency $currency
-	 */
 	public function __construct(Address $invoiceAddress, Currency $currency)
 	{
 		$this->currency = $currency;
@@ -130,36 +102,24 @@ class Company
 	}
 
 
-	/**
-	 * @return Currency
-	 */
 	public function getCurrency(): Currency
 	{
 		return $this->currency;
 	}
 
 
-	/**
-	 * @param Currency $currency
-	 */
 	public function setCurrency(Currency $currency): void
 	{
 		$this->currency = $currency;
 	}
 
 
-	/**
-	 * @return Address
-	 */
 	public function getInvoiceAddress(): Address
 	{
 		return $this->invoiceAddress;
 	}
 
 
-	/**
-	 * @param Address $invoiceAddress
-	 */
 	public function setInvoiceAddress(Address $invoiceAddress): void
 	{
 		$this->invoiceAddress = $invoiceAddress;

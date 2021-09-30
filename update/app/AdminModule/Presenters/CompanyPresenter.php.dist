@@ -10,7 +10,7 @@ namespace App\AdminModule\Presenters;
  * Class CompanyPresenter
  * @package App\AdminModule\Presenters
  */
-class CompanyPresenter extends CompanyInnerPackagePresenter
+class CmsInvoiceCompanyPresenter extends CmsInvoiceCompanyEndpoint
 {
 
 }

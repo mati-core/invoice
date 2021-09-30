@@ -130,10 +130,8 @@ class ExpenseHelper
 
 
 	/**
-	 * @param string $id
 	 * @return array
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getExpenseById(string $id): array
 	{
@@ -493,10 +491,8 @@ class ExpenseHelper
 
 
 	/**
-	 * @param string $id
 	 * @return array
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getSupplierData(string $id): array
 	{

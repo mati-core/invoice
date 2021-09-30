@@ -12,30 +12,18 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class InvoicePayDocument extends InvoiceCore
 {
-	/**
-	 * @var bool
-	 */
 	protected bool $disableStatistics = true;
 
-	/**
-	 * @var InvoiceCore
-	 * @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", mappedBy="payDocument")
-	 */
+	/** @ORM\OneToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", mappedBy="payDocument") */
 	private InvoiceCore $invoice;
 
 
-	/**
-	 * @return InvoiceCore
-	 */
 	public function getInvoice(): InvoiceCore
 	{
 		return $this->invoice;
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 */
 	public function setInvoice(InvoiceCore $invoice): void
 	{
 		$this->invoice = $invoice;
@@ -49,7 +37,6 @@ class InvoicePayDocument extends InvoiceCore
 		}
 
 		$diff = round($this->getTotalPrice() - ($this->getItemTotalPrice() + $this->getTotalTax()), 2);
-
 		foreach ($this->getDepositInvoices() as $invoice) {
 			$diff += $invoice->getTotalPrice();
 		}
@@ -62,5 +49,4 @@ class InvoicePayDocument extends InvoiceCore
 	{
 		return true;
 	}
-
 }

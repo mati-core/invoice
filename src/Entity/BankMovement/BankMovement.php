@@ -33,14 +33,10 @@ class BankMovement
 	use UuidIdentifier;
 	use SmartObject;
 
-	/**
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $messageId;
 
-	/**
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $status = self::STATUS_NOT_PROCESSED;
 
 	/**
@@ -49,19 +45,13 @@ class BankMovement
 	 */
 	private InvoiceCore|null $invoice;
 
-	/**
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $bankAccountName;
 
-	/**
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $bankAccount;
 
-	/**
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $currencyIsoCode;
 
 	/**
@@ -70,50 +60,41 @@ class BankMovement
 	 */
 	private Currency $currency;
 
-	/**
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $customerBankAccount;
 
-	/**
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $customerName;
 
-	/**
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $variableSymbol;
 
-	/**
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $constantSymbol;
 
-	/**
-	 * @ORM\Column(type="text", nullable=true)
-	 */
+	/** @ORM\Column(type="text", nullable=true) */
 	private string|null $message;
 
-	/**
-	 * @ORM\Column(type="float")
-	 */
+	/** @ORM\Column(type="float") */
 	private float $price;
 
-	/**
-	 * @ORM\Column(type="date")
-	 */
+	/** @ORM\Column(type="date") */
 	private DateTime $date;
 
-	/**
-	 * @ORM\Column(type="datetime")
-	 */
+	/** @ORM\Column(type="datetime") */
 	private DateTime $createDate;
 
 
 	public function __construct(
-		string $messageId, string $bankAccountName, string $bankAccount, string $currencyIsoCode, Currency $currency,
-		string $customerBankAccount, string $variableSymbol, float $price, DateTime $date
+		string $messageId,
+		string $bankAccountName,
+		string $bankAccount,
+		string $currencyIsoCode,
+		Currency $currency,
+		string $customerBankAccount,
+		string $variableSymbol,
+		float $price,
+		DateTime $date
 	) {
 		$this->messageId = $messageId;
 		$this->bankAccountName = $bankAccountName;

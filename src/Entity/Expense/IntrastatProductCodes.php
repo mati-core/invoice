@@ -22,5 +22,4 @@ class IntrastatProductCodes
 			'8427 90 00' => 'Vozíky ostatní se zařízením zdvihacím, manipulačním, ne s el. motorem',
 		];
 	}
-
 }

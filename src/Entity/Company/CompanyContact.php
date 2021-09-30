@@ -18,91 +18,46 @@ class CompanyContact
 	use SmartObject;
 	use UuidIdentifier;
 
-	/**
-	 * @var Company
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company", inversedBy="contacts")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company", inversedBy="contacts") */
 	private Company $company;
 
-	/**
-	 * @var CompanyStock|null
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock", inversedBy="contacts")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock", inversedBy="contacts") */
 	private CompanyStock|null $companyStock;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $role;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $firstName;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="string")
-	 */
+	/** @ORM\Column(type="string") */
 	private string $lastName;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $email;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $phone;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $mobilePhone;
 
-	/**
-	 * @var string|null
-	 * @ORM\Column(type="text", nullable=true)
-	 */
+	/** @ORM\Column(type="text", nullable=true) */
 	private string|null $note;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	private bool $sendInvoice = false;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	private bool $sendOffer = false;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	private bool $sendOrder = false;
 
-	/**
-	 * @var bool
-	 * @ORM\Column(type="boolean")
-	 */
+	/** @ORM\Column(type="boolean") */
 	private bool $sendMarketing = true;
 
 
-	/**
-	 * CompanyContact constructor.
-	 *
-	 * @param Company $company
-	 * @param string $lastName
-	 */
 	public function __construct(Company $company, string $lastName)
 	{
 		$this->company = $company;
@@ -110,18 +65,12 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @return Company
-	 */
 	public function getCompany(): Company
 	{
 		return $this->company;
 	}
 
 
-	/**
-	 * @param Company $company
-	 */
 	public function setCompany(Company $company): void
 	{
 		$this->company = $company;
@@ -134,9 +83,6 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getFirstName(): ?string
 	{
 		return $this->firstName;
@@ -161,9 +107,6 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getNote(): ?string
 	{
 		return $this->note;
@@ -229,9 +172,6 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getEmail(): ?string
 	{
 		return $this->email;
@@ -244,10 +184,6 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @param bool $formatted
-	 * @return string|null
-	 */
 	public function getPhone(bool $formatted = false): ?string
 	{
 		if ($formatted === true) {
@@ -274,10 +210,6 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @param bool $formatted
-	 * @return string|null
-	 */
 	public function getMobilePhone(bool $formatted = false): ?string
 	{
 		if ($formatted === true) {
@@ -304,9 +236,6 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public function getRole(): ?string
 	{
 		return $this->role;
@@ -319,18 +248,12 @@ class CompanyContact
 	}
 
 
-	/**
-	 * @return CompanyStock|null
-	 */
 	public function getCompanyStock(): ?CompanyStock
 	{
 		return $this->companyStock;
 	}
 
 
-	/**
-	 * @param CompanyStock|null $companyStock
-	 */
 	public function setCompanyStock(?CompanyStock $companyStock): void
 	{
 		$this->companyStock = $companyStock;

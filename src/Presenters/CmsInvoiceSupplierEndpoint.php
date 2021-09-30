@@ -6,6 +6,7 @@ namespace App\AdminModule\Presenters;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Address\CountryManager;
@@ -21,38 +22,20 @@ use Nette\Forms\Form;
 use Nette\Utils\ArrayHash;
 use Tracy\Debugger;
 
-/**
- * Class SupplierInnerPackagePresenter
- *
- * @package App\AdminModule\Presenters
- */
-class SupplierInnerPackagePresenter extends BaseAdminPresenter
+class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 {
+	private Supplier|null $editedSupplier;
 
-	/**
-	 * @var SupplierManagerAccessor
-	 * @inject
-	 */
-	public SupplierManagerAccessor $supplierManager;
-
-	/**
-	 * @var CurrencyManagerAccessor
-	 * @inject
-	 */
-	public CurrencyManagerAccessor $currencyManager;
-
-	/**
-	 * @var CountryManagerAccessor
-	 * @inject
-	 */
-	public CountryManagerAccessor $countryManager;
 
 	use FormFactoryTrait;
 
-	/**
-	 * @var Supplier|null
-	 */
-	private Supplier|null $editedSupplier;
+
+	public function __construct(
+		private SupplierManagerAccessor $supplierManager,
+		private CurrencyManagerAccessor $currencyManager,
+		private CountryManagerAccessor $countryManager,
+	) {
+	}
 
 
 	public function actionDefault(): void
@@ -71,7 +54,6 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionDetail(string $id): void
@@ -87,7 +69,6 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function handleDelete(string $id): void
@@ -108,7 +89,6 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function handleActive(string $id): void
@@ -116,9 +96,8 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 		try {
 			$supplier = $this->supplierManager->get()->getSupplierById($id);
 			$supplier->setActive(!$supplier->isActive());
-
-			$this->entityManager->getUnitOfWork()->commit($supplier);
-		} catch (NonUniqueResultException | NoResultException $e) {
+			$this->entityManager->flush();
+		} catch (NonUniqueResultException | NoResultException) {
 			$this->flashMessage('Požadovaný dodavatel neexistuje.', 'error');
 		} catch (EntityManagerException $e) {
 			Debugger::log($e);
@@ -130,7 +109,6 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @return Form
 	 * @throws AbortException
 	 */
 	public function createComponentCreateForm(): Form
@@ -186,11 +164,8 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 						? null
 						: $values->deliveryCompany
 				);
-
-				$this->entityManager->getUnitOfWork()->commit($supplier);
-
+				$this->entityManager->flush();
 				$this->flashMessage('Dodavatel ' . $supplier->getName() . ' byl úspěšně přidán do seznamu.', 'success');
-
 				$this->redirect('default');
 			};
 
@@ -212,7 +187,6 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @return Form
 	 * @throws AbortException
 	 * @throws SupplierException
 	 */
@@ -259,10 +233,6 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 
 			$form->addSubmit('submit', 'Save');
 
-			/**
-			 * @param Form $form
-			 * @param ArrayHash $values
-			 */
 			$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 			{
 
@@ -293,9 +263,7 @@ class SupplierInnerPackagePresenter extends BaseAdminPresenter
 				);
 
 				$this->entityManager->flush();
-
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
-
 				$this->redirect('default');
 			};
 

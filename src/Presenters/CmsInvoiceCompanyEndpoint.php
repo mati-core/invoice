@@ -6,6 +6,7 @@ namespace App\AdminModule\Presenters;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
@@ -38,66 +39,32 @@ use Nette\Utils\Strings;
 use Tracy\Debugger;
 use Ublaboo\DataGrid\Exception\DataGridException;
 
-class CompanyInnerPackagePresenter extends BaseAdminPresenter
+class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 {
-	/**
-	 * @var CompanyManagerAccessor
-	 * @inject
-	 */
-	public CompanyManagerAccessor $companyManager;
+	protected string $pageRight = 'page__company';
 
-	/**
-	 * @var CountryManagerAccessor
-	 * @inject
-	 */
-	public CountryManagerAccessor $countryManager;
-
-	/**
-	 * @var CurrencyManagerAccessor
-	 * @inject
-	 */
-	public CurrencyManagerAccessor $currencyManager;
-
-	/**
-	 * @var InvoiceManagerAccessor
-	 * @inject
-	 */
-	public InvoiceManagerAccessor $invoiceManager;
 
 	use FormFactoryTrait;
 
-	/**
-	 * @var CompanyInvoiceStatisticsControl
-	 * @inject
-	 */
-	public CompanyInvoiceStatisticsControl $invoiceStatisticsControl;
-
-	protected string $pageRight = 'page__company';
-
-	/**
-	 * @var Data|null
-	 */
 	private Data|null $aresData = null;
 
-	/**
-	 * @var Company|null
-	 */
 	private Company|null $editedCompany = null;
 
-	/**
-	 * @var CompanyStock|null
-	 */
 	private CompanyStock|null $editedStock = null;
 
-	/**
-	 * @var CompanyContact|null
-	 */
 	private CompanyContact|null $editedContact = null;
 
-	/**
-	 * @var int
-	 */
 	private int $returnButton = 0;
+
+
+	public function __construct(
+		private CompanyManagerAccessor $companyManager,
+		private CountryManagerAccessor $countryManager,
+		private CurrencyManagerAccessor $currencyManager,
+		private InvoiceManagerAccessor $invoiceManager,
+		private CompanyInvoiceStatisticsControl $invoiceStatisticsControl,
+	) {
+	}
 
 
 	public function actionDefault(): void
@@ -119,9 +86,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @param string|null $ic
-	 */
 	public function actionCreate(string $ic = null): void
 	{
 		if ($ic !== null && $ic !== '') {
@@ -141,7 +105,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionEdit(string $id): void
@@ -158,7 +121,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionEditStock(string $id): void
@@ -177,7 +139,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionDetail(string $id): void
@@ -187,14 +148,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->template->company = $this->editedCompany;
 		} catch (NonUniqueResultException | NoResultException) {
 			$this->flashMessage('Požadovaná firma neexistuje.', 'danger');
-
 			$this->redirect('default');
 		}
 	}
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionInvoice(string $id): void
@@ -204,14 +163,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->template->company = $this->editedCompany;
 		} catch (NonUniqueResultException | NoResultException) {
 			$this->flashMessage('Požadovaná firma neexistuje.', 'danger');
-
 			$this->redirect('default');
 		}
 	}
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionDetailStock(string $id): void
@@ -223,14 +180,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->template->company = $this->editedCompany;
 		} catch (NonUniqueResultException | NoResultException) {
 			$this->flashMessage('Požadovaná pobočka neexistuje.', 'danger');
-
 			$this->redirect('default');
 		}
 	}
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionCreateStock(string $id): void
@@ -240,15 +195,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->template->company = $this->editedCompany;
 		} catch (NonUniqueResultException | NoResultException) {
 			$this->flashMessage('Požadovaná firma neexistuje.', 'danger');
-
 			$this->redirect('default');
 		}
 	}
 
 
 	/**
-	 * @param string $companyId
-	 * @param string|null $companyStockId
 	 * @throws AbortException
 	 */
 	public function actionContact(string $companyId, string $companyStockId = null): void
@@ -270,15 +222,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			}
 		} catch (NonUniqueResultException | NoResultException) {
 			$this->flashMessage('Požadovaná firma neexistuje.', 'danger');
-
 			$this->redirect('default');
 		}
 	}
 
 
 	/**
-	 * @param string $companyId
-	 * @param string|null $companyStockId
 	 * @throws AbortException
 	 */
 	public function actionCreateContact(string $companyId, string $companyStockId = null): void
@@ -294,14 +243,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->template->companyStock = $this->editedStock;
 		} catch (NonUniqueResultException | NoResultException) {
 			$this->flashMessage('Požadovaná firma neexistuje.', 'danger');
-
 			$this->redirect('default');
 		}
 	}
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionEditContact(string $id): void
@@ -323,7 +270,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionInvoicedItems(string $id): void
@@ -341,17 +287,14 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
-	 * @throws AbortException
-	 * @throws EntityManagerException
+	 * @throws AbortException|EntityManagerException
 	 */
 	public function handleBlackList(string $id): void
 	{
 		try {
 			$company = $this->companyManager->get()->getCompanyById($id);
 			$company->setBlackList(!$company->isBlackList());
-
-			$this->entityManager->getUnitOfWork()->commit($company);
+			$this->entityManager->flush();
 
 			$this->redirect('detail', ['id' => $company->getId()]);
 		} catch (NonUniqueResultException | NoResultException) {
@@ -363,7 +306,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function handleRemove(string $id): void
@@ -384,7 +326,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function handleRemoveStock(string $id): void
@@ -408,7 +349,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @return Form
 	 * @throws NoResultException
 	 * @throws NonUniqueResultException
 	 * @throws CurrencyException
@@ -464,10 +404,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Přidat');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $value
-		 */
 		$form->onValidate[] = function (Form $form, ArrayHash $value): void
 		{
 			try {
@@ -481,10 +417,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			}
 		};
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			try {
@@ -505,14 +437,13 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$company->setSendInvoicesInOneFile($values->groupInvoices);
 				$company->setInvoiceDueDayCount((int) $values->invoiceDuaDayCount);
 
-				$this->entityManager->persist($company)->flush([$invoiceAddress, $company]);
+				$this->entityManager->persist($company);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Firma byla úspěšně přidána do seznamu.', 'success');
-
 				$this->redirect('detail', ['id' => $company->getId()]);
 			} catch (EntityManagerException $e) {
 				Debugger::log($e);
-
 				$this->flashMessage('Při ukládání do databáze nastala chyba.', 'danger');
 			}
 		};
@@ -522,7 +453,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @return Form
 	 * @throws CompanyException
 	 */
 	public function createComponentEditForm(): Form
@@ -583,10 +513,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Uložit');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			try {
@@ -607,15 +533,12 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$this->editedCompany->setNote($values->note);
 				$this->editedCompany->setSendInvoicesInOneFile($values->groupInvoices);
 				$this->editedCompany->setInvoiceDueDayCount((int) $values->invoiceDuaDayCount);
-
-				$this->entityManager->flush([$invoiceAddress, $this->editedCompany]);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
-
 				$this->redirect('detail', ['id' => $this->editedCompany->getId()]);
 			} catch (EntityManagerException $e) {
 				Debugger::log($e);
-
 				$this->flashMessage('Při ukládání do databáze nastala chyba.', 'danger');
 			}
 		};
@@ -625,7 +548,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @return Form
 	 * @throws CompanyException
 	 * @throws NoResultException
 	 * @throws NonUniqueResultException
@@ -658,10 +580,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Přidat');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			try {
@@ -683,10 +601,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$stock->setNote($values->note === '' ? null : $values->note);
 
 				$this->entityManager->persist($stock);
-
 				$this->editedCompany->getStocks()->add($stock);
-
-				$this->entityManager->flush([$address, $stock, $this->editedCompany]);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Pobočka byla úspěšně přidána.', 'success');
 
@@ -703,7 +619,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @return Form
 	 * @throws CompanyException
 	 */
 	public function createComponentEditStockForm(): Form
@@ -747,10 +662,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Uložit');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			try {
@@ -764,17 +675,13 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 				$address->setCountry($this->countryManager->get()->getCountryById($values->country));
 
 				$this->editedStock->setName($values->name);
-
 				$this->editedStock->setNote($values->note === '' ? null : $values->note);
-
-				$this->entityManager->flush([$address, $this->editedStock, $this->editedCompany]);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
-
 				$this->redirect('detailStock', ['id' => $this->editedStock->getId()]);
 			} catch (EntityManagerException $e) {
 				Debugger::log($e);
-
 				$this->flashMessage('Při ukládání do databáze nastala chyba.', 'danger');
 			}
 		};
@@ -783,9 +690,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentCreateContactForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -849,7 +753,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$contact->setSendOrder($values->sendOrder);
 			$contact->setSendMarketing($values->sendMarketing);
 
-			$this->entityManager->persist($contact)->getUnitOfWork()->commit($contact);
+			$this->entityManager->persist($contact);
+			$this->entityManager->flush();
 
 			$this->flashMessage('Kontakt byl úspěšně vytvořen.', 'success');
 
@@ -867,9 +772,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentEditContactForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -946,7 +848,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 			$this->editedContact->setSendOrder($values->sendOrder);
 			$this->editedContact->setSendMarketing($values->sendMarketing);
 
-			$this->entityManager->persist($this->editedContact)->getUnitOfWork()->commit($this->editedContact);
+			$this->entityManager->persist($this->editedContact);
+			$this->entityManager->flush();
 
 			$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 
@@ -965,7 +868,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function handleDeleteContact(string $id): void
@@ -973,7 +875,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 		try {
 			$contact = $this->companyManager->get()->getContactById($id);
 			try {
-				$this->entityManager->remove($contact)->flush();
+				$this->entityManager->remove($contact);
+				$this->entityManager->flush();
 				$this->flashMessage('Kontak byl smazán.');
 			} catch (EntityManagerException $e) {
 				$this->flashMessage('Při odstraňování kontaktu nastala chyba.', 'error');
@@ -1000,9 +903,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentCompanyNoteForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1012,15 +912,11 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			try {
 				$this->editedCompany->setNote($values->note);
-				$this->entityManager->getUnitOfWork()->commit($this->editedCompany);
+				$this->entityManager->flush();
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 			} catch (EntityManagerException $e) {
 				Debugger::log($e);
@@ -1034,9 +930,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentCompanyStockNoteForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1046,15 +939,11 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			try {
 				$this->editedStock->setNote($values->note);
-				$this->entityManager->getUnitOfWork()->commit($this->editedStock);
+				$this->entityManager->flush();
 				$this->flashMessage('Změny byly úspěšně uloženy.', 'success');
 			} catch (EntityManagerException $e) {
 				Debugger::log($e);
@@ -1069,8 +958,6 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $name
-	 * @return MatiDataGrid
 	 * @throws CurrencyException
 	 * @throws DataGridException
 	 */
@@ -1398,12 +1285,8 @@ class CompanyInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return CompanyInvoiceStatisticsControl
-	 */
 	public function createComponentInvoiceStatistics(): CompanyInvoiceStatisticsControl
 	{
 		return $this->invoiceStatisticsControl;
 	}
-
 }

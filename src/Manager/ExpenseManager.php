@@ -38,7 +38,6 @@ class ExpenseManager
 
 
 	/**
-	 * @param Expense $expense
 	 * @return ExpenseHistory[]
 	 */
 	public function getHistory(Expense $expense): array
@@ -54,9 +53,6 @@ class ExpenseManager
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getNextNumber(): string
 	{
 		$date = date('Y') . '-' . date('m') . '-01';

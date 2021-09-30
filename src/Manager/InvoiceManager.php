@@ -112,8 +112,6 @@ class InvoiceManager
 
 
 	/**
-	 * @param int $limit
-	 * @param int $offset
 	 * @return InvoiceCore[]
 	 */
 	public function getInvoices(int $limit = 100, int $offset = 0): array
@@ -132,8 +130,6 @@ class InvoiceManager
 
 
 	/**
-	 * @param \DateTime $startDate
-	 * @param \DateTime $stopDate
 	 * @return InvoiceCore[]
 	 */
 	public function getInvoicesBetweenDates(\DateTime $startDate, \DateTime $stopDate): array
@@ -186,10 +182,7 @@ class InvoiceManager
 
 
 	/**
-	 * @param string $id
-	 * @return InvoiceCore
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getInvoiceById(string $id): InvoiceCore
 	{
@@ -204,8 +197,6 @@ class InvoiceManager
 
 
 	/**
-	 * @param InvoiceCore $invoice
-	 * @param BaseUser|null $user
 	 * @throws \Exception
 	 */
 	public function removeInvoice(InvoiceCore $invoice, ?BaseUser $user = null): void
@@ -260,16 +251,12 @@ class InvoiceManager
 				$entities[] = $history;
 			}
 		}
-
-		$this->entityManager->getUnitOfWork()->commit($entities);
+		$this->entityManager->flush();
 	}
 
 
 	/**
-	 * @param InvoiceCore $invoice
-	 * @return InvoicePayDocument
-	 * @throws EntityManagerException
-	 * @throws InvoiceException
+	 * @throws EntityManagerException|InvoiceException
 	 */
 	public function createPayDocumentFromInvoice(InvoiceCore $invoice): InvoicePayDocument
 	{
@@ -278,12 +265,11 @@ class InvoiceManager
 				'Nelze vygenerovat fakturu, protože proforma faktury není odevzdána a schválena.'
 			);
 		}
-
 		if (!$invoice->isPaid()) {
 			throw new InvoiceException('Nelze vygenerovat fakturu na základě neuhrazené proformy.');
 		}
 
-		//Nastaveni meny
+		// Nastaveni meny
 		$currencyTemp = $this->currencyManager->getCurrencyRateByDate($invoice->getCurrency(), $invoice->getPayDate());
 		$currencyRate = $currencyTemp->getRate();
 		$currencyDate = $currencyTemp->getLastUpdate();
@@ -293,7 +279,6 @@ class InvoiceManager
 			$invoice->setRate($currencyRate);
 		}
 
-		//$number = $this->getNextInvoiceNumber($currencyDate);
 		$number = '77' . $invoice->getNumber();
 
 		$pd = new InvoicePayDocument($number);
@@ -448,14 +433,12 @@ class InvoiceManager
 
 
 	/**
-	 * @param InvoiceCore $invoice
 	 * @return array
 	 * @throws EntityManagerException
 	 */
 	public function sendEmailToCompany(InvoiceCore $invoice): array
 	{
 		$emails = $this->getInvoiceEmails($invoice);
-
 		if (count($emails) === 0) {
 			return [
 				'show' => true,
@@ -477,20 +460,16 @@ class InvoiceManager
 			'message' => 'Doklad se nepodařilo odeslat emailem.',
 			'type' => 'danger',
 		];
-
 	}
 
 
 	/**
-	 * @param InvoiceCore $invoice
 	 * @return array
 	 */
 	public function getInvoiceEmails(InvoiceCore $invoice): array
 	{
 		$emails = [];
-
 		$company = $invoice->getCompany();
-
 		if ($company !== null) {
 			foreach ($company->getContacts() as $contact) {
 				if ($contact->isSendInvoice() && $contact->getEmail() !== null) {
@@ -520,9 +499,7 @@ class InvoiceManager
 
 
 	/**
-	 * @param InvoiceCore $invoice
 	 * @param array $emails
-	 * @return bool
 	 * @throws ConstantException
 	 */
 	public function sendEmail(InvoiceCore $invoice, array $emails): bool
@@ -541,9 +518,7 @@ class InvoiceManager
 		 * @phpstan-ignore-next-line
 		 */
 		$user = $this->user->getIdentity()->getUser();
-
 		$status = true;
-
 		$attachments = [];
 
 		// Faktura do prilohy
@@ -656,11 +631,8 @@ class InvoiceManager
 					$invoice->addHistory($ih);
 					$invoice->setStatus(InvoiceStatus::SENT);
 					$invoice->addEmail($recipient);
-
-					$this->entityManager->flush([$invoice, $ih]);
-				} else {
-					$this->entityManager->flush([$invoice]);
 				}
+				$this->entityManager->flush();
 			} catch (ConstantException | EntityManagerException | EmailException $e) {
 				Debugger::log($e);
 				$ih = new InvoiceHistory(
@@ -674,7 +646,7 @@ class InvoiceManager
 				$invoice->addHistory($ih);
 				$invoice->setStatus(InvoiceStatus::SENT);
 
-				$this->entityManager->flush([$invoice, $ih]);
+				$this->entityManager->flush();
 				$status = false;
 			}
 		}
@@ -690,8 +662,6 @@ class InvoiceManager
 
 
 	/**
-	 * @param InvoiceProforma $proforma
-	 * @return Invoice
 	 * @throws EntityManagerException
 	 * @throws InvoiceException
 	 */
@@ -702,13 +672,11 @@ class InvoiceManager
 				'Nelze vygenerovat fakturu, protože proforma faktury není odevzdána a schválena.'
 			);
 		}
-
 		if (!$proforma->isPaid()) {
 			throw new InvoiceException('Nelze vygenerovat fakturu na základě neuhrazené proformy.');
 		}
 
 		$number = $this->getNextInvoiceNumber();
-
 		$invoice = new Invoice($number);
 		$invoice->setProforma($proforma);
 		$invoice->addDepositInvoice($proforma);
@@ -719,7 +687,6 @@ class InvoiceManager
 		if ($user instanceof StorageIdentity) {
 			$user = $user->getUser();
 		}
-
 		if (!$user instanceof BaseUser) {
 			$user = null;
 		}
@@ -866,8 +833,6 @@ class InvoiceManager
 
 
 	/**
-	 * @param \DateTime|null $date
-	 * @return string
 	 * @throws InvoiceException
 	 */
 	public function getNextInvoiceNumber(?\DateTime $date = null): string
@@ -921,10 +886,7 @@ class InvoiceManager
 
 
 	/**
-	 * @param string $number
-	 * @return InvoiceCore
-	 * @throws NonUniqueResultException
-	 * @throws NoResultException
+	 * @throws NonUniqueResultException|NoResultException
 	 */
 	public function getInvoiceByCode(string $number): InvoiceCore
 	{
@@ -938,10 +900,6 @@ class InvoiceManager
 	}
 
 
-	/**
-	 * @param InvoiceCore $invoice
-	 * @return string
-	 */
 	public function getColorByInvoiceDocument(InvoiceCore $invoice): string
 	{
 		return $this->exportManager->get()->getColorByInvoiceDocument($invoice);
@@ -949,7 +907,6 @@ class InvoiceManager
 
 
 	/**
-	 * @param InvoiceCore $invoice
 	 * @return array<string|null>
 	 */
 	public function getInvoiceTemplateData(InvoiceCore $invoice): array
@@ -959,7 +916,6 @@ class InvoiceManager
 
 
 	/**
-	 * @param Company $company
 	 * @return array<Invoice|InvoiceProforma|InvoicePayDocument|FixInvoice>|Collection
 	 */
 	public function getInvoicesByCompany(Company $company): array|Collection

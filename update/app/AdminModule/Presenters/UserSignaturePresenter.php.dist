@@ -10,7 +10,7 @@ namespace App\AdminModule\Presenters;
  * Class UserSignaturePresenter
  * @package App\AdminModule\Presenters
  */
-class UserSignaturePresenter extends UserSignatureInnerPackagePresenter
+class CmsInvoiceUserSignaturePresenter extends CmsInvoiceUserEndpoint
 {
 
 }

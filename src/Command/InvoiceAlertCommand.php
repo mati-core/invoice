@@ -34,10 +34,6 @@ use Tracy\Debugger;
 
 class InvoiceAlertCommand extends Command
 {
-
-	/**
-	 * @var string
-	 */
 	private string $tempDir;
 
 	/**
@@ -45,38 +41,23 @@ class InvoiceAlertCommand extends Command
 	 */
 	private array $params;
 
-	/**
-	 * @var EntityManager
-	 */
 	private EntityManager $entityManager;
 
-	/**
-	 * @var EmailerAccessor
-	 */
 	private EmailerAccessor $emailEngine;
 
-	/**
-	 * @var ExportManagerAccessor
-	 */
 	private ExportManagerAccessor $exportManager;
 
-	/**
-	 * @var SymfonyStyle|null
-	 */
 	private SymfonyStyle|null $io;
 
 
 	/**
-	 * InvoiceAlertCommand constructor.
-	 *
-	 * @param string $tempDir
 	 * @param array $params
-	 * @param EntityManager $entityManager
-	 * @param EmailerAccessor $emailEngine
-	 * @param ExportManagerAccessor $exportManager
 	 */
 	public function __construct(
-		string $tempDir, array $params, EntityManager $entityManager, EmailerAccessor $emailEngine,
+		string $tempDir,
+		array $params,
+		EntityManager $entityManager,
+		EmailerAccessor $emailEngine,
 		ExportManagerAccessor $exportManager
 	) {
 		parent::__construct();
@@ -90,14 +71,12 @@ class InvoiceAlertCommand extends Command
 
 	protected function configure(): void
 	{
-		$this->setName('app:invoice:alert')->setDescription('Send alert for unpaid invoices.');
+		$this->setName('app:invoice:alert')
+			->setDescription('Send alert for unpaid invoices.');
 	}
 
 
 	/**
-	 * @param InputInterface $input
-	 * @param OutputInterface $output
-	 * @return int
 	 * @throws \Exception
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
@@ -183,8 +162,6 @@ class InvoiceAlertCommand extends Command
 
 
 	/**
-	 * @param int $numberOfAlert
-	 * @param Invoice|InvoiceProforma $invoice
 	 * @throws ConstantException
 	 * @throws EmailException
 	 */
@@ -299,17 +276,14 @@ class InvoiceAlertCommand extends Command
 				$invoice->addHistory($ih);
 				$invoice->setStatus(InvoiceStatus::PAY_ALERT_ONE);
 				$invoice->setPayAlertStatus(InvoiceStatus::PAY_ALERT_ONE);
-
-				$this->entityManager->flush([$invoice, $ih]);
+				$this->entityManager->flush();
 			}
 		}
 	}
 
 
 	/**
-	 * @param Invoice|InvoiceProforma $invoice
-	 * @throws ConstantException
-	 * @throws EmailException
+	 * @throws ConstantException|EmailException
 	 */
 	private function sendAlertOne(Invoice|InvoiceProforma $invoice): void
 	{
@@ -318,9 +292,7 @@ class InvoiceAlertCommand extends Command
 
 
 	/**
-	 * @param Invoice|InvoiceProforma $invoice
-	 * @throws ConstantException
-	 * @throws EmailException
+	 * @throws ConstantException|EmailException
 	 */
 	private function sendAlertTwo(Invoice|InvoiceProforma $invoice): void
 	{
@@ -329,13 +301,10 @@ class InvoiceAlertCommand extends Command
 
 
 	/**
-	 * @param Invoice|InvoiceProforma $invoice
-	 * @throws ConstantException
-	 * @throws EmailException
+	 * @throws ConstantException|EmailException
 	 */
 	private function sendAlertThree(Invoice|InvoiceProforma $invoice): void
 	{
 		$this->sendAlert(3, $invoice);
 	}
-
 }

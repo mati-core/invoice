@@ -21,10 +21,7 @@ class BankMovementManager
 
 
 	/**
-	 * @param string $id
-	 * @return BankMovement
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getById(string $id): BankMovement
 	{
@@ -36,5 +33,4 @@ class BankMovementManager
 			->getQuery()
 			->getSingleResult();
 	}
-
 }

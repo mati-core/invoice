@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
+use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Form\FormFactoryTrait;
@@ -16,26 +17,17 @@ use Nette\Application\UI\Form;
 use Nette\Http\FileUpload;
 use Nette\Utils\ArrayHash;
 
-/**
- * Class UserSignatureInnerPackagePresenter
- *
- * @package App\AdminModule\Presenters
- */
-class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
+class CmsInvoiceUserEndpoint extends BaseEndpoint
 {
-
 	use FormFactoryTrait;
 
-	/**
-	 * @var SignatureManager
-	 * @inject
-	 */
-	public SignatureManager $signatureManager;
-
-	/**
-	 * @var BaseUser|IUser|null
-	 */
 	private BaseUser|IUser|null $editedUser;
+
+
+	public function __construct(
+		private SignatureManager $signatureManager,
+	) {
+	}
 
 
 	public function actionDefault(): void
@@ -45,7 +37,6 @@ class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionUpload(string $id): void
@@ -59,9 +50,6 @@ class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentUploadForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -95,10 +83,6 @@ class UserSignatureInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @param BaseUser $user
-	 * @return bool
-	 */
 	public function hasSignature(BaseUser $user): bool
 	{
 		return $this->signatureManager->hasSignature($user);

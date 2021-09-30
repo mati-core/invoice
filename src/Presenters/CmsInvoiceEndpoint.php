@@ -7,6 +7,7 @@ namespace App\AdminModule\Presenters;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
@@ -47,79 +48,32 @@ use Nette\Utils\Validators;
 use Tracy\Debugger;
 use Ublaboo\DataGrid\Exception\DataGridException;
 
-/**
- * Class InvoicePresenter
- *
- * @package App\AdminModule\Presenters
- */
-class InvoiceInnerPackagePresenter extends BaseAdminPresenter
+class CmsInvoiceEndpoint extends BaseEndpoint
 {
+	protected string $pageRight = 'page__invoice';
 
-	/**
-	 * @var CompanyManager
-	 * @inject
-	 */
-	public CompanyManager $companyManager;
-
-	/**
-	 * @var InvoiceManagerAccessor
-	 * @inject
-	 */
-	public InvoiceManagerAccessor $invoiceManager;
-
-	/**
-	 * @var CurrencyManager
-	 * @inject
-	 */
-	public CurrencyManager $currencyManager;
-
-	/**
-	 * @var BankMovementCronLogAccessor
-	 * @inject
-	 */
-	public BankMovementCronLogAccessor $bankMovementCronLog;
-
-	/**
-	 * @var UnitManager
-	 * @inject
-	 */
-	public UnitManager $unitManager;
 
 	use FormFactoryTrait;
 
-	/**
-	 * @var BankMovementManagerAccessor
-	 * @inject
-	 */
-	public BankMovementManagerAccessor $bankMovementManager;
-
-	/**
-	 * @var ExportManagerAccessor
-	 * @inject
-	 */
-	public ExportManagerAccessor $exportManager;
-
-	/**
-	 * @var string
-	 */
-	protected string $pageRight = 'page__invoice';
-
-	/**
-	 * @var InvoiceCore|null
-	 */
 	private InvoiceCore|null $editedInvoice;
 
-	/**
-	 * @var int
-	 */
 	private int $returnButton = 0;
 
 
+	public function __construct(
+		private CompanyManager $companyManager,
+		private InvoiceManagerAccessor $invoiceManager,
+		private CurrencyManager $currencyManager,
+		private BankMovementCronLogAccessor $bankMovementCronLog,
+		private UnitManager $unitManager,
+		private BankMovementManagerAccessor $bankMovementManager,
+		private ExportManagerAccessor $exportManager,
+	) {
+	}
+
+
 	/**
-	 * @param string $id
-	 * @param int $ret
-	 * @throws AbortException
-	 * @throws CurrencyException
+	 * @throws AbortException|CurrencyException
 	 */
 	public function actionShow(string $id, int $ret = 0): void
 	{
@@ -143,9 +97,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @param string|null $id
-	 */
 	public function actionDetail(?string $id = null): void
 	{
 		$this->template->invoiceId = $id;
@@ -155,9 +106,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @param string $id
-	 */
 	public function actionDetailFix(string $id): void
 	{
 		$this->template->invoiceId = $id;
@@ -186,7 +134,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionDetailBankMovement(string $id): void
@@ -210,7 +157,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 * @throws CurrencyException
 	 */
@@ -231,7 +177,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 * @throws EntityManagerException
 	 * @throws InvoiceException
@@ -258,7 +203,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionInvoicedItems(string $id): void
@@ -279,7 +223,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $invoiceId
 	 * @throws AbortException
 	 */
 	public function handleSubmit(string $invoiceId): void
@@ -389,13 +332,11 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				}
 			}
 
-			$this->entityManager->getUnitOfWork()->commit($entities);
+			$this->entityManager->flush();
 
 			if ($sendEmail === true) {
 				$status = $this->invoiceManager->get()->sendEmailToCompany($invoice);
-
 				$show = $status['message'] ?? false;
-
 				if ($show) {
 					$this->flashMessage($status['message'], $status['type']);
 				}
@@ -410,8 +351,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $invoiceId
-	 * @param string $type
 	 * @throws AbortException
 	 * @throws EntityManagerException
 	 */
@@ -440,14 +379,11 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 			$this->entityManager->persist($history);
 
 			$invoice->addHistory($history);
-
-			$this->entityManager->flush([$invoice, $history]);
+			$this->entityManager->flush();
 
 			if ($sendEmail === true) {
 				$status = $this->invoiceManager->get()->sendEmailToCompany($invoice);
-
 				$show = $status['message'] ?? false;
-
 				if ($show) {
 					$this->flashMessage($status['message'], $status['type']);
 				}
@@ -468,7 +404,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function handleDelete(string $id): void
@@ -489,9 +424,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentPayForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -502,10 +434,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			try {
@@ -521,10 +449,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				$history->setUser($user);
 
 				$this->entityManager->persist($history);
-
 				$this->editedInvoice->addHistory($history);
-
-				$this->entityManager->flush([$this->editedInvoice, $history]);
+				$this->entityManager->flush();
 
 				if ($this->editedInvoice instanceof InvoiceProforma) {
 					$pd = $this->invoiceManager->get()->createPayDocumentFromInvoice($this->editedInvoice);
@@ -550,8 +476,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $name
-	 * @return MatiDataGrid
 	 * @throws DataGridException
 	 */
 	public function createComponentBankMovementTable(string $name): MatiDataGrid
@@ -715,8 +639,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $name
-	 * @return MatiDataGrid
 	 * @throws CurrencyException
 	 * @throws DataGridException
 	 */
@@ -1217,9 +1139,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentInvoiceDenyFormA(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1251,8 +1170,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 				$this->entityManager->persist($history);
 				$this->editedInvoice->addHistory($history);
-
-				$this->entityManager->flush([$this->editedInvoice, $history]);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Doklad byl zamítnut.', 'info');
 			}
@@ -1268,9 +1186,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentInvoiceDenyFormB(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1300,8 +1215,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 				$this->entityManager->persist($history);
 				$this->editedInvoice->addHistory($history);
-
-				$this->entityManager->flush([$this->editedInvoice, $history]);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Doklad byl zamítnut.', 'info');
 			}
@@ -1318,7 +1232,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function handleResolveBankMovement(string $id): void
@@ -1326,9 +1239,7 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 		try {
 			$bm = $this->bankMovementManager->get()->getById($id);
 			$bm->setStatus(BankMovement::STATUS_DONE);
-
-			$this->entityManager->getUnitOfWork()->commit($bm);
-
+			$this->entityManager->flush();
 			$this->flashMessage(
 				'Stav bankovního pohybu byl změněn na ' . BankMovementStatus::getName(BankMovement::STATUS_DONE) . '.',
 				'success'
@@ -1352,9 +1263,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentEmailForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1363,10 +1271,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			$email = $values->email === '' ? null : $values->email;
@@ -1499,9 +1403,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentCommentForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1510,10 +1411,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$form->addSubmit('submit', 'Save');
 
-		/**
-		 * @param Form $form
-		 * @param ArrayHash $values
-		 */
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			if ($values->description !== '' && $values->description !== null) {
@@ -1526,10 +1423,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 				}
 
 				$this->entityManager->persist($comment);
-
 				$this->editedInvoice->addComments($comment);
-
-				$this->entityManager->flush([$comment, $this->editedInvoice]);
+				$this->entityManager->flush();
 			}
 
 			$form->reset();
@@ -1541,10 +1436,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @param string|null $txt
-	 * @return string|null
-	 */
 	public function insertLinks(?string $txt): ?string
 	{
 		if ($txt === null) {
@@ -1557,9 +1448,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentAddContactForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1596,7 +1484,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $contact
 	 * @throws \Exception
 	 */
 	public function handleDeleteContact(string $contact): void
@@ -1618,10 +1505,8 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->entityManager->persist($history);
 		$this->editedInvoice->addHistory($history);
-
 		$this->editedInvoice->setEmails(implode(';', $list));
-
-		$this->entityManager->flush([$this->editedInvoice, $history]);
+		$this->entityManager->flush();
 
 		$this->template->contacts = $this->invoiceManager->get()->getInvoiceEmails($this->editedInvoice);
 
@@ -1629,10 +1514,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @param string $contact
-	 * @return bool
-	 */
 	public function isCompanyContact(string $contact): bool
 	{
 		if ($this->editedInvoice !== null && $this->editedInvoice->getCompany()) {
@@ -1649,18 +1530,12 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return bool
-	 */
 	public function isSettingAccept(): bool
 	{
 		return $this->invoiceManager->get()->getAcceptSetting() !== null;
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentExportInvoicesForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1695,9 +1570,6 @@ class InvoiceInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentExportInvoiceListForm(): Form
 	{
 		$form = $this->formFactory->create();

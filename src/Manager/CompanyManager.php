@@ -31,10 +31,7 @@ class CompanyManager
 
 
 	/**
-	 * @param string $id
-	 * @return Company
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getCompanyById(string $id): Company
 	{
@@ -49,10 +46,7 @@ class CompanyManager
 
 
 	/**
-	 * @param string $id
-	 * @return CompanyStock
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getCompanyStockById(string $id): CompanyStock
 	{
@@ -67,10 +61,7 @@ class CompanyManager
 
 
 	/**
-	 * @param string $cin
-	 * @return Company
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getCompanyByCIN(string $cin): Company
 	{
@@ -114,7 +105,6 @@ class CompanyManager
 
 		if ($cache === null) {
 			$cache = [];
-
 			$list = $this->entityManager->getRepository(Company::class)
 					->createQueryBuilder('company')
 					->select('company.id as id, company.name as name')
@@ -132,15 +122,11 @@ class CompanyManager
 
 
 	/**
-	 * @param string $in
-	 * @return Data
 	 * @throws IdentificationNumberNotFoundException
 	 */
 	public function getDataFromAres(string $in): Data
 	{
-		$ares = new Ares();
-
-		return $ares->loadData($in);
+		return (new Ares)->loadData($in);
 	}
 
 
@@ -163,9 +149,6 @@ class CompanyManager
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getDefaultCompanyType(): string
 	{
 		return CompanyType::getDefault();
@@ -173,13 +156,13 @@ class CompanyManager
 
 
 	/**
-	 * @param Company $company
 	 * @throws CompanyException
 	 */
 	public function removeCompany(Company $company): void
 	{
 		try {
-			$this->entityManager->remove($company)->flush();
+			$this->entityManager->remove($company);
+			$this->entityManager->flush();
 		} catch (EntityManagerException) {
 			CompanyException::isUsed();
 		}
@@ -187,13 +170,13 @@ class CompanyManager
 
 
 	/**
-	 * @param CompanyStock $companyStock
 	 * @throws CompanyException
 	 */
 	public function removeCompanyStock(CompanyStock $companyStock): void
 	{
 		try {
-			$this->entityManager->remove($companyStock)->flush();
+			$this->entityManager->remove($companyStock);
+			$this->entityManager->flush();
 		} catch (EntityManagerException) {
 			CompanyException::isStockUsed();
 		}
@@ -201,10 +184,7 @@ class CompanyManager
 
 
 	/**
-	 * @param string $id
-	 * @return CompanyContact
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getContactById(string $id): CompanyContact
 	{
@@ -219,7 +199,6 @@ class CompanyManager
 
 
 	/**
-	 * @param Company $company
 	 * @return array<string, array<string, mixed>>
 	 */
 	public function getInvoicedItems(Company $company): array

@@ -63,8 +63,13 @@ class InvoicePayCheckCommand extends Command
 	 * @param array $params
 	 */
 	public function __construct(
-		string $tempDir, array $params, EntityManager $entityManager, CurrencyManagerAccessor $currencyManager,
-		LinkGenerator $linkGenerator, InvoiceManagerAccessor $invoiceManager, BankMovementCronLogAccessor $logger
+		string $tempDir,
+		array $params,
+		EntityManager $entityManager,
+		CurrencyManagerAccessor $currencyManager,
+		LinkGenerator $linkGenerator,
+		InvoiceManagerAccessor $invoiceManager,
+		BankMovementCronLogAccessor $logger
 	) {
 		parent::__construct();
 		$this->params = $params;
@@ -85,16 +90,13 @@ class InvoicePayCheckCommand extends Command
 	public function parseDataEUR(string $content): array
 	{
 		$data = [];
-
 		$lines = explode("\n", $content);
-
 		if (preg_match('/^dne\s(\d+\.\d+\.\d{4})\sbyl\sna\súčtu\s(\d+)/u', $lines[0], $m) && isset($m[1], $m[2])) {
 			$data['date'] = DateTime::from($m[1] . ' 00:00:00');
 			$data['bankAccount'] = $m[2] . '/0300';
 		} else {
 			throw new BankMailException('Can not parse date and bank account from line 3.');
 		}
-
 		if (preg_match('/^Částka:\s\+([\d|\s]+,\d+)\s([A-Z]{3})/u', $lines[6], $m) && isset($m[1], $m[2])) {
 			$price = str_replace(["\xc2\xa0", ','], ['', '.'], $m[1]);
 			$data['price'] = (float) $price;
@@ -102,11 +104,13 @@ class InvoicePayCheckCommand extends Command
 		} else {
 			throw new BankMailException('Can not parse price and currency from line 9.');
 		}
-
-		if (preg_match(
-				'/^Účet\sprotistrany:\s([A-Z]{2}\d{2}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4})/u', $lines[7],
+		if (
+			preg_match(
+				'/^Účet\sprotistrany:\s([A-Z]{2}\d{2}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4}\s?\d{0,4})/u',
+				$lines[7],
 				$m
-			) && isset($m[1])) {
+			) && isset($m[1])
+		) {
 			$data['customerBankAccount'] = $m[1];
 		} else {
 			throw new BankMailException(
@@ -115,7 +119,6 @@ class InvoicePayCheckCommand extends Command
 				)
 			);
 		}
-
 		if (preg_match('/^Název\sprotistrany:\s(.*)/u', $lines[8], $m) && isset($m[1])) {
 			$data['customerName'] = $m[1];
 		} else {
@@ -130,7 +133,6 @@ class InvoicePayCheckCommand extends Command
 			if (preg_match('/^Číslo\stransakce\sČSOB:[\D]*(\d+)/u', $lines[$line], $m) && isset($m[1])) {
 				$data['transactionID'] = $m[1];
 			}
-
 			if (preg_match('/^Účel\splatby:[\D]*(\d+)/u', $lines[$line], $m) && isset($m[1])) {
 				$data['variableSymbol'] = $m[1];
 				$continue = false;
@@ -141,8 +143,13 @@ class InvoicePayCheckCommand extends Command
 		} while ($continue && $limit > 0 && isset($lines[$line]));
 
 		if (!isset($data['variableSymbol'])) {
-			$data['variableSymbol'] = $data['transactionID'] ?? md5(
-					$data['date'] . $data['price'] . $data['currencyCode'] . $data['customerBankAccount'] . $data['customerName']
+			$data['variableSymbol'] = $data['transactionID']
+				?? md5(
+					$data['date']
+					. $data['price']
+					. $data['currencyCode']
+					. $data['customerBankAccount']
+					. $data['customerName']
 				);
 		}
 
@@ -152,14 +159,14 @@ class InvoicePayCheckCommand extends Command
 
 	protected function configure(): void
 	{
-		$this->setName('app:invoice:pay')->setDescription('Check invoice paid.');
+		$this->setName('app:invoice:pay')
+			->setDescription('Check invoice paid.');
 	}
 
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		try {
-
 			$this->io = new SymfonyStyle($input, $output);
 
 			$output->writeln('==============================================');
@@ -401,7 +408,8 @@ class InvoicePayCheckCommand extends Command
 			$bm->setConstantSymbol($data['constantSymbol'] ?? null);
 			$bm->setMessage($data['message'] ?? null);
 
-			$this->entityManager->persist($bm)->getUnitOfWork()->commit($bm);
+			$this->entityManager->persist($bm);
+			$this->entityManager->flush();
 
 			$this->processBankMovement($bm);
 		}
@@ -449,7 +457,7 @@ class InvoicePayCheckCommand extends Command
 
 				$invoice->addHistory($ih);
 
-				$this->entityManager->flush([$invoice, $ih]);
+				$this->entityManager->flush();
 
 				if ($invoice instanceof InvoiceProforma) {
 					$this->invoiceManager->get()->createPayDocumentFromInvoice($invoice);
@@ -464,6 +472,6 @@ class InvoicePayCheckCommand extends Command
 			$bm->setStatus(BankMovement::STATUS_SYSTEM_ERROR);
 		}
 
-		$this->entityManager->getUnitOfWork()->commit($bm);
+		$this->entityManager->flush();
 	}
 }

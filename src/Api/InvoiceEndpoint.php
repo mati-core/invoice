@@ -25,33 +25,26 @@ use Nette\Utils\DateTime;
 class InvoiceEndpoint extends BaseEndpoint
 {
 	/**
-	 * @var User
 	 * @inject
 	 */
 	public $user;
 
 	/**
-	 * @var InvoiceHelper
 	 * @inject
 	 */
 	public $invoiceHelper;
 
 	/**
-	 * @var CompanyManagerAccessor
 	 * @inject
 	 */
 	public CompanyManagerAccessor $companyManager;
 
 	/**
-	 * @var CurrencyManagerAccessor
 	 * @inject
 	 */
 	public CurrencyManagerAccessor $currencyManager;
 
 
-	/**
-	 * @param string $id
-	 */
 	public function postLoadInvoice(string $id): void
 	{
 		try {
@@ -72,14 +65,10 @@ class InvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @param string $id
-	 */
 	public function postLoadFixInvoice(string $id): void
 	{
 		try {
 			$invoiceData = $this->invoiceHelper->getFixInvoiceById($id);
-
 			$this->sendOk(
 				[
 					'invoice' => $invoiceData,
@@ -91,20 +80,13 @@ class InvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @param array $invoiceData
-	 * @param string $depositNumber
-	 */
 	public function postDepositInvoice(array $invoiceData, string $depositNumber): void
 	{
 		$depositNumber = trim($depositNumber);
-
 		try {
-			$invoiceData = $this->invoiceHelper->addDepositInvoice($invoiceData, $depositNumber);
-
 			$this->sendOk(
 				[
-					'invoice' => $invoiceData,
+					'invoice' => $this->invoiceHelper->addDepositInvoice($invoiceData, $depositNumber),
 				]
 			);
 		} catch (InvoiceException $e) {
@@ -114,7 +96,6 @@ class InvoiceEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @param string $id
 	 * @throws \Exception
 	 */
 	public function postLoadCompanyById(string $id): void
@@ -173,7 +154,6 @@ class InvoiceEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @param string $cin
 	 * @throws \Exception
 	 */
 	public function postLoadCompanyByCIN(string $cin): void
@@ -182,7 +162,6 @@ class InvoiceEndpoint extends BaseEndpoint
 
 		try {
 			$company = $this->companyManager->get()->getCompanyByCIN($cin);
-
 			$dueSelect = $company->getInvoiceDueDayCount();
 
 			if (!in_array($dueSelect, [0, 7, 10, 14, 30])) {
@@ -281,7 +260,6 @@ class InvoiceEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @param string $isoCode
 	 * @param array $invoiceData
 	 */
 	public function postLoadCurrency(string $isoCode, array $invoiceData): void

@@ -6,6 +6,7 @@ namespace App\AdminModule\Presenters;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
@@ -34,74 +35,42 @@ use Tracy\Debugger;
 use Ublaboo\DataGrid\DataGrid;
 use Ublaboo\DataGrid\Exception\DataGridException;
 
-/**
- * Class ExpenseInnerPackagePresenter
- *
- * @package App\AdminModule\Presenters
- */
-class ExpenseInnerPackagePresenter extends BaseAdminPresenter
+class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 {
-
-	/**
-	 * @var CurrencyManagerAccessor
-	 * @inject
-	 */
-	public CurrencyManagerAccessor $currencyManager;
-
-	/**
-	 * @var UnitManagerAccessor
-	 * @inject
-	 */
-	public UnitManagerAccessor $unitManager;
-
-	/**
-	 * @var CountryManagerAccessor
-	 * @inject
-	 */
-	public CountryManagerAccessor $countryManager;
-
-	/**
-	 * @var ExpenseManagerAccessor
-	 * @inject
-	 */
-	public ExpenseManagerAccessor $expenseManager;
-
-	/**
-	 * @var SupplierManagerAccessor
-	 * @inject
-	 */
-	public SupplierManagerAccessor $supplierManager;
-
-	/**
-	 * @var string
-	 */
 	protected string $pageRight = 'page__invoice';
+
+	private Expense|null $expense;
 
 	use FormFactoryTrait;
 
-	/**
-	 * @var Expense|null
-	 */
-	private Expense|null $expense;
+
+	public function __construct(
+		private CurrencyManagerAccessor $currencyManager,
+		private UnitManagerAccessor $unitManager,
+		private CountryManagerAccessor $countryManager,
+		private ExpenseManagerAccessor $expenseManager,
+		private SupplierManagerAccessor $supplierManager,
+	) {
+	}
 
 
-	/**
-	 * @param string|null $expenseId
-	 */
 	public function actionDetail(string $expenseId = null): void
 	{
-		$this->template->adminAccess = $this->checkAccess('page__expense__admin') ? 1 : 0;
-		$this->template->expenseId = $expenseId;
-		$this->template->currencyList = $this->currencyManager->get()->getActiveCurrencies();
-		$this->template->unitList = $this->unitManager->get()->getUnits();
-		$this->template->countries = $this->countryManager->get()->getCountriesActive();
-		$this->template->supplierList = $this->supplierManager->get()->getSuppliers();
-		$this->template->productCodes = IntrastatProductCodes::getList();
+		$this->sendJson(
+			[
+				'adminAccess' => $this->checkAccess('page__expense__admin'),
+				'expenseId' => $expenseId,
+				'currencyList' => $this->currencyManager->get()->getActiveCurrencies(),
+				'unitList' => $this->unitManager->get()->getUnits(),
+				'countries' => $this->countryManager->get()->getCountriesActive(),
+				'supplierList' => $this->supplierManager->get()->getSuppliers(),
+				'productCodes' => IntrastatProductCodes::getList(),
+			]
+		);
 	}
 
 
 	/**
-	 * @param string $id
 	 * @throws AbortException
 	 */
 	public function actionShow(string $id): void
@@ -119,10 +88,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $name
-	 * @return DataGrid
-	 * @throws CurrencyException
-	 * @throws DataGridException
+	 * @throws CurrencyException|DataGridException
 	 */
 	public function createComponentExpenseTable(string $name): MatiDataGrid
 	{
@@ -452,9 +418,6 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 	}
 
 
-	/**
-	 * @return Form
-	 */
 	public function createComponentPayForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -478,8 +441,7 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 				$history->setUser($user);
 
 				$this->entityManager->persist($history);
-
-				$this->entityManager->flush([$this->expense, $history]);
+				$this->entityManager->flush();
 
 				$this->flashMessage('Faktura byla uhrazena.', 'success');
 				$this->redirect('show', ['id' => $this->expense->getId()]);
@@ -496,17 +458,14 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 
 
 	/**
-	 * @param string $id
-	 * @throws AbortException
-	 * @throws EntityManagerException
+	 * @throws AbortException|EntityManagerException
 	 */
 	public function handleDelete(string $id): void
 	{
 		try {
 			$expense = $this->expenseManager->get()->getExpenseById($id);
 			$expense->setDeleted(true);
-			$this->entityManager->getUnitOfWork()->commit($expense);
-
+			$this->entityManager->flush();
 			$this->flashMessage('Náklad byl odstraněn.');
 		} catch (NoResultException | NonUniqueResultException) {
 			$this->flashMessage('Požadovaný náklad nebyla nalezena.', 'error');
@@ -514,5 +473,4 @@ class ExpenseInnerPackagePresenter extends BaseAdminPresenter
 
 		$this->redirect('default');
 	}
-
 }

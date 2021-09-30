@@ -20,69 +20,41 @@ class ExpenseHistory
 	use SmartObject;
 	use UuidIdentifier;
 
-	/**
-	 * @var Expense
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\Expense")
-	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id")
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\Expense")
+	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id") */
 	private Expense $expense;
 
-	/**
-	 * @var BaseUser|null
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
-	 */
+	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
+	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true) */
 	private BaseUser|null $user = null;
 
-	/**
-	 * @var string
-	 * @ORM\Column(type="text")
-	 */
+	/** @ORM\Column(type="text") */
 	private string $description;
 
-	/**
-	 * @var \DateTime
-	 * @ORM\Column(type="datetime")
-	 */
+	/** @ORM\Column(type="datetime") */
 	private \DateTime $date;
 
 
-	/**
-	 * ExpenseHistory constructor.
-	 *
-	 * @param Expense $expense
-	 * @param string $description
-	 * @throws \Exception
-	 */
 	public function __construct(Expense $expense, string $description)
 	{
 		$this->expense = $expense;
 		$this->description = $description;
-		$this->date = DateTime::from('NOW');
+		$this->date = new \DateTime;
 	}
 
 
-	/**
-	 * @return Expense
-	 */
 	public function getExpense(): Expense
 	{
 		return $this->expense;
 	}
 
 
-	/**
-	 * @return BaseUser|null
-	 */
 	public function getUser(): ?BaseUser
 	{
 		return $this->user;
 	}
 
 
-	/**
-	 * @param BaseUser|null $user
-	 */
 	public function setUser(?BaseUser $user): void
 	{
 		$this->user = $user;
@@ -95,12 +67,8 @@ class ExpenseHistory
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
 	public function getDate(): \DateTime
 	{
 		return $this->date;
 	}
-
 }
