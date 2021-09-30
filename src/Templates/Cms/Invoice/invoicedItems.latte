@@ -1,0 +1,78 @@
+{block title}
+	Ceník {$company !== null ? ' - ' . $company->getName() : ''}
+{/block}
+
+{block pageTitle}
+	<h1>Ceník {$company !== null ? ' - ' . $company->getName() : ''}</h1>
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Invoice:default">
+				<i class="fas fa-file-invoice"></i> Faktury
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Invoice:show, id => $invoice->getId()">
+				<i class="fas fa-file-invoice"></i> {$invoice->getNumber()}
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			<i class="fas fa-file-invoice-dollar"></i> Ceník
+		</li>
+	</ol>
+{/block}
+
+{block content}
+	<div class="container-fluid">
+		<!-- Small boxes (Stat box) -->
+
+		<div class="row">
+			<div class="col-12 col-md-6 offset-md-6 mb-3 text-right">
+				<a n:href="Invoice:show, id => $invoice->getId()" class="btn btn-secondary btn-sm">
+					<i class="fas fa-reply"></i> {_cms.main.back}
+				</a>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<div class="card">
+					<div class="card-header">
+						Přehled fakturovaných položek
+					</div>
+					<div class="card-body p-0">
+						<table class="table table-hover m-0">
+							<thead>
+							<tr>
+								<th style="width: 1%; white-space: nowrap;">Kód</th>
+								<th>Položka</th>
+								<th style="width: 1%; white-space: nowrap; text-align: right;">Poslední faktura</th>
+								<th style="width: 1%; white-space: nowrap; text-align: right;">Cena</th>
+							</tr>
+							</thead>
+							<tbody>
+							<tr n:foreach="$list as $item">
+								<td style="width: 1%; white-space: nowrap;">{$item['code']}</td>
+								<td>{$item['name']}</td>
+								<td style="width: 1%; white-space: nowrap; text-align: right;">
+									<a n:href="Invoice:show, id => $item['invoice']['id'], ret => 2">
+										{$item['invoice']['number']}
+									</a>
+								</td>
+								<td style="width: 1%; white-space: nowrap; text-align: right;">{$item['price']|noescape}</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{/block}

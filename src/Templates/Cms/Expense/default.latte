@@ -1,0 +1,152 @@
+{block title}
+	Výdaje
+{/block}
+
+{block pageTitle}
+	<h1>Výdaje</h1>
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			<i class="fas fa-file-invoice-dollar"></i> Výdaje
+		</li>
+	</ol>
+{/block}
+
+{block content}
+	<!-- Main content -->
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12 mb-3 text-right">
+				<a n:href="detail" class="btn btn-sm btn-primary">
+					<i class="fas fa-plus"></i>&nbsp;Nový výdaj
+				</a>
+			</div>
+		</div>
+
+		<div n:if="$presenter->checkAccess('page__invoice__showStatistics')" class="row">
+			{cache expire => '3 minutes'}
+			{include statistics}
+			{/cache}
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+
+				<!-- Default box -->
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Seznam výdajů</h3>
+					</div>
+					<div class="card-body p-0">
+						{control expenseTable}
+					</div>
+					<!-- /.card-body -->
+				</div>
+				<!-- /.card -->
+
+			</div>
+		</div>
+		<!-- /.row -->
+
+	</div>
+	<!-- /.container-fluid -->
+{/block}
+
+{define statistics}
+	{var $statistics = $presenter->getStatistics()}
+	<div class="col-md-3 col-sm-6 col-12">
+		<div class="info-box bg-gradient-info">
+			<span class="info-box-icon"><i class="fas fa-bookmark"></i></span>
+
+			<div class="info-box-content">
+				<span class="info-box-text">Celkem za {$statistics['monthName']}</span>
+				<span class="info-box-number">
+                                {MatiCore\Currency\Number::formatPrice($statistics['pricePerMonth'], $statistics['currency'], 2)|noescape}
+							</span>
+
+				<div class="progress">
+					<div class="progress-bar" style="width: 0%"></div>
+				</div>
+				<span class="progress-description">
+			                  Celkem {MatiCore\Currency\Number::formatPrice($statistics['pricePerYear'], $statistics['currency'], 2)|noescape} za rok.
+			                </span>
+			</div>
+			<!-- /.info-box-content -->
+		</div>
+		<!-- /.info-box -->
+	</div>
+	<!-- /.col -->
+	<div class="col-md-3 col-sm-6 col-12">
+		<div class="info-box bg-gradient-success">
+			<span class="info-box-icon"><i class="fas fa-thumbs-up"></i></span>
+
+			<div class="info-box-content">
+				<span class="info-box-text">DPH za {$statistics['monthName']}</span>
+				<span class="info-box-number">
+                                {MatiCore\Currency\Number::formatPrice($statistics['taxPerMonth'], $statistics['currency'], 2)|noescape}
+							</span>
+
+				<div class="progress">
+					<div class="progress-bar" style="width: 0%"></div>
+				</div>
+				<span class="progress-description">
+			                  Celkem {MatiCore\Currency\Number::formatPrice($statistics['taxPerYear'], $statistics['currency'], 2)|noescape} za rok.
+			                </span>
+			</div>
+			<!-- /.info-box-content -->
+		</div>
+		<!-- /.info-box -->
+	</div>
+	<!-- /.col -->
+	<div class="col-md-3 col-sm-6 col-12">
+		<div class="info-box bg-gradient-warning">
+			<span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
+
+			<div class="info-box-content">
+				<span class="info-box-text">Nezaplaceno</span>
+				<span class="info-box-number">
+                    {MatiCore\Currency\Number::formatPrice($statistics['unpaidPrice'], $statistics['currency'], 2)|noescape}
+				</span>
+
+				<div class="progress">
+					<div class="progress-bar" style="width: 0%"></div>
+				</div>
+				<span class="progress-description">
+                    Celkem {$statistics['unpaidCount']} faktur.
+                </span>
+			</div>
+			<!-- /.info-box-content -->
+		</div>
+		<!-- /.info-box -->
+	</div>
+	<!-- /.col -->
+	<div class="col-md-3 col-sm-6 col-12">
+		<div class="info-box bg-gradient-danger">
+			<span class="info-box-icon"><i class="fas fa-comments"></i></span>
+
+			<div class="info-box-content">
+				<span class="info-box-text">Po splatnosti</span>
+				<span class="info-box-number">
+                    {MatiCore\Currency\Number::formatPrice($statistics['overDatePrice'], $statistics['currency'], 2)|noescape}
+				</span>
+
+				<div class="progress">
+					<div class="progress-bar" style="width: 0%"></div>
+				</div>
+				<span class="progress-description">
+                    Celkem {$statistics['overDateCount']} faktur.
+                </span>
+			</div>
+			<!-- /.info-box-content -->
+		</div>
+		<!-- /.info-box -->
+	</div>
+	<!-- /.col -->
+{/define}

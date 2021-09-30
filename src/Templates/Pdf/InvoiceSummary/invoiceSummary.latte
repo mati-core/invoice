@@ -32,7 +32,7 @@
 			<small>{$invoiceData['priceCZK']|noescape}</small>
 		</td>
 	</tr>
-    {if $iterator->counter%32 === 0}
+	{if $iterator->counter % 32 === 0}
 	</tbody>
 </table>
 <pagebreak>
@@ -40,32 +40,32 @@
 		<h3>&nbsp;</h3>
 	</div>
 	<table class="table table-bordered-sm">
-        {include tableHead}
+		{include tableHead}
 		<tbody>
-    {/if}
-	{/foreach}
-	<tr>
-		<td colspan="6" style="text-align: right; border: 0;"></td>
-		<td style="text-align: right; font-weight: bold; border: 0;">{$totalTax|noescape}</td>
-		<td style="text-align: right; font-weight: bold; border: 0;">{$totalPrice|noescape}</td>
-	</tr>
-	</tbody>
-</table>
-<p style="font-size: 10px;">Vygenerováno {date('d.m.Y H:i:s')}</p>
+		{/if}
+		{/foreach}
+		<tr>
+			<td colspan="6" style="text-align: right; border: 0;"></td>
+			<td style="text-align: right; font-weight: bold; border: 0;">{$totalTax|noescape}</td>
+			<td style="text-align: right; font-weight: bold; border: 0;">{$totalPrice|noescape}</td>
+		</tr>
+		</tbody>
+	</table>
+	<p style="font-size: 10px;">Vygenerováno {date('d.m.Y H:i:s')}</p>
 </body>
 </html>
 
 {block tableHead}
-<thead>
-<tr>
-	<th>Číslo</th>
-	<th>Firma</th>
-	<th>Vystaveno</th>
-	<th>Daň plnění</th>
-	<th>Splatnost</th>
-	<th>Uhrazeno</th>
-	<th>DPH</th>
-	<th>Částka</th>
-</tr>
-</thead>
+	<thead>
+	<tr>
+		<th>Číslo</th>
+		<th>Firma</th>
+		<th>Vystaveno</th>
+		<th>Daň plnění</th>
+		<th>Splatnost</th>
+		<th>Uhrazeno</th>
+		<th>DPH</th>
+		<th>Částka</th>
+	</tr>
+	</thead>
 {/block}

@@ -1,0 +1,293 @@
+{block title}
+	<h1>{$company->getName()} - {$stock->getName()}</h1>
+{/block}
+
+{block pageTitle}
+	<h1>
+		<small>
+			{if $company->isBlackList()}
+				<span class="badge badge-dark mr-3">Black list</span>
+			{elseif $company->getType() === 'typ-smluvni'}
+				<span class="badge badge-primary mr-3">Smluvní</span>
+			{elseif $company->getType() === 'typ-vip'}
+				<span class="badge badge-warning mr-3">VIP</span>
+			{else}
+				<span class="badge badge-info mr-3">Standard</span>
+			{/if}
+		</small>
+		{$company->getName()} - {$stock->getName()}
+	</h1>
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Company:default">
+				<i class="fas fa-building"></i> Firmy
+			</a>
+		</li>
+		<li class="breadcrumb-item">
+			<a n:href="Company:detail, id => $company->getId()">
+				{$company->getName()}
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			Pobočka
+		</li>
+	</ol>
+{/block}
+
+{block modals}
+	<div n:if="$presenter->checkAccess('page__company__stockRemove')" class="modal fade" id="deleteModal">
+		<div class="modal-dialog">
+			<div class="modal-content bg-danger">
+				<div class="modal-header">
+					Smazat
+				</div>
+				<div class="modal-body">
+					<p>Opravdu si přejete smazat pobočku {$stock->getName()}?</p>
+				</div>
+				<div class="modal-footer">
+					<a n:href="removeStock!, id => $stock->getId()" class="btn btn-outline-light">
+						Smazat
+					</a>
+					<a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+
+	<form n:if="$presenter->checkAccess('page__company__stockNote')" n:name="companyStockNoteForm" class="ajax">
+		<div class="modal fade" id="noteModal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						Poznámka
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<textarea n:name="note" class="form-control" rows="10"></textarea>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button n:name="submit" class="btn btn-success" id="btn-custom-invoice">
+							<i class="fas fa-save"></i>&nbsp;Uložit
+						</button>
+						<a href="#" class="btn btn-light" data-dismiss="modal">Zrušit</a>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+	</form>
+{/block}
+
+{block content}
+	<div class="container-fluid">
+		<!-- Small boxes (Stat box) -->
+
+		<div class="row">
+			<div class="col-6 pt-2">
+				<h4>{$stock->getAddress()}
+					<a href="http://maps.google.com/?q={$stock->getAddress()}" target="_blank">
+						<i class="fas fa-map-marked-alt ml-3"></i>
+					</a>
+				</h4>
+			</div>
+			<div class="col-6 mb-3 text-right">
+				{include smallButtons}
+			</div>
+		</div>
+
+
+		<div class="row">
+			<div class="col-lg-4 col-12">
+
+				<!-- Default box -->
+				{var $invoiceAddress = $company->getInvoiceAddress()}
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">{$invoiceAddress->getCompanyName()}</h3>
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col">
+								{$invoiceAddress->getStreet()}
+									<br>
+                                    {$invoiceAddress->getCity()}
+									<br>
+                                    {$invoiceAddress->getZipCode()}
+									<br>
+                                    {$invoiceAddress->getCountry()->getName()}
+							</div>
+							<div class="col">
+								IČ: {$invoiceAddress->getCin()}
+									<br>
+								DIČ: {$invoiceAddress->getTin()}
+									<br><br>
+								Měna: {$company->getCurrency()->getCode()}
+							</div>
+						</div>
+					</div>
+					<!-- /.card-body -->
+				</div>
+				<!-- /.card -->
+
+			</div>
+
+			{include infoBlock}
+
+		</div>
+		<!-- /.row -->
+
+		<div n:if="$presenter->checkAccess('page__company__statistics')" class="row">
+			{control invoiceStatistics, $company}
+		</div>
+
+	</div>
+	<!-- /.container-fluid -->
+{/block}
+
+{block infoBlock}
+	<div class="col-12 col-lg-4">
+		<div class="card" style="height: 93%;">
+			<div class="card-body">
+				<b>Poznámka</b>
+				<p>{$stock->getNote()}</p>
+			</div>
+			<!-- /.card-body -->
+		</div>
+	</div>
+	<div class="col-12 col-lg-4">
+		<div class="card">
+			<div class="card-body">
+				{include bigButtons}
+			</div>
+			<!-- /.card-body -->
+		</div>
+	</div>
+{/block}
+
+{block bigButtons}
+
+	<table class="table table-sm">
+		<tr>
+			<td>
+				<a n:href="Company:contact, companyId => $company->getId(), companyStockId => $stock->getId()">
+					<i class="fas fa-address-book"></i> Kontakty
+				</a>
+			</td>
+			<td style="width: 1%; white-space: nowrap;">
+				<a n:if="$presenter->checkAccess('page__company__contactCreate')" n:href="createContact, companyId => $company->getId(), companyStockId => $stock->getId()"
+						class="btn btn-xs btn-outline-info text-info">
+					<i class="fas fa-fw fa-plus"></i>
+				</a>
+			</td>
+		</tr>
+		<tr n:if="$presenter->checkAccess('page__invoice')">
+			<td>
+				<a n:href="Company:invoice, id => $company->getId()">
+					<i class="fas fa-file-invoice"></i> Faktury
+				</a>
+			</td>
+			<td style="width: 1%; white-space: nowrap;">
+				<a n:if="$presenter->checkAccess('page__company__invoiceCreate')" n:href="Invoice:detail"
+						class="btn btn-xs btn-outline-info text-info">
+					<i class="fas fa-fw fa-plus"></i>
+				</a>
+			</td>
+		</tr>
+	</table>
+{/block}
+
+{block smallButtons}
+	<a n:href="detail, id => $company->getId()" class="btn btn-sm btn-secondary">
+		<i class="fas fa-reply"></i>&nbsp;Zpět
+	</a>
+	<div n:if="$presenter->checkAccess('page__company__stockAdd') || $presenter->checkAccess('page__company__stockEdit') || $presenter->checkAccess('page__company__stockRemove')"
+			class="btn-group btn-group-sm" role="group">
+		<button type="button" class="btn btn-xs btn-primary" data-toggle="dropdown">
+			Akce <i class="fas fa-caret-down"></i>
+			<div class="dropdown-menu" role="menu" x-placement="bottom-start"
+				 style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-1px, 37px, 0px);">
+				<a n:if="$presenter->checkAccess('page__company__stockAdd')" n:href="createStock, id => $company->getId()"
+						class="dropdown-item" onclick="window.location.href = this.href">
+					<i class="fas fa-plus fa-fw"></i>&nbsp;Přidat pobočku
+				</a>
+				<a n:if="$presenter->checkAccess('page__company__stockEdit')" n:href="editStock, id => $stock->getId()"
+						class="dropdown-item" onclick="window.location.href = this.href">
+					<i class="fas fa-edit fa-fw"></i>&nbsp;Upravit pobočku
+				</a>
+				<a n:if="$presenter->checkAccess('page__company__stockRemove')" href="#"
+																				class="dropdown-item text-danger"
+																				onclick="$('#deleteModal').modal('show');">
+					<i class="fas fa-trash fa-fw"></i>&nbsp;Smazat pobočku
+				</a>
+			</div>
+		</button>
+	</div>
+	<a n:if="$presenter->checkAccess('page__company__stockNote')" href="#"
+																  class="btn btn-outline-info btn-sm"
+																  data-toggle="modal" data-target="#noteModal">
+		<i class="fas fa-file"></i>&nbsp;Poznámka
+	</a>
+{/block}
+
+{block scripts}
+	<script>
+		$(document).ready(function () {
+			$(document).on('keyup', '[data-js-search-input]', function () {
+				let val = $(this).val();
+
+				console.log(val);
+
+				if (val === '') {
+					$('[data-js-search]').each(function () {
+						$(this).show();
+					});
+				} else {
+					let regex = new RegExp('(.*)' + val + '(.*)', 'gi');
+
+					$('[data-js-search]').each(function () {
+						let companyData = $(this).attr('data-js-search');
+
+						if (companyData.match(regex)) {
+							$(this).show();
+						} else {
+							$(this).hide();
+						}
+					});
+				}
+			});
+		});
+	</script>
+{/block}
+
+{define csWeekDay}
+	{switch (int) $day->format('N')}
+		{case 1}
+		po
+		{case 2}
+		út
+		{case 3}
+		st
+		{case 4}
+		čt
+		{case 5}
+		pá
+		{case 6}
+		so
+		{case 7}
+		ne
+		{default}
+		??
+	{/switch}
+{/define}

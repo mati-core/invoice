@@ -1,0 +1,53 @@
+{block title}
+	Bankovní pohyby
+{/block}
+
+{block pageTitle}
+	<h1>Bankovní pohyby</h1>
+{/block}
+
+{block breadcrumb}
+	<ol class="breadcrumb float-sm-right">
+		<li class="breadcrumb-item">
+			<a n:href="Homepage:default">
+				<i class="fas fa-tachometer-alt"></i>
+			</a>
+		</li>
+		<li class="breadcrumb-item active">
+			<i class="fas fa-wallet"></i> Bankovní pohyby
+		</li>
+	</ol>
+{/block}
+
+{block content}
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12">
+
+				<!-- Default box -->
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Seznam bankovních pohybů</h3>
+						<div class="float-right">
+							Poslední aktualizace: {$lastUpdate ?? 'Nikdy'}&nbsp;&nbsp;
+							{if $lastUpdateStatus}
+								<i class="fas fa-check text-success"></i>
+							{else}
+								<i class="fas fa-times text-danger"></i>
+							{/if}
+						</div>
+					</div>
+					<div class="card-body p-0">
+						{control bankMovementTable}
+					</div>
+					<!-- /.card-body -->
+				</div>
+				<!-- /.card -->
+
+			</div>
+		</div>
+		<!-- /.row -->
+
+	</div>
+	<!-- /.container-fluid -->
+{/block}
