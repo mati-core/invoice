@@ -11,63 +11,26 @@ use Baraja\Doctrine\EntityManagerException;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use MatiCore\Address\CountryManagerAccessor;
 use MatiCore\Company\Company;
 use MatiCore\Company\CompanyManagerAccessor;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManagerAccessor;
-use MatiCore\Currency\Number;
-use MatiCore\Unit\Unit;
-use MatiCore\Unit\UnitException;
-use MatiCore\Unit\UnitManagerAccessor;
-use MatiCore\User\BaseUser;
-use MatiCore\User\StorageIdentity;
-use MatiCore\User\UserException;
 use Nette\Security\User;
-use Nette\Utils\DateTime;
 
 class InvoiceHelper
 {
 	/**
-	 * @var array
-	 */
-	private array $companyData;
-
-	private CompanyManagerAccessor $companyManager;
-
-	private EntityManager $entityManager;
-
-	private InvoiceManagerAccessor $invoiceManager;
-
-	private CurrencyManagerAccessor $currencyManager;
-
-	private UnitManagerAccessor $unitManager;
-
-	private CountryManagerAccessor $countryManager;
-
-	private SignatureManagerAccessor $signatureManager;
-
-	private User $user;
-
-
-	/**
 	 * @param array $companyData
 	 */
 	public function __construct(
-		array $companyData, CompanyManagerAccessor $companyManager, EntityManager $entityManager,
-		InvoiceManagerAccessor $invoiceManager, CurrencyManagerAccessor $currencyManager,
-		UnitManagerAccessor $unitManager, CountryManagerAccessor $countryManager,
-		SignatureManagerAccessor $signatureManager, User $user
+		private array $companyData,
+		private CompanyManagerAccessor $companyManager,
+		private EntityManager $entityManager,
+		private InvoiceManagerAccessor $invoiceManager,
+		private CurrencyManagerAccessor $currencyManager,
+		private UnitManagerAccessor $unitManager,
+		private CountryManagerAccessor $countryManager,
+		private SignatureManagerAccessor $signatureManager,
+		private User $user
 	) {
-		$this->companyData = $companyData;
-		$this->companyManager = $companyManager;
-		$this->entityManager = $entityManager;
-		$this->invoiceManager = $invoiceManager;
-		$this->currencyManager = $currencyManager;
-		$this->unitManager = $unitManager;
-		$this->countryManager = $countryManager;
-		$this->signatureManager = $signatureManager;
-		$this->user = $user;
 	}
 
 
@@ -85,7 +48,7 @@ class InvoiceHelper
 
 			$ret = [
 				'id' => $invoice->getId(),
-				'type' => ($invoice instanceof Invoice ? 'invoice' : 'proforma'),
+				'type' => $invoice->isRegular() ? 'invoice' : 'proforma',
 				'number' => $invoice->getNumber(),
 				'orderNumber' => $invoice->getOrderNumber() ?? '',
 				'rentNumber' => $invoice->getRentNumber() ?? '',
@@ -219,7 +182,7 @@ class InvoiceHelper
 	 */
 	public function getNewInvoice(): array
 	{
-		$date = DateTime::from('NOW');
+		$date = new \DateTime;
 		$dueDate = $date->modifyClone('+14 days');
 
 		$currency = $this->currencyManager->get()->getDefaultCurrency();
@@ -327,22 +290,25 @@ class InvoiceHelper
 			$invoice = $this->invoiceManager->get()->getInvoiceById($id);
 			$unit = $this->unitManager->get()->getDefaultUnit();
 
-			$date = $invoice instanceof FixInvoice ? $invoice->getDate() : DateTime::from('NOW');
-			$taxDate = $invoice instanceof FixInvoice ? $invoice->getTaxDate() : DateTime::from('NOW');
-			$dueDate = $invoice instanceof FixInvoice
+			$date = $invoice->isFix() ? $invoice->getDate() : new \DateTime;
+			$taxDate = $invoice->isFix() ? $invoice->getTaxDate() : new \DateTime;
+			$dueDate = $invoice->isFix()
 				? $invoice->getDueDate()
-				: DateTime::from($date)->modify('+30 days');
+				: (new \DateTime($date))->modify('+30 days');
 
-			$textBeforeItems = $invoice instanceof FixInvoice
-				? $invoice->getTextBeforeItems() ?? '' : 'Opravný daňový doklad k daňovému dokladu č. ' . $invoice->getNumber();
-			$textAfterItems = $invoice instanceof FixInvoice ? $invoice->getTextBeforeItems() ?? '' : '';
+			$textBeforeItems = $invoice->isFix()
+				? ($invoice->getTextBeforeItems() ?? '')
+				: 'Opravný daňový doklad k daňovému dokladu č. ' . $invoice->getNumber();
+			$textAfterItems = $invoice->isFix()
+				? ($invoice->getTextBeforeItems() ?? '')
+				: '';
 
-			$invoiceId = $invoice instanceof FixInvoice && $invoice->getInvoice() !== null
-				? $invoice->getInvoice()->getId()
+			$invoiceId = $invoice->isFix() && $invoice->getSubInvoice() !== null
+				? $invoice->getSubInvoice()->getId()
 				: $invoice->getId();
 
 			$ret = [
-				'id' => $invoice instanceof FixInvoice ? $invoice->getId() : null,
+				'id' => $invoice->isFix() ? $invoice->getId() : null,
 				'type' => 'fixInvoice',
 				'invoiceId' => $invoiceId,
 				'number' => '11' . $invoice->getNumber(),
@@ -418,7 +384,7 @@ class InvoiceHelper
 					];
 				}
 
-				if ($invoice instanceof FixInvoice) {
+				if ($invoice->isFix()) {
 					$ret['items'][] =
 						[
 							'id' => $item->getId(),
@@ -510,8 +476,8 @@ class InvoiceHelper
 		}
 
 		$type = $invoiceData['type'];
-		$date = DateTime::from($invoiceData['date']);
-		$dateTax = DateTime::from($invoiceData['dateTax']);
+		$date = new \DateTime($invoiceData['date']);
+		$dateTax = new \DateTime($invoiceData['dateTax']);
 
 		if ($type === 'proforma') {
 			$invoiceData['number'] = $this->invoiceManager->get()->getNextInvoiceNumber($date);
@@ -546,7 +512,7 @@ class InvoiceHelper
 		}
 
 		$currencyRate = (float) $invoiceData['currencyData']['rate'];
-		$currencyDate = DateTime::from($invoiceData['currencyData']['rateDate']);
+		$currencyDate = new \DateTime($invoiceData['currencyData']['rateDate']);
 
 		if ($currency->getCode() === 'CZK') {
 			$bankData = $this->companyData['bank']['CZK'];
@@ -571,7 +537,6 @@ class InvoiceHelper
 			}
 		}
 
-		// Načtení Invoice
 		$invoice = null;
 		try {
 			if ($invoiceId !== null) {
@@ -583,43 +548,42 @@ class InvoiceHelper
 
 		if ($invoice === null) {
 			if ($invoiceType === 'invoice') {
-				$invoice = new Invoice($invoiceNumber);
+				$invoice = new Invoice($invoiceNumber, Invoice::TYPE_REGULAR);
 			} elseif ($invoiceType === 'fixInvoice') {
-				$invoice = new FixInvoice($invoiceNumber);
+				$invoice = new Invoice($invoiceNumber, Invoice::TYPE_FIX);
 				$parentId = $invoiceData['invoiceId'];
 
 				try {
 					$parent = $this->invoiceManager->get()->getInvoiceById($parentId);
-					if ($parent instanceof Invoice) {
-						$invoice->setInvoice($parent);
+					if ($parent->isRegular()) {
+						$invoice->setSubInvoice($parent);
 						$parent->setFixInvoice($invoice);
 					}
 				} catch (NoResultException | NonUniqueResultException) {
-
 				}
 			} else {
-				$invoice = new InvoiceProforma($invoiceNumber);
+				$invoice = new Invoice($invoiceNumber, Invoice::TYPE_PROFORMA);
 			}
 
 			$invoice->setCreateUser($user);
-			$invoice->setCreateDate(DateTime::from('NOW'));
+			$invoice->setCreateDate(new \DateTime);
 			$invoice->setEditUser($user);
-			$invoice->setEditDate(DateTime::from('NOW'));
+			$invoice->setEditDate(new \DateTime);
 
-			if ($invoice instanceof FixInvoice) {
+			if ($invoice->isFix()) {
 				$changeDescription = 'Vytvoření opravného daňového dokladu';
-			} elseif ($invoice instanceof InvoiceProforma) {
+			} elseif ($invoice->isProforma()) {
 				$changeDescription = 'Vytvoření proformy';
 			} else {
 				$changeDescription = 'Vytvoření faktury';
 			}
 		} else {
 			$invoice->setEditUser($user);
-			$invoice->setEditDate(DateTime::from('NOW'));
+			$invoice->setEditDate(new \DateTime);
 
-			if ($invoice instanceof FixInvoice) {
+			if ($invoice->isFix()) {
 				$changeDescription = 'Úprava opravného daňového dokladu';
-			} elseif ($invoice instanceof InvoiceProforma) {
+			} elseif ($invoice->isProforma()) {
 				$changeDescription = 'Úprava proformy';
 			} else {
 				$changeDescription = 'Úprava faktury';
@@ -647,10 +611,10 @@ class InvoiceHelper
 
 		//Nacteni zeme spolecnosti
 		try {
-			$country = $this->countryManager->get()->getCountryByIsoCode($this->companyData['country']);
+			$country = $this->countryManager->getCountryByIsoCode($this->companyData['country']);
 		} catch (NoResultException | NonUniqueResultException) {
 			try {
-				$country = $this->countryManager->get()->getCountryByIsoCode('CZE');
+				$country = $this->countryManager->getCountryByIsoCode('CZE');
 			} catch (NoResultException | NonUniqueResultException) {
 				$country = null;
 			}
@@ -658,10 +622,10 @@ class InvoiceHelper
 
 		//Nacteni zeme zakaznika
 		try {
-			$customerCountry = $this->countryManager->get()->getCountryByIsoCode($invoiceData['customer']['country']);
+			$customerCountry = $this->countryManager->getCountryByIsoCode($invoiceData['customer']['country']);
 		} catch (NoResultException | NonUniqueResultException) {
 			try {
-				$customerCountry = $this->countryManager->get()->getCountryByIsoCode('CZE');
+				$customerCountry = $this->countryManager->getCountryByIsoCode('CZE');
 			} catch (NoResultException | NonUniqueResultException) {
 				$customerCountry = null;
 			}
@@ -677,7 +641,9 @@ class InvoiceHelper
 		}
 		$invoice->setCompanyCin($invoiceData['company']['cin']);
 		$invoice->setCompanyTin(
-			$invoiceData['company']['cin'] === '' || $invoiceData['company']['tin'] === null ? null : $invoiceData['company']['tin']
+			$invoiceData['company']['cin'] === '' || $invoiceData['company']['tin'] === null
+				? null
+				: $invoiceData['company']['tin']
 		);
 		$invoice->setCompanyLogo($this->companyData['logo']);
 
@@ -704,7 +670,9 @@ class InvoiceHelper
 		}
 		$invoice->setCustomerCin($invoiceData['customer']['cin']);
 		$invoice->setCustomerTin(
-			$invoiceData['customer']['cin'] === '' || $invoiceData['customer']['tin'] === null ? null : $invoiceData['customer']['tin']
+			$invoiceData['customer']['cin'] === '' || $invoiceData['customer']['tin'] === null
+				? null
+				: $invoiceData['customer']['tin']
 		);
 
 		//cisla
@@ -720,12 +688,12 @@ class InvoiceHelper
 		$invoice->setTaxEnabled($invoiceData['taxEnabled']);
 
 		//Data
-		$invoice->setDate(DateTime::from($invoiceData['date']));
-		$invoice->setDueDate(DateTime::from($invoiceData['dateDue']));
-		if ($invoice instanceof InvoiceProforma) {
-			$invoice->setTaxDate(DateTime::from($invoiceData['date']));
+		$invoice->setDate(new \DateTime($invoiceData['date']));
+		$invoice->setDueDate(new \DateTime($invoiceData['dateDue']));
+		if ($invoice->isProforma()) {
+			$invoice->setTaxDate(new \DateTime($invoiceData['date']));
 		} else {
-			$invoice->setTaxDate(DateTime::from($invoiceData['dateTax']));
+			$invoice->setTaxDate(new \DateTime($invoiceData['dateTax']));
 		}
 
 		//platební metody
@@ -750,11 +718,11 @@ class InvoiceHelper
 
 		$invoice->addHistory($invoiceHistory);
 
-		//Přidaní položek
+		// Add items
 		$this->clearInvoiceItems($invoice);
 		$position = 0;
 		foreach ($invoiceData['items'] as $itemData) {
-			if (!$invoice instanceof FixInvoice || (float) $itemData['count'] !== 0.0) {
+			if (!$invoice->isFix() || (float) $itemData['count'] !== 0.0) {
 				$unit = $this->getUnit($itemData['unit']);
 				$position++;
 				$item = new InvoiceItem(
@@ -769,7 +737,7 @@ class InvoiceHelper
 
 				if (isset($itemData['buyCurrency']['id']) && $itemData['buyCurrency']['id'] !== null) {
 					try {
-						$buyCurrency = $this->currencyManager->get()->getCurrencyById($itemData['buyCurrency']['id']);
+						$buyCurrency = $this->currencyManager->getCurrencyById($itemData['buyCurrency']['id']);
 						$item->setBuyCurrency($buyCurrency);
 					} catch (NoResultException | NonUniqueResultException) {
 						$item->setBuyCurrency(null);
@@ -812,27 +780,26 @@ class InvoiceHelper
 				$invoice->addDepositInvoice($depositInvoice);
 				$depositInvoice->addDepositingInvoice($invoice);
 
-				if ($depositInvoice instanceof InvoiceProforma && $invoice instanceof Invoice) {
-					$depositInvoice->setInvoice($invoice);
+				if ($depositInvoice->isProforma() && $invoice->isRegular()) {
+					$depositInvoice->setSubInvoice($invoice);
 				}
 			} catch (NoResultException | NonUniqueResultException) {
-
 			}
 		}
 
-		$invoice->setStatus(InvoiceStatus::CREATED);
-		$invoice->setAcceptStatus1(InvoiceStatus::WAITING);
-		$invoice->setAcceptStatus2(InvoiceStatus::WAITING);
+		$invoice->setStatus(Invoice::STATUS_CREATED);
+		$invoice->setAcceptStatus1(Invoice::STATUS_WAITING);
+		$invoice->setAcceptStatus2(Invoice::STATUS_WAITING);
 		$invoice->setSubmitted(false);
 
-		if ($invoice instanceof FixInvoice) {
-			$invoice->setPayDate(DateTime::from('NOW'));
-		} elseif ($invoice instanceof Invoice && $invoice->getTotalPrice() === 0.0) {
+		if ($invoice->isFix()) {
+			$invoice->setPayDate(new \DateTime);
+		} elseif ($invoice->isRegular() && $invoice->getTotalPrice() === 0.0) {
 			$proforma = $invoice->getProforma();
 			if ($proforma !== null) {
 				$invoice->setPayDate($proforma->getPayDate());
 			} else {
-				$invoice->setPayDate(DateTime::from('NOW'));
+				$invoice->setPayDate(new \DateTime);
 			}
 		} else {
 			$invoice->setPayDate(null);
@@ -913,19 +880,20 @@ class InvoiceHelper
 	 */
 	public function getDepositList(Company $company): array
 	{
-		/** @var InvoiceProforma[]|Collection $invoices */
-		$invoices = $this->entityManager->getRepository(InvoiceProforma::class)
+		/** @var Invoice[] $invoices */
+		$invoices = $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('proforma')
 				->select('proforma')
 				->where('proforma.company = :companyId')
-				->setParameter('companyId', $company->getId())
+				->andWhere('proforma.type = :type')
 				->andWhere('proforma.invoice IS NULL')
 				->andWhere('proforma.payDate IS NOT NULL')
+				->setParameter('companyId', $company->getId())
+				->setParameter('type', Invoice::TYPE_PROFORMA)
 				->getQuery()
-				->getResult() ?? [];
+				->getResult();
 
 		$ret = [];
-
 		foreach ($invoices as $invoice) {
 			$ret[] = [
 				'number' => $invoice->getNumber(),
@@ -955,7 +923,7 @@ class InvoiceHelper
 	/**
 	 * @throws EntityManagerException
 	 */
-	private function clearInvoiceItems(InvoiceCore $invoice): void
+	private function clearInvoiceItems(Invoice $invoice): void
 	{
 		foreach ($invoice->getItems() as $item) {
 			$invoice->removeItem($item);
@@ -964,9 +932,6 @@ class InvoiceHelper
 	}
 
 
-	/**
-	 * @throws UnitException
-	 */
 	private function getUnit(string $unitId): Unit
 	{
 		static $cache;

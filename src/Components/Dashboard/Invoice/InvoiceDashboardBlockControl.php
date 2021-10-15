@@ -5,16 +5,9 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use App\AdminModule\Presenters\BaseAdminPresenter;
 use Baraja\Doctrine\EntityManager;
-use MatiCore\Cms\Dashboard\DashboardBlockControl;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManagerAccessor;
-use MatiCore\Currency\Number;
-use MatiCore\DataGrid\MatiDataGrid;
 use Nette\Security\User;
 use Nette\Utils\Strings;
-use Ublaboo\DataGrid\Exception\DataGridException;
 
 class InvoiceDashboardBlockControl extends DashboardBlockControl
 {
@@ -33,7 +26,10 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 
 	public function __construct(
-		?array $acceptRights, User $user, EntityManager $entityManager, CurrencyManagerAccessor $currencyManager
+		?array $acceptRights,
+		User $user,
+		EntityManager $entityManager,
+		CurrencyManagerAccessor $currencyManager
 	) {
 		$this->acceptRights = $acceptRights;
 		$this->user = $user;
@@ -81,7 +77,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid = new MatiDataGrid($this, $name);
 
-		$query = $this->entityManager->getRepository(InvoiceCore::class)
+		$query = $this->entityManager->getRepository(Invoice::class)
 			->createQueryBuilder('invoice')
 			->select('invoice')
 			->where('invoice.deleted = :f')
@@ -92,30 +88,28 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 			$query->andWhere('invoice.submitted = :f')
 				->setParameter('f', 0)
 				->addOrderBy('invoice.number', 'DESC');
+		} elseif ($this->getPresenter()->checkAccess('page__invoice__accept-B')) {
+			$query->orderBy('invoice.number', 'ASC');
+			$query->andWhere('invoice.acceptStatus1 = :status1')
+				->setParameter('status1', Invoice::STATUS_ACCEPTED);
+			$query->andWhere('invoice.acceptStatus2 = :status2')
+				->setParameter('status2', Invoice::STATUS_WAITING);
+		} elseif ($this->getPresenter()->checkAccess('page__invoice__accept-A')) {
+			$query->orderBy('invoice.number', 'ASC');
+			$query->andWhere('invoice.submitted = :submitted')
+				->setParameter('submitted', true)
+				->andWhere('invoice.acceptStatus1 = :status')
+				->setParameter('status', Invoice::STATUS_WAITING);
 		} else {
-			if ($this->getPresenter()->checkAccess('page__invoice__accept-B')) {
-				$query->orderBy('invoice.number', 'ASC');
-				$query->andWhere('invoice.acceptStatus1 = :status1')
-					->setParameter('status1', InvoiceStatus::ACCEPTED);
-				$query->andWhere('invoice.acceptStatus2 = :status2')
-					->setParameter('status2', InvoiceStatus::WAITING);
-			} elseif ($this->getPresenter()->checkAccess('page__invoice__accept-A')) {
-				$query->orderBy('invoice.number', 'ASC');
-				$query->andWhere('invoice.submitted = :submitted')
-					->setParameter('submitted', true)
-					->andWhere('invoice.acceptStatus1 = :status')
-					->setParameter('status', InvoiceStatus::WAITING);
-			} else {
-				$query->orderBy('invoice.acceptStatus1', 'DESC');
-				$query->addOrderBy('invoice.acceptStatus2', 'DESC');
-				$query->addOrderBy('invoice.number', 'DESC');
-				$query->andWhere(
-					'(invoice.submitted = :f OR invoice.acceptStatus1 = :status1 OR invoice.acceptStatus2 = :status2)'
-				)
-					->setParameter('f', 0)
-					->setParameter('status1', InvoiceStatus::DENIED)
-					->setParameter('status2', InvoiceStatus::DENIED);
-			}
+			$query->orderBy('invoice.acceptStatus1', 'DESC');
+			$query->addOrderBy('invoice.acceptStatus2', 'DESC');
+			$query->addOrderBy('invoice.number', 'DESC');
+			$query->andWhere(
+				'(invoice.submitted = :f OR invoice.acceptStatus1 = :status1 OR invoice.acceptStatus2 = :status2)'
+			)
+				->setParameter('f', 0)
+				->setParameter('status1', Invoice::STATUS_DENIED)
+				->setParameter('status2', Invoice::STATUS_DENIED);
 		}
 
 		$grid->setDataSource($query);
@@ -124,16 +118,14 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid->addColumnText('number', 'Číslo')
 			->setRenderer(
-				function (InvoiceCore $invoice): string
+				function (Invoice $invoice): string
 				{
 					$link = $this->getPresenter()->link('Invoice:show', ['id' => $invoice->getId(), 'ret' => 1]);
 
 					return '<a href="' . $link . '">' . $invoice->getNumber() . '</a>'
 						. '<br>'
-						. '<small class="'
-						. InvoiceStatus::getColorByStatus($invoice->getStatus())
-						. '">'
-						. InvoiceStatus::getNameByStatus($invoice->getStatus())
+						. '<small class="' . $invoice->getColor() . '">'
+						. htmlspecialchars($invoice->getLabel())
 						. '</small>';
 				}
 			)
@@ -141,7 +133,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid->addColumnText('company', 'Firma')
 			->setRenderer(
-				function (InvoiceCore $invoice): string
+				function (Invoice $invoice): string
 				{
 					if ($invoice->getCompany() !== null) {
 						$link = $this->getPresenter()->link(
@@ -167,7 +159,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid->addColumnText('date', 'Vystaveno')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore): string
+				static function (Invoice $invoiceCore): string
 				{
 					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
 							->getName() . '</small>';
@@ -177,7 +169,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid->addColumnText('taxDate', 'Daň. plnění')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore): string
+				static function (Invoice $invoiceCore): string
 				{
 					if ($invoiceCore->isProforma()) {
 						return '<span class="text-info">Záloha</span><br>&nbsp;';
@@ -190,7 +182,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid->addColumnText('dueDate', 'Splatnost')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore): string
+				static function (Invoice $invoiceCore): string
 				{
 					$ret = $invoiceCore->getDueDate()->format('d.m.Y');
 
@@ -225,7 +217,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid->addColumnText('price', 'Částka')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore) use ($currency): string
+				static function (Invoice $invoiceCore) use ($currency): string
 				{
 					return '<b>' . Number::formatPrice(
 							$invoiceCore->getTotalPrice(), $invoiceCore->getCurrency(), 2
@@ -242,7 +234,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 		if ($this->acceptRights !== null) {
 			$grid->addColumnText('accept', 'Schválení')
 				->setRenderer(
-					function (InvoiceCore $invoiceCore): string
+					function (Invoice $invoiceCore): string
 					{
 						if ($invoiceCore->isSubmitted() === false) {
 							return '<span class="text-warning">Editace</span>';
@@ -290,7 +282,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$grid->addAction('detail', 'Detail')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore)
+				function (Invoice $invoiceCore)
 				{
 					$link = $this->getPresenter()->link('Invoice:show', ['id' => $invoiceCore->getId(), 'ret' => 1]);
 

@@ -6,16 +6,11 @@ namespace MatiCore\Invoice;
 
 
 use Doctrine\ORM\EntityManager;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManager;
-use MatiCore\Currency\Number;
-use MatiCore\Utils\Date;
 use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
 use Mpdf\MpdfException;
 use Mpdf\Output\Destination;
 use Nette\Application\UI\ITemplateFactory;
-use Nette\Utils\DateTime;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Strings;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -81,23 +76,25 @@ class ExportManager
 
 		foreach ($invoices as $invoice) {
 			$tmpFile = $this->tempDir . '/export/' . $invoice->getNumber() . '.pdf';
-			$this->exportInvoiceToPDF($invoice, Destination::FILE, $tmpFile);
+			$this->exportInvoiceToPdf($invoice, Destination::FILE, $tmpFile);
 			$files[] = $tmpFile;
 		}
 
 		return $this->mergePDF(
-			$files, Destination::DOWNLOAD, $this->config['invoice']['filename'] . date('Ymd_His') . '.pdf'
+			$files,
+			Destination::DOWNLOAD,
+			$this->config['invoice']['filename'] . date('Ymd_His') . '.pdf'
 		);
 	}
 
 
-	public function getExportInvoiceFileName(InvoiceCore $invoice): string
+	public function getExportInvoiceFileName(Invoice $invoice): string
 	{
-		if ($invoice instanceof Invoice) {
+		if ($invoice->isRegular()) {
 			$name = $this->config['invoice']['filename'] . $invoice->getNumber() . '.pdf';
-		} elseif ($invoice instanceof FixInvoice) {
+		} elseif ($invoice->isFix()) {
 			$name = $this->config['fixInvoice']['filename'] . $invoice->getNumber() . '.pdf';
-		} elseif ($invoice instanceof InvoicePayDocument) {
+		} elseif ($invoice->isPayDocument()) {
 			$name = $this->config['payDocument']['filename'] . $invoice->getNumber() . '.pdf';
 		} else {
 			$name = $this->config['proforma']['filename'] . $invoice->getNumber() . '.pdf';
@@ -110,18 +107,18 @@ class ExportManager
 	/**
 	 * @throws CurrencyException|MpdfException
 	 */
-	public function exportInvoiceToPDF(
-		InvoiceCore $invoice,
+	public function exportInvoiceToPdf(
+		Invoice $invoice,
 		string $destination = Destination::DOWNLOAD,
 		?string $file = null
 	): ?string {
 		$name = $this->getExportInvoiceFileName($invoice);
 
-		$template = $this->templateFactory->createTemplate();
-		$template->color = $this->getColorByInvoiceDocument($invoice);
-		$template->templateData = $this->getInvoiceTemplateData($invoice);
-		$template->invoice = $invoice;
-		$template->currency = $this->currencyManager->getDefaultCurrency();
+		$params = [];
+		$params['color'] = $this->getColorByInvoiceDocument($invoice);
+		$params['templateData'] = $this->getInvoiceTemplateData($invoice);
+		$params['invoice'] = $invoice;
+		$params['currency'] = $this->currencyManager->getDefaultCurrency();
 		$pageBreaker = new PdfPageBreaker($invoice->getCurrency(), 23);
 
 		if ($invoice->getCurrency()->getCode() !== 'CZK') {
@@ -138,17 +135,17 @@ class ExportManager
 			}
 		}
 
-		$template->pageBreaker = $pageBreaker;
-		$template->beforeTextPBI = $this->getTextPBI($invoice->getTextBeforeItems());
-		$template->afterTextPBI = $this->getTextPBI($invoice->getTextAfterItems(), 45, 2);
+		$params['pageBreaker'] = $pageBreaker;
+		$params['beforeTextPBI'] = $this->getTextPBI($invoice->getTextBeforeItems());
+		$params['afterTextPBI'] = $this->getTextPBI($invoice->getTextAfterItems(), 45, 2);
 
-		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['template'])) {
+		if ($invoice->isFix() && isset($this->config['fixInvoice']['template'])) {
 			$templateFile = $this->config['fixInvoice']['template'];
 			$styleFile = $this->config['fixInvoice']['style'] ?? null;
-		} elseif ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['template'])) {
+		} elseif ($invoice->isPayDocument() && isset($this->config['payDocument']['template'])) {
 			$templateFile = $this->config['payDocument']['template'];
 			$styleFile = $this->config['payDocument']['style'] ?? null;
-		} elseif ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['template'])) {
+		} elseif ($invoice->isProforma() && isset($this->config['proforma']['template'])) {
 			$templateFile = $this->config['proforma']['template'];
 			$styleFile = $this->config['proforma']['style'] ?? null;
 		} else {
@@ -160,15 +157,15 @@ class ExportManager
 			$templateFile = __DIR__ . '/../Templates/Pdf/Invoice/invoice.latte';
 		}
 
-		$template->setFile($templateFile);
-		$html = $template->renderToString();
+		$html = $this->templateFactory->createTemplate()
+			->renderToString($templateFile, $params);
 
 		if ($styleFile === null || $styleFile === '') {
 			$styleFile = __DIR__ . '/../Templates/Pdf/Invoice/invoice.css';
 		}
 
 		$style = FileSystem::read($styleFile);
-		$style = str_replace('__COLOR__', $template->color, $style);
+		$style = str_replace('__COLOR__', $params['color'], $style);
 
 		$pdf = new Mpdf();
 		$pdf->SetAuthor($this->config['author']);
@@ -235,11 +232,11 @@ class ExportManager
 	 */
 	public function exportInvoiceAlertToPDF(
 		int $alertNumber,
-		InvoiceCore $invoice,
+		Invoice $invoice,
 		\DateTime $newDueDate,
 		string $destination = Destination::DOWNLOAD,
 		?string $file = null
-	): void {
+	): ?string {
 		$template = $this->templateFactory->createTemplate();
 		$template->invoice = $invoice;
 		$template->newDueDate = $newDueDate;
@@ -299,7 +296,7 @@ class ExportManager
 	 * @throws MpdfException
 	 */
 	public function exportInvoiceAlertOneToPDF(
-		InvoiceCore $invoice,
+		Invoice $invoice,
 		\DateTime $newDueDate,
 		string $destination = Destination::DOWNLOAD,
 		?string $file = null
@@ -308,11 +305,8 @@ class ExportManager
 	}
 
 
-	/**
-	 * @throws MpdfException
-	 */
 	public function exportInvoiceAlertTwoToPDF(
-		InvoiceCore $invoice,
+		Invoice $invoice,
 		\DateTime $newDueDate,
 		string $destination = Destination::DOWNLOAD,
 		?string $file = null
@@ -321,11 +315,8 @@ class ExportManager
 	}
 
 
-	/**
-	 * @throws MpdfException
-	 */
 	public function exportInvoiceAlertThreeToPDF(
-		InvoiceCore $invoice,
+		Invoice $invoice,
 		\DateTime $newDueDate,
 		string $destination = Destination::DOWNLOAD,
 		?string $file = null
@@ -335,8 +326,7 @@ class ExportManager
 
 
 	/**
-	 * @param InvoiceCore[] $invoices
-	 * @throws CurrencyException|MpdfException
+	 * @param Invoice[] $invoices
 	 */
 	public function exportInvoiceSummaryToPDF(
 		array $invoices,
@@ -356,7 +346,7 @@ class ExportManager
 				'company' => Strings::truncate($invoice->getCustomerName(), 40),
 				'ic' => $invoice->getCustomerCin(),
 				'date' => $invoice->getDate()->format('d.m.Y'),
-				'dateTax' => ($invoice instanceof InvoiceProforma ? '' : $invoice->getTaxDate()->format('d.m.Y')),
+				'dateTax' => ($invoice->isProforma() ? '' : $invoice->getTaxDate()->format('d.m.Y')),
 				'dueDate' => $invoice->getDueDate()->format('d.m.Y'),
 				'payDate' => ($invoice->getPayDate() === null ? '' : $invoice->getPayDate()->format('d.m.Y')),
 				'tax' => Number::formatPrice($invoice->getTotalTax() * $invoice->getRate(), $currency, 2),
@@ -376,7 +366,7 @@ class ExportManager
 		$template->data = $data;
 		$template->totalTax = $totalTax;
 		$template->totalPrice = $totalPrice;
-		$template->dateNow = DateTime::from('NOW');
+		$template->dateNow = new \DateTime;
 
 		$templateFile = $this->config['summary']['template'];
 		if ($templateFile === null || $templateFile === '') {
@@ -409,15 +399,12 @@ class ExportManager
 	}
 
 
-	/**
-	 * @throws \Exception
-	 */
 	public function exportIntrastatToXLS(\DateTime $date): void
 	{
 		$date->modify('first day of this month');
-		$startDate = DateTime::from($date->format('Y-m-d') . ' 00:00:00');
+		$startDate = new \DateTime($date->format('Y-m-d') . ' 00:00:00');
 		$date->modify('+1 month');
-		$stopDate = DateTime::from($date->format('Y-m-d') . ' 00:00:00');
+		$stopDate = new \DateTime($date->format('Y-m-d') . ' 00:00:00');
 
 		/** @var ExpenseInvoice[] $expenseList */
 		$expenseList = $this->entityManager->getRepository(ExpenseInvoice::class)
@@ -544,20 +531,19 @@ class ExportManager
 		header('Cache-Control: max-age=0');
 
 		$writer->save('php://output');
-
 		die;
 	}
 
 
-	public function getColorByInvoiceDocument(InvoiceCore $invoice): string
+	public function getColorByInvoiceDocument(Invoice $invoice): string
 	{
-		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['color'])) {
+		if ($invoice->isFix() && isset($this->config['fixInvoice']['color'])) {
 			return $this->config['fixInvoice']['color'];
 		}
-		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['color'])) {
+		if ($invoice->isPayDocument() && isset($this->config['payDocument']['color'])) {
 			return $this->config['payDocument']['color'];
 		}
-		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['color'])) {
+		if ($invoice->isProforma() && isset($this->config['proforma']['color'])) {
 			return $this->config['proforma']['color'];
 		}
 
@@ -583,15 +569,15 @@ class ExportManager
 	}
 
 
-	public function getDescription(InvoiceCore $invoice): ?string
+	public function getDescription(Invoice $invoice): ?string
 	{
-		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['description'])) {
+		if ($invoice->isFix() && isset($this->config['fixInvoice']['description'])) {
 			return $this->config['fixInvoice']['description'];
 		}
-		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['description'])) {
+		if ($invoice->isPayDocument() && isset($this->config['payDocument']['description'])) {
 			return $this->config['payDocument']['description'];
 		}
-		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['description'])) {
+		if ($invoice->isProforma() && isset($this->config['proforma']['description'])) {
 			return $this->config['proforma']['description'];
 		}
 
@@ -599,15 +585,15 @@ class ExportManager
 	}
 
 
-	public function getAdditionalDescription(InvoiceCore $invoice): ?string
+	public function getAdditionalDescription(Invoice $invoice): ?string
 	{
-		if ($invoice instanceof FixInvoice && isset($this->config['fixInvoice']['additionalDescription'])) {
+		if ($invoice->isFix() && isset($this->config['fixInvoice']['additionalDescription'])) {
 			return $this->config['fixInvoice']['additionalDescription'];
 		}
-		if ($invoice instanceof InvoicePayDocument && isset($this->config['payDocument']['additionalDescription'])) {
+		if ($invoice->isPayDocument() && isset($this->config['payDocument']['additionalDescription'])) {
 			return $this->config['payDocument']['additionalDescription'];
 		}
-		if ($invoice instanceof InvoiceProforma && isset($this->config['proforma']['additionalDescription'])) {
+		if ($invoice->isProforma() && isset($this->config['proforma']['additionalDescription'])) {
 			return $this->config['proforma']['additionalDescription'];
 		}
 
@@ -616,9 +602,9 @@ class ExportManager
 
 
 	/**
-	 * @return array<string|null>
+	 * @return array<string, string|null>
 	 */
-	public function getInvoiceTemplateData(InvoiceCore $invoice): array
+	public function getInvoiceTemplateData(Invoice $invoice): array
 	{
 		return [
 			'companyDescription' => $this->getCompanyDescription(),

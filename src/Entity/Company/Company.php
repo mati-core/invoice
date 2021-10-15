@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace MatiCore\Company;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Address\Entity\Address;
-use MatiCore\Currency\Currency;
-use Nette\SmartObject;
 
 /**
  * @ORM\Entity()
@@ -18,8 +15,12 @@ use Nette\SmartObject;
  */
 class Company
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
+
+	public const
+		TYPE_STANDARD = 'standard',
+		TYPE_VIP = 'vip',
+		TYPE_CONTRACT = 'contract';
 
 	/** @ORM\Column(type="string") */
 	private string $name;
@@ -27,7 +28,8 @@ class Company
 	/**
 	 * @var CompanyStock[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyStock", mappedBy="company")
-	 * @ORM\OrderBy({"name"="ASC"}) */
+	 * @ORM\OrderBy({"name"="ASC"})
+	 */
 	private array|Collection $stocks;
 
 	/**
@@ -45,7 +47,8 @@ class Company
 	/**
 	 * @var CompanyContact[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyContact", mappedBy="company")
-	 * @ORM\OrderBy({"lastName"="ASC","firstName"="ASC"}) */
+	 * @ORM\OrderBy({"lastName"="ASC","firstName"="ASC"})
+	 */
 	private array|Collection $contacts;
 
 	/** @ORM\Column(type="boolean") */
@@ -209,5 +212,4 @@ class Company
 	{
 		$this->sendInvoicesInOneFile = $sendInvoicesInOneFile;
 	}
-
 }

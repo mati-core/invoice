@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Currency\Currency;
-use MatiCore\Unit\Unit;
-use Nette\SmartObject;
 
 /**
  * @ORM\Entity()
@@ -17,11 +14,10 @@ use Nette\SmartObject;
  */
 class InvoiceItem
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="items") */
-	private InvoiceCore $invoice;
+	/** @ORM\ManyToOne(targetEntity="Invoice", inversedBy="items") */
+	private Invoice $invoice;
 
 	/** @ORM\Column(type="string") */
 	private string $description;
@@ -33,7 +29,8 @@ class InvoiceItem
 	private float $quantity;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Unit\Unit")
-	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id") */
+	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id")
+	 */
 	private Unit $unit;
 
 	/** @ORM\Column(type="float") */
@@ -46,7 +43,8 @@ class InvoiceItem
 	private float|null $buyPrice;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="buy_curreny_id", referencedColumnName="id", nullable=true) */
+	 * @ORM\JoinColumn(name="buy_curreny_id", referencedColumnName="id", nullable=true)
+	 */
 	private Currency|null $buyCurrency;
 
 	/** @ORM\Column(type="integer") */
@@ -60,7 +58,7 @@ class InvoiceItem
 
 
 	public function __construct(
-		InvoiceCore $invoice,
+		Invoice $invoice,
 		string $description,
 		float $quantity,
 		Unit $unit,
@@ -74,13 +72,13 @@ class InvoiceItem
 	}
 
 
-	public function getInvoice(): InvoiceCore
+	public function getInvoice(): Invoice
 	{
 		return $this->invoice;
 	}
 
 
-	public function setInvoice(InvoiceCore $invoice): void
+	public function setInvoice(Invoice $invoice): void
 	{
 		$this->invoice = $invoice;
 	}

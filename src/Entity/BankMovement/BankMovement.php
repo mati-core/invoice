@@ -6,12 +6,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
-use DateTime;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Currency\Currency;
-use Nette\SmartObject;
-use Nette\Utils\DateTime as UDateTime;
 
 /**
  * @ORM\Entity()
@@ -30,8 +26,7 @@ class BankMovement
 		STATUS_IS_PAID = 'is-paid',
 		STATUS_SYSTEM_ERROR = 'error';
 
-	use UuidIdentifier;
-	use SmartObject;
+	use IdentifierUnsigned;
 
 	/** @ORM\Column(type="string") */
 	private string $messageId;
@@ -40,10 +35,10 @@ class BankMovement
 	private string $status = self::STATUS_NOT_PROCESSED;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore")
+	 * @ORM\ManyToOne(targetEntity="Invoice")
 	 * @ORM\JoinColumn(name="invoice_id", referencedColumnName="id", nullable=true)
 	 */
-	private InvoiceCore|null $invoice;
+	private Invoice|null $invoice;
 
 	/** @ORM\Column(type="string") */
 	private string $bankAccountName;
@@ -79,10 +74,10 @@ class BankMovement
 	private float $price;
 
 	/** @ORM\Column(type="date") */
-	private DateTime $date;
+	private \DateTime $date;
 
 	/** @ORM\Column(type="datetime") */
-	private DateTime $createDate;
+	private \DateTime $createDate;
 
 
 	public function __construct(
@@ -94,7 +89,7 @@ class BankMovement
 		string $customerBankAccount,
 		string $variableSymbol,
 		float $price,
-		DateTime $date
+		\DateTime $date
 	) {
 		$this->messageId = $messageId;
 		$this->bankAccountName = $bankAccountName;
@@ -105,7 +100,7 @@ class BankMovement
 		$this->variableSymbol = $variableSymbol;
 		$this->price = $price;
 		$this->date = $date;
-		$this->createDate = UDateTime::from('NOW');
+		$this->createDate = new \DateTime;
 	}
 
 
@@ -127,13 +122,13 @@ class BankMovement
 	}
 
 
-	public function getInvoice(): ?InvoiceCore
+	public function getInvoice(): ?Invoice
 	{
 		return $this->invoice;
 	}
 
 
-	public function setInvoice(?InvoiceCore $invoice): void
+	public function setInvoice(?Invoice $invoice): void
 	{
 		$this->invoice = $invoice;
 	}
@@ -259,19 +254,19 @@ class BankMovement
 	}
 
 
-	public function getDate(): DateTime
+	public function getDate(): \DateTime
 	{
 		return $this->date;
 	}
 
 
-	public function setDate(DateTime $date): void
+	public function setDate(\DateTime $date): void
 	{
 		$this->date = $date;
 	}
 
 
-	public function getCreateDate(): DateTime
+	public function getCreateDate(): \DateTime
 	{
 		return $this->createDate;
 	}

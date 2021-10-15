@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
+use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
@@ -14,29 +15,16 @@ use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use MatiCore\Company\CompanyManager;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManager;
-use MatiCore\Currency\Number;
-use MatiCore\DataGrid\MatiDataGrid;
-use MatiCore\Form\FormFactoryTrait;
 use MatiCore\Invoice\BankMovement;
 use MatiCore\Invoice\BankMovementCronLogAccessor;
 use MatiCore\Invoice\BankMovementManagerAccessor;
 use MatiCore\Invoice\BankMovementStatus;
 use MatiCore\Invoice\ExportManagerAccessor;
-use MatiCore\Invoice\FixInvoice;
-use MatiCore\Invoice\Invoice;
 use MatiCore\Invoice\InvoiceComment;
-use MatiCore\Invoice\InvoiceCore;
+use MatiCore\Invoice\Invoice;
 use MatiCore\Invoice\InvoiceException;
 use MatiCore\Invoice\InvoiceHistory;
 use MatiCore\Invoice\InvoiceManagerAccessor;
-use MatiCore\Invoice\InvoiceProforma;
-use MatiCore\Invoice\InvoiceStatus;
-use MatiCore\Unit\UnitManager;
-use MatiCore\User\BaseUser;
-use MatiCore\User\StorageIdentity;
-use MatiCore\Utils\Date;
 use Mpdf\MpdfException;
 use Nette\Application\AbortException;
 use Nette\Application\UI\Form;
@@ -46,7 +34,6 @@ use Nette\Utils\JsonException;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use Tracy\Debugger;
-use Ublaboo\DataGrid\Exception\DataGridException;
 
 #[PublicEndpoint]
 class CmsInvoiceEndpoint extends BaseEndpoint
@@ -56,12 +43,13 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 	use FormFactoryTrait;
 
-	private InvoiceCore|null $editedInvoice;
+	private Invoice|null $editedInvoice;
 
 	private int $returnButton = 0;
 
 
 	public function __construct(
+		private EntityManager $entityManager,
 		private CompanyManager $companyManager,
 		private InvoiceManagerAccessor $invoiceManager,
 		private CurrencyManager $currencyManager,
@@ -166,7 +154,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		try {
 			$invoice = $this->invoiceManager->get()->getInvoiceById($id);
 
-			$this->exportManager->get()->exportInvoiceToPDF($invoice);
+			$this->exportManager->get()->exportInvoiceToPdf($invoice);
 		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Faktura nebyla nalezena.', 'error');
 			$this->redirect('default');
@@ -186,14 +174,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	{
 		try {
 			$proforma = $this->invoiceManager->get()->getInvoiceById($id);
-
-			if (!$proforma instanceof InvoiceProforma) {
+			if ($proforma->isProforma() === false) {
 				$this->flashMessage('Fakturu lze generovat pouze ze zálohé faktury.', 'error');
 				$this->redirect('show', ['id' => $id]);
 			}
 
 			$invoice = $this->invoiceManager->get()->createInvoiceFromInvoiceProforma($proforma);
-
 			$this->flashMessage('Faktura byla úspěšně vygenerována.', 'success');
 			$this->redirect('detail', ['id' => $invoice->getId()]);
 		} catch (NoResultException | NonUniqueResultException $e) {
@@ -231,16 +217,16 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		try {
 			$invoice = $this->invoiceManager->get()->getInvoiceById($invoiceId);
 			$invoice->setSubmitted(true);
-			$invoice->setStatus(InvoiceStatus::WAITING);
+			$invoice->setStatus(Invoice::STATUS_WAITING);
 
 			$entities[] = $invoice;
 
 			$sendEmail = false;
 
 			if ($this->invoiceManager->get()->getAcceptSetting() === null) {
-				$invoice->setAcceptStatus1(InvoiceStatus::ACCEPTED);
-				$invoice->setAcceptStatus2(InvoiceStatus::ACCEPTED);
-				$invoice->setStatus(InvoiceStatus::ACCEPTED);
+				$invoice->setAcceptStatus1(Invoice::STATUS_ACCEPTED);
+				$invoice->setAcceptStatus2(Invoice::STATUS_ACCEPTED);
+				$invoice->setStatus(Invoice::STATUS_ACCEPTED);
 				$invoice->setClosed(true);
 
 				/** @var BaseUser $user */
@@ -254,9 +240,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->addHistory($history);
 				$entities[] = $history;
 
-				if ($invoice instanceof FixInvoice) {
+				if ($invoice->isFix()) {
 					$this->flashMessage('Opravný daňový doklad byl odevzdán a schválen.', 'success');
-				} elseif ($invoice instanceof InvoiceProforma) {
+				} elseif ($invoice->isProforma()) {
 					$this->flashMessage('Proforma byla odevzdána a schválena.', 'success');
 				} else {
 					$this->flashMessage('Faktura byla odevzdána a schválena.', 'success');
@@ -264,9 +250,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 				$sendEmail = true;
 			} elseif ($this->checkAccess('page__invoice__accept-B')) {
-				$invoice->setAcceptStatus1(InvoiceStatus::ACCEPTED);
-				$invoice->setAcceptStatus2(InvoiceStatus::ACCEPTED);
-				$invoice->setStatus(InvoiceStatus::ACCEPTED);
+				$invoice->setAcceptStatus1(Invoice::STATUS_ACCEPTED);
+				$invoice->setAcceptStatus2(Invoice::STATUS_ACCEPTED);
+				$invoice->setStatus(Invoice::STATUS_ACCEPTED);
 				$invoice->setClosed(true);
 
 				/** @var BaseUser $user */
@@ -280,9 +266,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->addHistory($history);
 				$entities[] = $history;
 
-				if ($invoice instanceof FixInvoice) {
+				if ($invoice->isFix()) {
 					$this->flashMessage('Opravný daňový doklad byl odevzdán a schválen.', 'success');
-				} elseif ($invoice instanceof InvoiceProforma) {
+				} elseif ($invoice->isProforma()) {
 					$this->flashMessage('Proforma byla odevzdána a schválena.', 'success');
 				} else {
 					$this->flashMessage('Faktura byla odevzdána a schválena.', 'success');
@@ -290,8 +276,8 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 				$sendEmail = true;
 			} elseif ($this->checkAccess('page__invoice__accept-A')) {
-				$invoice->setAcceptStatus1(InvoiceStatus::ACCEPTED);
-				$invoice->setAcceptStatus2(InvoiceStatus::WAITING);
+				$invoice->setAcceptStatus1(Invoice::STATUS_ACCEPTED);
+				$invoice->setAcceptStatus2(Invoice::STATUS_WAITING);
 
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
@@ -304,16 +290,16 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->addHistory($history);
 				$entities[] = $history;
 
-				if ($invoice instanceof FixInvoice) {
+				if ($invoice->isFix()) {
 					$this->flashMessage('Opravný daňový doklad byl odevzdán a odeslán ke schválení.', 'info');
-				} elseif ($invoice instanceof InvoiceProforma) {
+				} elseif ($invoice->isProforma()) {
 					$this->flashMessage('Proforma byla odevzdána a odeslána ke schválení.', 'info');
 				} else {
 					$this->flashMessage('Faktura byla odevzdána a odeslána ke schválení.', 'info');
 				}
 			} else {
-				$invoice->setAcceptStatus1(InvoiceStatus::WAITING);
-				$invoice->setAcceptStatus2(InvoiceStatus::WAITING);
+				$invoice->setAcceptStatus1(Invoice::STATUS_WAITING);
+				$invoice->setAcceptStatus2(Invoice::STATUS_WAITING);
 
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
@@ -324,9 +310,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->addHistory($history);
 				$entities[] = $history;
 
-				if ($invoice instanceof FixInvoice) {
+				if ($invoice->isFix()) {
 					$this->flashMessage('Opravný daňový doklad byl odevzdán ke schválení.', 'info');
-				} elseif ($invoice instanceof InvoiceProforma) {
+				} elseif ($invoice->isProforma()) {
 					$this->flashMessage('Proforma byla odevzdána ke schválení.', 'info');
 				} else {
 					$this->flashMessage('Faktura byla odevzdána ke schválení.', 'info');
@@ -361,14 +347,14 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 			$invoice = $this->invoiceManager->get()->getInvoiceById($invoiceId);
 
 			if ($type === 'A') {
-				$invoice->setAcceptStatus1(InvoiceStatus::ACCEPTED);
+				$invoice->setAcceptStatus1(Invoice::STATUS_ACCEPTED);
 			} else {
-				$invoice->setAcceptStatus2(InvoiceStatus::ACCEPTED);
+				$invoice->setAcceptStatus2(Invoice::STATUS_ACCEPTED);
 			}
 
 			$sendEmail = false;
 			if ($invoice->isReady()) {
-				$invoice->setStatus(InvoiceStatus::ACCEPTED);
+				$invoice->setStatus(Invoice::STATUS_ACCEPTED);
 				$invoice->setClosed(true);
 				$sendEmail = true;
 			}
@@ -439,13 +425,13 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		{
 			try {
 				$this->editedInvoice->setPayDate($values->date);
-				$this->editedInvoice->setStatus(InvoiceStatus::PAID);
+				$this->editedInvoice->setStatus(Invoice::STATUS_PAID);
 
 				/** @var BaseUser|null $user */
 				$user = $this->getUser()->getIdentity()->getUser();
-				$text = ($this->editedInvoice instanceof InvoiceProforma ? 'Proforma' : 'Faktura') . ' uhrazena dne ' . $values->date->format(
-						'd.m.Y'
-					);
+				$text = ($this->editedInvoice->isProforma() ? 'Proforma' : 'Faktura')
+					. ' uhrazena dne '
+					. $values->date->format('d.m.Y');
 				$history = new InvoiceHistory($this->editedInvoice, $text);
 				$history->setUser($user);
 
@@ -453,11 +439,11 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$this->editedInvoice->addHistory($history);
 				$this->entityManager->flush();
 
-				if ($this->editedInvoice instanceof InvoiceProforma) {
+				if ($this->editedInvoice->isProforma()) {
 					$pd = $this->invoiceManager->get()->createPayDocumentFromInvoice($this->editedInvoice);
-
 					$this->flashMessage(
-						'Proforma byla uhrazena a byl vygenerován doklad o zaplacení č.:' . $pd->getNumber(), 'success'
+						'Proforma byla uhrazena a byl vygenerován doklad o zaplacení č.:' . $pd->getNumber(),
+						'success'
 					);
 					$this->redirect('show', ['id' => $pd->getId()]);
 				}
@@ -650,43 +636,44 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$grid = new MatiDataGrid($this, $name);
 
 		$grid->setDataSource(
-			$this->entityManager->getRepository(InvoiceCore::class)
+			$this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('invoice')
 				->select('invoice, company, u1')
 				->leftJoin('invoice.company', 'company')
 				->join('invoice.createUser', 'u1')
 				->leftJoin('invoice.depositingInvoices', 'deposit')
-				->where('invoice.deleted = :f')
-				->setParameter('f', 0)
-				->andWhere(
-					'invoice INSTANCE OF ' . Invoice::class . ' OR invoice INSTANCE OF ' . InvoiceProforma::class
-				)
+				->andWhere('invoice.deleted = FALSE')
+				->andWhere('invoice.type IN (:types)')
+				->setParameter('types', [
+					Invoice::TYPE_REGULAR,
+					Invoice::TYPE_PROFORMA,
+				])
 				->orderBy('invoice.number', 'DESC')
 		);
 
 		$grid->setRowCallback(
-			static function (InvoiceCore $invoice, Html $row): void
+			static function (Invoice $invoice, Html $row): void
 			{
 				$status = $invoice->getStatus();
-				if ($status === InvoiceStatus::ACCEPTED) {
+				if ($status === Invoice::STATUS_ACCEPTED) {
 					$row->addClass('table-success');
 
 					return;
 				}
 
-				if ($status === InvoiceStatus::DENIED) {
+				if ($status === Invoice::STATUS_DENIED) {
 					$row->addClass('table-danger');
 
 					return;
 				}
 
-				if ($status === InvoiceStatus::CREATED) {
+				if ($status === Invoice::STATUS_CREATED) {
 					$row->addClass('table-warning');
 
 					return;
 				}
 
-				if ($status === InvoiceStatus::PAY_ALERT_THREE) {
+				if ($status === Invoice::STATUS_PAY_ALERT_THREE) {
 					$row->addClass('table-danger');
 
 					return;
@@ -696,16 +683,14 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('number', 'Číslo')
 			->setRenderer(
-				function (InvoiceCore $invoice): string
+				function (Invoice $invoice): string
 				{
 					$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
 
 					return '<a href="' . $link . '">' . $invoice->getNumber() . '</a>'
 						. '<br>'
-						. '<small class="'
-						. InvoiceStatus::getColorByStatus($invoice->getStatus())
-						. '">'
-						. InvoiceStatus::getNameByStatus($invoice->getStatus())
+						. '<small class="' . $invoice->getColor() . '">'
+						. htmlspecialchars($invoice->getLabel())
 						. '</small>';;
 				}
 			)
@@ -714,7 +699,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('company', 'Firma')
 			->setRenderer(
-				function (InvoiceCore $invoice): string
+				function (Invoice $invoice): string
 				{
 					if ($invoice->getCompany() !== null) {
 						$link = $this->link('Company:detail', ['id' => $invoice->getCompany()->getId()]);
@@ -738,7 +723,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('date', 'Vystaveno')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore): string
+				static function (Invoice $invoiceCore): string
 				{
 					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
 							->getName() . '</small>';
@@ -748,10 +733,10 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('taxDate', 'Daň. plnění')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore): string
+				function (Invoice $invoiceCore): string
 				{
 					if ($invoiceCore->isProforma()) {
-						$invoice = $invoiceCore->getInvoice();
+						$invoice = $invoiceCore->getSubInvoice();
 						if ($invoice !== null) {
 							$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
 							$str = '<small><a href="' . $link . '" title="Faktura"><i class="fas fa-file-invoice"></i>&nbsp;' . $invoice->getNumber(
@@ -765,7 +750,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 					$str = '<small>&nbsp;</small>';
 
-					/** @var FixInvoice $fixInvoice */
+					/** @var Invoice $fixInvoice */
 					$fixInvoice = $invoiceCore->getFixInvoice();
 					if ($fixInvoice !== null) {
 						$link = $this->link('Invoice:show', ['id' => $fixInvoice->getId()]);
@@ -774,23 +759,23 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 						if (
 							$this->invoiceManager->get()->getAcceptSetting() !== null
 							&& (
-								$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
-								|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
+								$fixInvoice->getAcceptStatus1() !== Invoice::STATUS_ACCEPTED
+								|| $fixInvoice->getAcceptStatus2() !== Invoice::STATUS_ACCEPTED
 							)
 						) {
-							if ($fixInvoice->getAcceptStatus1() === InvoiceStatus::WAITING) {
+							if ($fixInvoice->getAcceptStatus1() === Invoice::STATUS_WAITING) {
 								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::DENIED) {
+							} elseif ($fixInvoice->getAcceptStatus1() === Invoice::STATUS_DENIED) {
 								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED) {
+							} elseif ($fixInvoice->getAcceptStatus1() === Invoice::STATUS_ACCEPTED) {
 								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
 							}
 
-							if ($fixInvoice->getAcceptStatus2() === InvoiceStatus::WAITING) {
+							if ($fixInvoice->getAcceptStatus2() === Invoice::STATUS_WAITING) {
 								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::DENIED) {
+							} elseif ($fixInvoice->getAcceptStatus2() === Invoice::STATUS_DENIED) {
 								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
+							} elseif ($fixInvoice->getAcceptStatus2() === Invoice::STATUS_ACCEPTED) {
 								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
 							}
 						}
@@ -804,7 +789,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('dueDate', 'Splatnost')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore): string
+				function (Invoice $invoiceCore): string
 				{
 					$ret = $invoiceCore->getDueDate()->format('d.m.Y');
 
@@ -812,8 +797,8 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 						$ret .= '<br><small class="text-success"><i class="fas fa-coins text-warning" title="Uhrazeno"></i>&nbsp;' . $invoiceCore->getPayDate(
 							)->format('d.m.Y') . '</small>';
 
-						if ($invoiceCore instanceof InvoiceProforma) {
-							$payDocument = $invoiceCore->getPayDocument();
+						if ($invoiceCore->isProforma()) {
+							$payDocument = $invoiceCore->getParentInvoice();
 							if ($payDocument !== null) {
 								$link = $this->link('Invoice:show', ['id' => $payDocument->getId()]);
 								$ret .= '&nbsp;<small><a href="' . $link . '" style="color: rgb(75, 0, 150);" title="Doklad k přijaté platbě"><i class="fas fa-file-invoice-dollar"></i></a></small>';
@@ -846,12 +831,11 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('price', 'Částka')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore) use ($currency): string
+				static function (Invoice $invoiceCore) use ($currency): string
 				{
 					$totalPrice = $invoiceCore->getTotalPrice();
-					if ($invoiceCore instanceof Invoice) {
+					if ($invoiceCore->isRegular()) {
 						$fixInvoice = $invoiceCore->getFixInvoice();
-
 						if ($fixInvoice !== null) {
 							$totalPrice += $fixInvoice->getTotalPrice();
 						}
@@ -881,7 +865,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		if ($this->invoiceManager->get()->getAcceptSetting() !== null) {
 			$grid->addColumnText('accept', 'Schválení')
 				->setRenderer(
-					function (InvoiceCore $invoiceCore): string
+					function (Invoice $invoiceCore): string
 					{
 						if ($invoiceCore->isSubmitted() === false) {
 							return '<span class="text-warning">Editace</span>';
@@ -929,7 +913,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addAction('detail', 'Detail')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore)
+				function (Invoice $invoiceCore)
 				{
 					$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 
@@ -941,7 +925,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$grid->addAction('delete', 'Delete')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore)
+				function (Invoice $invoiceCore)
 				{
 					if ($this->checkAccess('page__invoice__forceRemove') === false) {
 						return '';
@@ -972,7 +956,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$invoiceUsers = $this->entityManager->getRepository(BaseUser::class)
 				->createQueryBuilder('u')
 				->select('u')
-				->join(InvoiceCore::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
+				->join(Invoice::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
 				->groupBy('u.id')
 				->orderBy('u.lastName', 'ASC')
 				->addOrderBy('u.firstName', 'ASC')
@@ -1005,17 +989,17 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				{
 					if ($status === 'unpaid') {
 						$qb->andWhere('invoice.acceptStatus1 = :status1')
-							->setParameter('status1', InvoiceStatus::ACCEPTED)
+							->setParameter('status1', Invoice::STATUS_ACCEPTED)
 							->andWhere('invoice.acceptStatus2 = :status2')
-							->setParameter('status2', InvoiceStatus::ACCEPTED);
+							->setParameter('status2', Invoice::STATUS_ACCEPTED);
 						$qb->andWhere('invoice.payDate IS NULL');
 					} elseif ($status === 'paid') {
 						$qb->andWhere('invoice.payDate IS NOT NULL');
 					} elseif ($status === 'overDate') {
 						$qb->andWhere('invoice.acceptStatus1 = :status1')
-							->setParameter('status1', InvoiceStatus::ACCEPTED)
+							->setParameter('status1', Invoice::STATUS_ACCEPTED)
 							->andWhere('invoice.acceptStatus2 = :status2')
-							->setParameter('status2', InvoiceStatus::ACCEPTED);
+							->setParameter('status2', Invoice::STATUS_ACCEPTED);
 						$qb->andWhere('invoice.payDate IS NULL');
 						$qb->andWhere('invoice.dueDate < :now')
 							->setParameter('now', (new \DateTime)->format('Y-m-d'));
@@ -1024,17 +1008,18 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 							->setParameter('f', false);
 					} elseif ($status === 'accepted') {
 						$qb->andWhere('invoice.acceptStatus1 = :status1')
-							->setParameter('status1', InvoiceStatus::ACCEPTED)
+							->setParameter('status1', Invoice::STATUS_ACCEPTED)
 							->andWhere('invoice.acceptStatus2 = :status2')
-							->setParameter('status2', InvoiceStatus::ACCEPTED);
+							->setParameter('status2', Invoice::STATUS_ACCEPTED);
 					} elseif ($status === 'notAccepted') {
 						$qb->andWhere('(invoice.acceptStatus1 = :status OR invoice.acceptStatus2 = :status)')
-							->setParameter('status', InvoiceStatus::WAITING);
+							->setParameter('status', Invoice::STATUS_WAITING);
 					} elseif ($status === 'denied') {
 						$qb->andWhere('(invoice.acceptStatus1 = :status OR invoice.acceptStatus2 = :status)')
-							->setParameter('status', InvoiceStatus::DENIED);
+							->setParameter('status', Invoice::STATUS_DENIED);
 					} elseif ($status === 'proforma') {
-						$qb->andWhere('invoice INSTANCE OF ' . InvoiceProforma::class);
+						$qb->andWhere('invoice.type = :typeProforma')
+							->setParameter('typeProforma', Invoice::TYPE_PROFORMA);
 					}
 
 					return $qb;
@@ -1081,7 +1066,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$session->exportedIds = [];
 
 		if (count($ids) > 0) {
-			$invoices = $this->entityManager->getRepository(InvoiceCore::class)
+			$invoices = $this->entityManager->getRepository(Invoice::class)
 					->createQueryBuilder('i')
 					->select('i')
 					->where('i.id IN (:ids)')
@@ -1123,7 +1108,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$session->exportedIds = [];
 
 		if (count($ids) > 0) {
-			$invoices = $this->entityManager->getRepository(InvoiceCore::class)
+			$invoices = $this->entityManager->getRepository(Invoice::class)
 					->createQueryBuilder('i')
 					->select('i')
 					->where('i.id IN (:ids)')
@@ -1154,13 +1139,13 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
 
-				$this->editedInvoice->setAcceptStatus1(InvoiceStatus::DENIED);
+				$this->editedInvoice->setAcceptStatus1(Invoice::STATUS_DENIED);
 				$this->editedInvoice->setAcceptStatus1Description($values->description ?? '');
 				$this->editedInvoice->setAcceptStatus1User($user);
 
-				$this->editedInvoice->setAcceptStatus2(InvoiceStatus::DENIED);
+				$this->editedInvoice->setAcceptStatus2(Invoice::STATUS_DENIED);
 
-				$this->editedInvoice->setStatus(InvoiceStatus::DENIED);
+				$this->editedInvoice->setStatus(Invoice::STATUS_DENIED);
 
 				$history = new InvoiceHistory(
 					$this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>' . str_replace(
@@ -1201,11 +1186,11 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				/** @var BaseUser $user */
 				$user = $this->getUser()->getIdentity()->getUser();
 
-				$this->editedInvoice->setAcceptStatus2(InvoiceStatus::DENIED);
+				$this->editedInvoice->setAcceptStatus2(Invoice::STATUS_DENIED);
 				$this->editedInvoice->setAcceptStatus2Description($values->description ?? '');
 				$this->editedInvoice->setAcceptStatus2User($user);
 
-				$this->editedInvoice->setStatus(InvoiceStatus::DENIED);
+				$this->editedInvoice->setStatus(Invoice::STATUS_DENIED);
 
 				$history = new InvoiceHistory(
 					$this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>' . str_replace(
@@ -1314,9 +1299,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$price = 0.0;
 		$tax = 0.0;
 		foreach ($invoices as $invoice) {
-			if ($invoice instanceof InvoiceProforma) {
+			if ($invoice->isProforma()) {
 				$price += $invoice->getTotalPrice() * $invoice->getRate();
-			} elseif ($invoice instanceof Invoice) {
+			} elseif ($invoice->isRegular()) {
 				$price += $invoice->getTotalPrice() * $invoice->getRate();
 				$tax += $invoice->getTotalTaxCZK();
 
@@ -1334,7 +1319,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$data['pricePerMonth'] = $price;
 		$data['taxPerMonth'] = $tax;
 
-		//Rok
+		// year
 		$dateStart = new \DateTime(date('Y') . '-01-01 00:00:00');
 		$dateStop = $dateStart->modifyClone('+1 year');
 
@@ -1343,9 +1328,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$price = 0.0;
 		$tax = 0.0;
 		foreach ($invoices as $invoice) {
-			if ($invoice instanceof InvoiceProforma) {
+			if ($invoice->isProforma()) {
 				$price += $invoice->getTotalPrice() * $invoice->getRate();
-			} elseif ($invoice instanceof Invoice) {
+			} elseif ($invoice->isRegular()) {
 				$price += $invoice->getTotalPrice() * $invoice->getRate();
 				$tax += $invoice->getTotalTaxCZK();
 
@@ -1376,8 +1361,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		foreach ($invoices as $invoice) {
 			$invoiceTotalPrice = $invoice->getTotalPrice() * $invoice->getRate();
-
-			if ($invoice instanceof Invoice) {
+			if ($invoice->isRegular()) {
 				$fixInvoice = $invoice->getFixInvoice();
 				if ($fixInvoice !== null) {
 					$invoiceTotalPrice += $fixInvoice->getTotalPrice() * $fixInvoice->getRate();
@@ -1595,13 +1579,10 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 			}
 
 			$invoices = $this->invoiceManager->get()->getInvoicesBetweenDates($dateStart, $dateStop);
-
 			$this->exportManager->get()->exportInvoiceSummaryToPDF($invoices);
-
 			die;
 		};
 
 		return $form;
 	}
-
 }

@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace MatiCore\Supplier;
 
 
+use Baraja\Country\Entity\Country;
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Address\Entity\Address;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use MatiCore\Address\Entity\Address;
-use MatiCore\Address\Entity\Country;
-use MatiCore\Currency\Currency;
 
 class SupplierManager
 {
@@ -46,14 +45,11 @@ class SupplierManager
 	public function getSuppliersForForm(): array
 	{
 		static $cache;
-
 		if ($cache === null) {
 			$items = [];
-
 			foreach ($this->getSuppliers() as $supplier) {
 				$items[$supplier->getId()] = $supplier->getName();
 			}
-
 			$cache = $items;
 		}
 
@@ -67,7 +63,6 @@ class SupplierManager
 	public function getSuppliers(): array
 	{
 		static $cache;
-
 		if ($cache === null) {
 			$cache = $this->entityManager->getRepository(Supplier::class)
 					->createQueryBuilder('supplier')
@@ -88,8 +83,7 @@ class SupplierManager
 		string $city,
 		Country $country
 	): Supplier {
-		$address = new Address($street, $city);
-		$address->setCountry($country);
+		$address = new Address($country, $name, null, $street, $city);
 
 		$this->entityManager->persist($address);
 		$supplier = new Supplier($name, $currency, $address);

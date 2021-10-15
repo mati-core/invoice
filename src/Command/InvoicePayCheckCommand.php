@@ -10,21 +10,15 @@ use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use MatiCore\Currency\CurrencyManagerAccessor;
 use MatiCore\Invoice\BankMailException;
 use MatiCore\Invoice\BankMovement;
 use MatiCore\Invoice\BankMovementCronLogAccessor;
-use MatiCore\Invoice\InvoiceCore;
+use MatiCore\Invoice\Invoice;
 use MatiCore\Invoice\InvoiceException;
 use MatiCore\Invoice\InvoiceHistory;
 use MatiCore\Invoice\InvoiceManagerAccessor;
-use MatiCore\Invoice\InvoiceProforma;
-use MatiCore\Invoice\InvoiceStatus;
 use Nette\Application\LinkGenerator;
-use Nette\Utils\DateTime;
 use Nette\Utils\FileSystem;
-use PhpImap\IncomingMail;
-use PhpImap\Mailbox;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,27 +28,8 @@ use Tracy\Debugger;
 
 class InvoicePayCheckCommand extends Command
 {
-	private EntityManager $entityManager;
-
-	private CurrencyManagerAccessor $currencyManager;
-
-	private LinkGenerator $linkGenerator;
-
-	private InvoiceManagerAccessor $invoiceManager;
-
-	private BankMovementCronLogAccessor $logger;
-
-	/**
-	 * @var array
-	 */
-	private array $params;
-
-	/**
-	 * @var array
-	 */
+	/** @var array */
 	private array $allowedSenders;
-
-	private string $tempDir;
 
 	private SymfonyStyle|null $io;
 
@@ -63,23 +38,16 @@ class InvoicePayCheckCommand extends Command
 	 * @param array $params
 	 */
 	public function __construct(
-		string $tempDir,
-		array $params,
-		EntityManager $entityManager,
-		CurrencyManagerAccessor $currencyManager,
-		LinkGenerator $linkGenerator,
-		InvoiceManagerAccessor $invoiceManager,
-		BankMovementCronLogAccessor $logger
+		private string $tempDir,
+		private array $params,
+		private EntityManager $entityManager,
+		private CurrencyManagerAccessor $currencyManager,
+		private LinkGenerator $linkGenerator,
+		private InvoiceManagerAccessor $invoiceManager,
+		private BankMovementCronLogAccessor $logger
 	) {
 		parent::__construct();
-		$this->params = $params;
-		$this->allowedSenders = $this->params['payEmail']['allowedSenders'] ?? [];
-		$this->tempDir = $tempDir;
-		$this->entityManager = $entityManager;
-		$this->currencyManager = $currencyManager;
-		$this->linkGenerator = $linkGenerator;
-		$this->invoiceManager = $invoiceManager;
-		$this->logger = $logger;
+		$this->allowedSenders = $params['payEmail']['allowedSenders'] ?? [];
 	}
 
 
@@ -92,7 +60,7 @@ class InvoicePayCheckCommand extends Command
 		$data = [];
 		$lines = explode("\n", $content);
 		if (preg_match('/^dne\s(\d+\.\d+\.\d{4})\sbyl\sna\súčtu\s(\d+)/u', $lines[0], $m) && isset($m[1], $m[2])) {
-			$data['date'] = DateTime::from($m[1] . ' 00:00:00');
+			$data['date'] = new \DateTime($m[1] . ' 00:00:00');
 			$data['bankAccount'] = $m[2] . '/0300';
 		} else {
 			throw new BankMailException('Can not parse date and bank account from line 3.');
@@ -193,7 +161,7 @@ class InvoicePayCheckCommand extends Command
 
 			$output->writeln('Connecting...');
 
-			$date = DateTime::from('NOW');
+			$date = new \DateTime;
 			$date->modify('-7 days');
 
 			$mailsIds = $mailBox->searchMailbox('SINCE "' . $date->format('Y-m-d') . '"');
@@ -294,7 +262,7 @@ class InvoicePayCheckCommand extends Command
 		$lines = explode("\n", $content);
 
 		if (preg_match('/^dne\s(\d+\.\d+\.\d{4})\sbyla\sna\súčtu\s(\d+)/u', $lines[0], $m) && isset($m[1], $m[2])) {
-			$data['date'] = DateTime::from($m[1] . ' 00:00:00');
+			$data['date'] = new \DateTime($m[1] . ' 00:00:00');
 			$data['bankAccount'] = $m[2] . '/0300';
 		} else {
 			throw new BankMailException('Can not parse date and bank account from line 3.');
@@ -422,8 +390,8 @@ class InvoicePayCheckCommand extends Command
 	private function processBankMovement(BankMovement $bm): void
 	{
 		try {
-			/** @var InvoiceCore $invoice */
-			$invoice = $this->entityManager->getRepository(InvoiceCore::class)
+			/** @var Invoice $invoice */
+			$invoice = $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
 				->select('i')
 				->where('i.variableSymbol = :vs')
@@ -444,7 +412,7 @@ class InvoicePayCheckCommand extends Command
 			} else {
 				$invoice->setPayDate($bm->getDate());
 				$invoice->setClosed(true);
-				$invoice->setStatus(InvoiceStatus::PAID);
+				$invoice->setStatus(Invoice::STATUS_PAID);
 
 				$link = '/admin/invoice/detail-bank-movement?id=' . $bm->getId();
 
@@ -456,10 +424,9 @@ class InvoicePayCheckCommand extends Command
 				$this->entityManager->persist($ih);
 
 				$invoice->addHistory($ih);
-
 				$this->entityManager->flush();
 
-				if ($invoice instanceof InvoiceProforma) {
+				if ($invoice->isProforma()) {
 					$this->invoiceManager->get()->createPayDocumentFromInvoice($invoice);
 				}
 

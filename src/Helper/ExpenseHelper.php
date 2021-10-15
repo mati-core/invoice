@@ -9,50 +9,21 @@ use Baraja\Doctrine\EntityManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use MatiCore\Address\CountryManager;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManager;
 use MatiCore\Supplier\SupplierManagerAccessor;
-use MatiCore\Unit\UnitException;
-use MatiCore\Unit\UnitManager;
-use MatiCore\User\BaseUser;
 use Nette\Security\User;
-use Nette\Utils\DateTime;
 use Tracy\Debugger;
 
 class ExpenseHelper
 {
-	private EntityManager $entityManager;
-
-	private CurrencyManager $currencyManager;
-
-	private UnitManager $unitManager;
-
-	private ExpenseManagerAccessor $expenseManager;
-
-	private CountryManager $countryManager;
-
-	private SupplierManagerAccessor $supplierManager;
-
-	private User $user;
-
-
 	public function __construct(
-		EntityManager $entityManager,
-		UnitManager $unitManager,
-		ExpenseManagerAccessor $expenseManager,
-		CurrencyManager $currencyManager,
-		User $user,
-		CountryManager $countryManager,
-		SupplierManagerAccessor $supplierManager
+		private EntityManager $entityManager,
+		private UnitManager $unitManager,
+		private ExpenseManagerAccessor $expenseManager,
+		private CurrencyManager $currencyManager,
+		private User $user,
+		private CountryManager $countryManager,
+		private SupplierManagerAccessor $supplierManager
 	) {
-		$this->entityManager = $entityManager;
-		$this->unitManager = $unitManager;
-		$this->expenseManager = $expenseManager;
-		$this->currencyManager = $currencyManager;
-		$this->countryManager = $countryManager;
-		$this->supplierManager = $supplierManager;
-		$this->user = $user;
 	}
 
 
@@ -289,7 +260,7 @@ class ExpenseHelper
 	 */
 	public function saveExpense(array $expenseData): array
 	{
-		$date = DateTime::from($expenseData['date']);
+		$date = new \DateTime($expenseData['date']);
 
 		$isNew = false;
 
@@ -378,7 +349,7 @@ class ExpenseHelper
 		//Datumy
 		$payDateRaw = $expenseData['datePay'];
 		if ($payDateRaw !== '' && $payDateRaw !== null) {
-			$payDate = DateTime::from($payDateRaw);
+			$payDate = new \DateTime($payDateRaw);
 			$expense->setPaid(true);
 			$expense->setPayDate($payDate);
 			$expense->setPayMethod($expenseData['payMethod']);
@@ -389,10 +360,10 @@ class ExpenseHelper
 
 		$dueDateRaw = $expenseData['dateDue'];
 		if ($dueDateRaw !== '' && $dueDateRaw !== null) {
-			$dueDate = DateTime::from($dueDateRaw);
+			$dueDate = new \DateTime($dueDateRaw);
 			$expense->setDueDate($dueDate);
 		} else {
-			$now = DateTime::from('NOW');
+			$now = new \DateTime;
 			$now->modify('+3 days');
 
 			$expense->setDueDate($now);
@@ -443,9 +414,9 @@ class ExpenseHelper
 
 			//DATUM
 			$expense->setDatePrint(
-				$expenseData['datePrint'] === '' || $expenseData['datePrint'] === null ? null : DateTime::from(
-					$expenseData['datePrint']
-				)
+				$expenseData['datePrint'] === '' || $expenseData['datePrint'] === null
+					? null
+					: new \DateTime($expenseData['datePrint'])
 			);
 
 			//POLOZKY
@@ -510,5 +481,4 @@ class ExpenseHelper
 			'tin' => $supplier->getAddress()->getTin() ?? '',
 		];
 	}
-
 }

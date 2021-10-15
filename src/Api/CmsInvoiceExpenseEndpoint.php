@@ -11,12 +11,6 @@ use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
-use MatiCore\Address\CountryManagerAccessor;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManagerAccessor;
-use MatiCore\Currency\Number;
-use MatiCore\DataGrid\MatiDataGrid;
-use MatiCore\Form\FormFactoryTrait;
 use MatiCore\Invoice\Expense;
 use MatiCore\Invoice\ExpenseCategory;
 use MatiCore\Invoice\ExpenseHistory;
@@ -25,15 +19,10 @@ use MatiCore\Invoice\ExpenseInvoiceItem;
 use MatiCore\Invoice\ExpenseManagerAccessor;
 use MatiCore\Invoice\IntrastatProductCodes;
 use MatiCore\Supplier\SupplierManagerAccessor;
-use MatiCore\Unit\UnitManagerAccessor;
-use MatiCore\User\BaseUser;
-use MatiCore\Utils\Date;
 use Nette\Application\AbortException;
 use Nette\Application\UI\Form;
 use Nette\Utils\ArrayHash;
 use Tracy\Debugger;
-use Ublaboo\DataGrid\DataGrid;
-use Ublaboo\DataGrid\Exception\DataGridException;
 
 #[PublicEndpoint]
 class CmsInvoiceExpenseEndpoint extends BaseEndpoint

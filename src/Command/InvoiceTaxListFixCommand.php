@@ -8,7 +8,7 @@ namespace MatiCore\Invoice\Command;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
-use MatiCore\Invoice\InvoiceCore;
+use MatiCore\Invoice\Invoice;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,15 +18,13 @@ use Tracy\Debugger;
 
 class InvoiceTaxListFixCommand extends Command
 {
-	private EntityManager $entityManager;
-
 	private SymfonyStyle|null $io;
 
 
-	public function __construct(EntityManager $entityManager)
-	{
+	public function __construct(
+		private EntityManager $entityManager,
+	) {
 		parent::__construct();
-		$this->entityManager = $entityManager;
 	}
 
 
@@ -40,17 +38,16 @@ class InvoiceTaxListFixCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		try {
-
 			$this->io = new SymfonyStyle($input, $output);
 
 			$output->writeln('==============================================');
-			$output->writeln('           FIX INVOICE TAX LISTS             ');
+			$output->writeln('           FIX INVOICE TAX LISTS              ');
 			$output->writeln('');
 			$output->writeln('');
 
 			$output->writeln('loading invoices...');
 
-			$invoiceList = $this->entityManager->getRepository(InvoiceCore::class)->findAll();
+			$invoiceList = $this->entityManager->getRepository(Invoice::class)->findAll();
 			$count = count($invoiceList);
 
 			$output->writeln('loading done (count: ' . $count . ')');
@@ -91,7 +88,7 @@ class InvoiceTaxListFixCommand extends Command
 	/**
 	 * @throws EntityManagerException
 	 */
-	private function processFixInvoice(InvoiceCore $invoice): void
+	private function processFixInvoice(Invoice $invoice): void
 	{
 		if (count($invoice->getTaxList()) === 0) {
 			$taxTable = $invoice->getTaxTable();

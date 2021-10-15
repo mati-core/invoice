@@ -9,11 +9,7 @@ use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use h4kuna\Ares\Ares;
-use h4kuna\Ares\Data;
-use h4kuna\Ares\Exceptions\IdentificationNumberNotFoundException;
-use MatiCore\Currency\Number;
-use MatiCore\Invoice\InvoiceCore;
+use MatiCore\Invoice\Invoice;
 use Nette\Localization\Translator;
 
 class CompanyManager
@@ -205,7 +201,7 @@ class CompanyManager
 	{
 		$list = [];
 
-		$invoices = $this->entityManager->getRepository(InvoiceCore::class)
+		$invoices = $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('invoice')
 				->select('invoice')
 				->where('invoice.company = :company')
@@ -240,13 +236,13 @@ class CompanyManager
 		}
 
 		usort(
-			$list, static function ($a, $b)
-		{
-			return strcmp($a['name'], $b['name']);
-		}
+			$list,
+			static function ($a, $b)
+			{
+				return strcmp($a['name'], $b['name']);
+			}
 		);
 
 		return $list;
 	}
-
 }

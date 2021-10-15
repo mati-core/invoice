@@ -6,43 +6,26 @@ namespace App\Api;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use h4kuna\Ares\Exceptions\IdentificationNumberNotFoundException;
 use MatiCore\Company\CompanyManagerAccessor;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManagerAccessor;
 use MatiCore\Invoice\ExpenseException;
 use MatiCore\Invoice\ExpenseHelper;
 use Nette\Application\UI\InvalidLinkException;
 use Nette\Security\User;
-use Nette\Utils\DateTime;
 
-/**
- * @public
- */
+#[PublicEndpoint]
 class ExpenseEndpoint extends BaseEndpoint
 {
-	/**
-	 * @inject
-	 */
-	public User $user;
-
-	/**
-	 * @inject
-	 */
-	public ExpenseHelper $expenseHelper;
-
-	/**
-	 * @inject
-	 */
-	public CompanyManagerAccessor $companyManager;
-
-	/**
-	 * @inject
-	 */
-	public CurrencyManagerAccessor $currencyManager;
+	public function __construct(
+		private User $user,
+		private ExpenseHelper $expenseHelper,
+		private CompanyManagerAccessor $companyManager,
+		private CurrencyManagerAccessor $currencyManager,
+	) {
+	}
 
 
 	public function postLoadExpense(string $id): void
@@ -54,7 +37,7 @@ class ExpenseEndpoint extends BaseEndpoint
 				$expenseData = $this->expenseHelper->getExpenseById($id);
 			}
 
-			$this->sendOk(
+			$this->sendJson(
 				[
 					'expense' => $expenseData,
 				]
@@ -73,10 +56,10 @@ class ExpenseEndpoint extends BaseEndpoint
 		try {
 			$currency = $this->currencyManager->get()->getCurrencyByIsoCode($code);
 			$currencyTemp = $this->currencyManager->get()->getCurrencyRateByDate(
-				$currency, DateTime::from($expenseData['date'] ?? 'NOW')
+				$currency, new \DateTime($expenseData['date'] ?? 'now')
 			);
 
-			$this->sendOk(
+			$this->sendJson(
 				[
 					'currency' => [
 						'id' => $currency->getId(),
@@ -99,7 +82,7 @@ class ExpenseEndpoint extends BaseEndpoint
 		try {
 			$aresData = $this->companyManager->get()->getDataFromAres($cin);
 
-			$this->sendOk(
+			$this->sendJson(
 				[
 					'customer' => [
 						'id' => null,
@@ -115,7 +98,7 @@ class ExpenseEndpoint extends BaseEndpoint
 				]
 			);
 		} catch (IdentificationNumberNotFoundException) {
-			$this->sendOk(
+			$this->sendJson(
 				[
 					'customer' => [
 						'id' => null,
@@ -137,15 +120,13 @@ class ExpenseEndpoint extends BaseEndpoint
 	public function postLoadSupplier(string $id): void
 	{
 		try {
-			$customer = $this->expenseHelper->getSupplierData($id);
-
-			$this->sendOk(
+			$this->sendJson(
 				[
-					'customer' => $customer,
+					'customer' => $this->expenseHelper->getSupplierData($id),
 				]
 			);
 		} catch (NoResultException | NonUniqueResultException) {
-			$this->sendOk(
+			$this->sendJson(
 				[
 					'customer' => [
 						'name' => '',
@@ -169,8 +150,7 @@ class ExpenseEndpoint extends BaseEndpoint
 	{
 		try {
 			$expenseData = $this->expenseHelper->saveExpense($expenseData);
-
-			$this->sendOk(
+			$this->sendJson(
 				[
 					'expense' => $expenseData,
 					'redirect' => $this->link(':Admin:Expense:show', ['id' => $expenseData['id']]),

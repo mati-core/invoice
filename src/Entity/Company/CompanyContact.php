@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Company;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use Nette\SmartObject;
 
 /**
  * @ORM\Entity()
@@ -15,8 +14,7 @@ use Nette\SmartObject;
  */
 class CompanyContact
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company", inversedBy="contacts") */
 	private Company $company;
@@ -270,5 +268,4 @@ class CompanyContact
 	{
 		$this->sendMarketing = $sendMarketing;
 	}
-
 }

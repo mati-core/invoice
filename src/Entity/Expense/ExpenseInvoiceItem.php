@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Unit\Unit;
-use Nette\SmartObject;
 
 /**
  * @ORM\Entity()
@@ -16,11 +14,11 @@ use Nette\SmartObject;
  */
 class ExpenseInvoiceItem
 {
-	use UuidIdentifier;
-	use SmartObject;
+	use IdentifierUnsigned;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\ExpenseInvoice", inversedBy="items")
-	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id") */
+	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id")
+	 */
 	private Expense $expense;
 
 	/** @ORM\Column(type="string") */
@@ -31,7 +29,8 @@ class ExpenseInvoiceItem
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="\MatiCore\Unit\Unit")
-	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id") */
+	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id")
+	 */
 	private Unit $unit;
 
 	/** @ORM\Column(type="float") */
@@ -145,5 +144,4 @@ class ExpenseInvoiceItem
 	{
 		return $this->getPricePerItem() * $this->getQuantity();
 	}
-
 }

@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\User\BaseUser;
-use Nette\SmartObject;
-use Nette\Utils\DateTime;
 
 /**
  * @ORM\Entity()
@@ -17,15 +14,16 @@ use Nette\Utils\DateTime;
  */
 class ExpenseHistory
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\Expense")
-	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id") */
+	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id")
+	 */
 	private Expense $expense;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true) */
+	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
+	 */
 	private BaseUser|null $user = null;
 
 	/** @ORM\Column(type="text") */

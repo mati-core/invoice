@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use MatiCore\User\BaseUser;
 use Nette\Utils\FileSystem;
 
 class SignatureManager

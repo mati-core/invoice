@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace MatiCore\Company;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Address\Entity\Address;
-use Nette\SmartObject;
 
 /**
  * @ORM\Entity()
@@ -17,8 +15,7 @@ use Nette\SmartObject;
  */
 class CompanyStock
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company", inversedBy="stocks") */
 	private Company $company;
@@ -27,12 +24,14 @@ class CompanyStock
 	private string $name;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Address")
-	 * @ORM\JoinColumn(name="address_id", referencedColumnName="id") */
+	 * @ORM\JoinColumn(name="address_id", referencedColumnName="id")
+	 */
 	private Address $address;
 
 	/**
 	 * @var CompanyContact[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyContact", mappedBy="companyStock") */
+	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyContact", mappedBy="companyStock")
+	 */
 	private array|Collection $contacts;
 
 	/** @ORM\Column(type="text", nullable=true) */
@@ -111,5 +110,4 @@ class CompanyStock
 	{
 		$this->note = $note;
 	}
-
 }

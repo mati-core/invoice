@@ -92,7 +92,7 @@
 			</div>
 		</div>
 
-		{if $expense instanceof \MatiCore\Invoice\ExpenseInvoice}
+		{if $expense->isExpense()}
 			{include expenseInvoice}
 		{else}
 			{include expense}

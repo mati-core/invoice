@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\User\BaseUser;
-use Nette\SmartObject;
-use Nette\Utils\DateTime;
 
 /**
  * @ORM\Entity()
@@ -17,14 +14,14 @@ use Nette\Utils\DateTime;
  */
 class InvoiceComment
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="comments") */
-	private InvoiceCore $invoice;
+	/** @ORM\ManyToOne(targetEntity="Invoice", inversedBy="comments") */
+	private Invoice $invoice;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true) */
+	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
+	 */
 	private BaseUser|null $user;
 
 	/** @ORM\Column(type="text") */
@@ -34,7 +31,7 @@ class InvoiceComment
 	private \DateTime $date;
 
 
-	public function __construct(InvoiceCore $invoice, string $description)
+	public function __construct(Invoice $invoice, string $description)
 	{
 		$this->invoice = $invoice;
 		$this->description = $description;
@@ -42,13 +39,13 @@ class InvoiceComment
 	}
 
 
-	public function getInvoice(): InvoiceCore
+	public function getInvoice(): Invoice
 	{
 		return $this->invoice;
 	}
 
 
-	public function setInvoice(InvoiceCore $invoice): void
+	public function setInvoice(Invoice $invoice): void
 	{
 		$this->invoice = $invoice;
 	}

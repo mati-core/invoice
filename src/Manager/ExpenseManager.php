@@ -77,5 +77,4 @@ class ExpenseManager
 
 		return 'PF' . date('y') . date('m') . $countString;
 	}
-
 }

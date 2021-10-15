@@ -5,40 +5,27 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
+use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
-use h4kuna\Ares\Data;
-use h4kuna\Ares\Exceptions\IdentificationNumberNotFoundException;
-use MatiCore\Address\CountryManagerAccessor;
-use MatiCore\Address\Entity\Address;
 use MatiCore\Company\Company;
 use MatiCore\Company\CompanyContact;
 use MatiCore\Company\CompanyException;
 use MatiCore\Company\CompanyInvoiceStatisticsControl;
 use MatiCore\Company\CompanyManagerAccessor;
 use MatiCore\Company\CompanyStock;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManagerAccessor;
-use MatiCore\Currency\Number;
-use MatiCore\DataGrid\MatiDataGrid;
-use MatiCore\Form\FormFactoryTrait;
-use MatiCore\Invoice\FixInvoice;
 use MatiCore\Invoice\Invoice;
-use MatiCore\Invoice\InvoiceCore;
 use MatiCore\Invoice\InvoiceManagerAccessor;
-use MatiCore\Invoice\InvoiceProforma;
-use MatiCore\Invoice\InvoiceStatus;
 use Nette\Application\AbortException;
 use Nette\Application\UI\Form;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Html;
 use Nette\Utils\Strings;
 use Tracy\Debugger;
-use Ublaboo\DataGrid\Exception\DataGridException;
 
 #[PublicEndpoint]
 class CmsInvoiceCompanyEndpoint extends BaseEndpoint
@@ -60,6 +47,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 
 	public function __construct(
+		private EntityManager $entityManager,
 		private CompanyManagerAccessor $companyManager,
 		private CountryManagerAccessor $countryManager,
 		private CurrencyManagerAccessor $currencyManager,
@@ -970,42 +958,44 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 		$grid = new MatiDataGrid($this, $name);
 
 		$grid->setDataSource(
-			$this->entityManager->getRepository(InvoiceCore::class)
+			$this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('invoice')
 				->select('invoice')
 				->where('invoice.deleted = :f')
 				->setParameter('f', 0)
 				->andWhere('invoice.company = :company')
 				->setParameter('company', $this->editedCompany->getId())
-				->andWhere(
-					'invoice INSTANCE OF ' . Invoice::class . ' OR invoice INSTANCE OF ' . InvoiceProforma::class
-				)
+				->andWhere('invoice.type IN (:types)')
+				->setParameter('types', [
+					Invoice::TYPE_REGULAR,
+					Invoice::TYPE_PROFORMA,
+				])
 				->orderBy('invoice.number', 'DESC')
 		);
 
 		$grid->setRowCallback(
-			static function (InvoiceCore $invoice, Html $row): void
+			static function (Invoice $invoice, Html $row): void
 			{
 				$status = $invoice->getStatus();
-				if ($status === InvoiceStatus::ACCEPTED) {
+				if ($status === Invoice::STATUS_ACCEPTED) {
 					$row->addClass('table-success');
 
 					return;
 				}
 
-				if ($status === InvoiceStatus::DENIED) {
+				if ($status === Invoice::STATUS_DENIED) {
 					$row->addClass('table-danger');
 
 					return;
 				}
 
-				if ($status === InvoiceStatus::CREATED) {
+				if ($status === Invoice::STATUS_CREATED) {
 					$row->addClass('table-warning');
 
 					return;
 				}
 
-				if ($status === InvoiceStatus::PAY_ALERT_THREE) {
+				if ($status === Invoice::STATUS_PAY_ALERT_THREE) {
 					$row->addClass('table-danger');
 
 					return;
@@ -1015,16 +1005,14 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('number', 'Číslo')
 			->setRenderer(
-				function (InvoiceCore $invoice): string
+				function (Invoice $invoice): string
 				{
 					$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
 
 					return '<a href="' . $link . '">' . $invoice->getNumber() . '</a>'
 						. '<br>'
-						. '<small class="'
-						. InvoiceStatus::getColorByStatus($invoice->getStatus())
-						. '">'
-						. InvoiceStatus::getNameByStatus($invoice->getStatus())
+						. '<small class="' . $invoice->getColor() . '">'
+						. htmlspecialchars($invoice->getLabel())
 						. '</small>';;
 				}
 			)
@@ -1033,7 +1021,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('company', 'Firma')
 			->setRenderer(
-				function (InvoiceCore $invoice): string
+				function (Invoice $invoice): string
 				{
 					if ($invoice->getCompany() !== null) {
 						$link = $this->link('Company:detail', ['id' => $invoice->getCompany()->getId()]);
@@ -1057,7 +1045,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('date', 'Vystaveno')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore): string
+				static function (Invoice $invoiceCore): string
 				{
 					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
 							->getName() . '</small>';
@@ -1067,10 +1055,10 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('taxDate', 'Daň. plnění')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore): string
+				function (Invoice $invoiceCore): string
 				{
 					if ($invoiceCore->isProforma()) {
-						$invoice = $invoiceCore->getInvoice();
+						$invoice = $invoiceCore->getSubInvoice();
 						if ($invoice !== null) {
 							$link = $this->link('Invoice:show', ['id' => $invoice->getId()]);
 							$str = '<small><a href="' . $link . '" title="Faktura"><i class="fas fa-file-invoice"></i>&nbsp;' . $invoice->getNumber(
@@ -1084,29 +1072,30 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 					$str = '<small>&nbsp;</small>';
 
-					/** @var FixInvoice $fixInvoice */
+					/** @var Invoice $fixInvoice */
 					$fixInvoice = $invoiceCore->getFixInvoice();
 					if ($fixInvoice !== null) {
 						$link = $this->link('Invoice:show', ['id' => $fixInvoice->getId()]);
-						$str = '<small><a href="' . $link . '" title="Dobropis" style="color: rgb(194, 0, 64);"><i class="fas fa-file-invoice"></i>&nbsp;' . $fixInvoice->getNumber(
-							);
+						$str = '<small><a href="' . $link . '" title="Dobropis" style="color: rgb(194, 0, 64);">'
+							. '<i class="fas fa-file-invoice"></i>&nbsp;'
+							. $fixInvoice->getNumber();
 						if (
-							$fixInvoice->getAcceptStatus1() !== InvoiceStatus::ACCEPTED
-							|| $fixInvoice->getAcceptStatus2() !== InvoiceStatus::ACCEPTED
+							$fixInvoice->getAcceptStatus1() !== Invoice::STATUS_ACCEPTED
+							|| $fixInvoice->getAcceptStatus2() !== Invoice::STATUS_ACCEPTED
 						) {
-							if ($fixInvoice->getAcceptStatus1() === InvoiceStatus::WAITING) {
+							if ($fixInvoice->getAcceptStatus1() === Invoice::STATUS_WAITING) {
 								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::DENIED) {
+							} elseif ($fixInvoice->getAcceptStatus1() === Invoice::STATUS_DENIED) {
 								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-							} elseif ($fixInvoice->getAcceptStatus1() === InvoiceStatus::ACCEPTED) {
+							} elseif ($fixInvoice->getAcceptStatus1() === Invoice::STATUS_ACCEPTED) {
 								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
 							}
 
-							if ($fixInvoice->getAcceptStatus2() === InvoiceStatus::WAITING) {
+							if ($fixInvoice->getAcceptStatus2() === Invoice::STATUS_WAITING) {
 								$str .= '&nbsp;<i class="fas fa-clock text-warning"></i>';
-							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::DENIED) {
+							} elseif ($fixInvoice->getAcceptStatus2() === Invoice::STATUS_DENIED) {
 								$str .= '&nbsp;<i class="fas fa-times text-danger"></i>';
-							} elseif ($fixInvoice->getAcceptStatus2() === InvoiceStatus::ACCEPTED) {
+							} elseif ($fixInvoice->getAcceptStatus2() === Invoice::STATUS_ACCEPTED) {
 								$str .= '&nbsp;<i class="fas fa-check text-success"></i>';
 							}
 						}
@@ -1120,7 +1109,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('dueDate', 'Splatnost')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore): string
+				function (Invoice $invoiceCore): string
 				{
 					$ret = $invoiceCore->getDueDate()->format('d.m.Y');
 
@@ -1128,7 +1117,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 						$ret .= '<br><small class="text-success"><i class="fas fa-coins text-warning" title="Uhrazeno"></i>&nbsp;' . $invoiceCore->getPayDate(
 							)->format('d.m.Y') . '</small>';
 
-						if ($invoiceCore instanceof InvoiceProforma) {
+						if ($invoiceCore->isProforma()) {
 							$payDocument = $invoiceCore->getPayDocument();
 							if ($payDocument !== null) {
 								$link = $this->link('Invoice:show', ['id' => $payDocument->getId()]);
@@ -1162,21 +1151,20 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('price', 'Částka')
 			->setRenderer(
-				static function (InvoiceCore $invoiceCore) use ($currency): string
+				static function (Invoice $invoiceCore) use ($currency): string
 				{
 					$totalPrice = $invoiceCore->getTotalPrice();
-					if ($invoiceCore instanceof Invoice) {
+					if ($invoiceCore->isRegular()) {
 						$fixInvoice = $invoiceCore->getFixInvoice();
-
 						if ($fixInvoice !== null) {
 							$totalPrice += $fixInvoice->getTotalPrice();
 						}
 					}
 
 					if ($totalPrice < 0) {
-						return '<b class="text-danger">' . Number::formatPrice(
-								$totalPrice, $invoiceCore->getCurrency(), 2
-							) . '</b>'
+						return '<b class="text-danger">'
+							. Number::formatPrice($totalPrice, $invoiceCore->getCurrency(), 2)
+							. '</b>'
 							. '<br>'
 							. '<small>'
 							. Number::formatPrice($totalPrice * $invoiceCore->getRate(), $currency, 2)
@@ -1196,7 +1184,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addColumnText('accept', 'Schválení')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore): string
+				function (Invoice $invoiceCore): string
 				{
 					if ($invoiceCore->isSubmitted() === false) {
 						return '<span class="text-warning">Editace</span>';
@@ -1243,7 +1231,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 		$grid->addAction('detail', 'Detail')
 			->setRenderer(
-				function (InvoiceCore $invoiceCore)
+				function (Invoice $invoiceCore)
 				{
 					$link = $this->link('Invoice:show', ['id' => $invoiceCore->getId()]);
 

@@ -8,9 +8,9 @@ namespace MatiCore\Company;
 class CompanyType
 {
 	public const
-		STANDARD = 'company.type.standard',
-		VIP = 'company.type.vip',
-		CONTRACT = 'company.type.contract';
+		STANDARD = 'standard',
+		VIP = 'vip',
+		CONTRACT = 'contract';
 
 
 	/**

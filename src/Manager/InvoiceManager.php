@@ -7,82 +7,41 @@ namespace MatiCore\Invoice;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
-use Doctrine\Common\Collections\Collection;
+use Baraja\Url\Url;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Company\Company;
-use MatiCore\Constant\Exception\ConstantException;
-use MatiCore\Currency\CurrencyException;
-use MatiCore\Currency\CurrencyManager;
-use MatiCore\Email\EmailerAccessor;
-use MatiCore\Email\EmailException;
 use MatiCore\Invoice\Email\InvoiceEmail;
 use MatiCore\Invoice\Email\InvoiceFixEmail;
 use MatiCore\Invoice\Email\InvoicePayDocumentEmail;
-use MatiCore\User\BaseUser;
-use MatiCore\User\StorageIdentity;
 use Mpdf\MpdfException;
 use Mpdf\Output\Destination;
 use Nette\Application\LinkGenerator;
-use Nette\Application\UI\InvalidLinkException;
 use Nette\Security\User;
-use Nette\Utils\DateTime;
 use Nette\Utils\Validators;
 use Tracy\Debugger;
 
 class InvoiceManager
 {
-	private string $tempDir;
-
-	/**
-	 * @var array|null
-	 */
+	/** @var array|null */
 	private ?array $acceptSetting;
-
-	/**
-	 * @var array
-	 */
-	private array $params;
-
-	private EntityManager $entityManager;
-
-	private User $user;
-
-	private CurrencyManager $currencyManager;
-
-	private SignatureManager $signatureManager;
-
-	private LinkGenerator $linkGenerator;
-
-	private EmailerAccessor $emailEngine;
-
-	private ExportManagerAccessor $exportManager;
 
 
 	/**
 	 * @param array $params
 	 */
 	public function __construct(
-		string $tempDir,
-		array $params,
-		EntityManager $entityManager,
-		User $user,
-		CurrencyManager $currencyManager,
-		SignatureManager $signatureManager,
-		LinkGenerator $linkGenerator,
-		EmailerAccessor $emailEngine,
-		ExportManagerAccessor $exportManager
+		private string $tempDir,
+		private array $params,
+		private EntityManager $entityManager,
+		private User $user,
+		private CurrencyManager $currencyManager,
+		private SignatureManager $signatureManager,
+		private LinkGenerator $linkGenerator,
+		private EmailerAccessor $emailEngine,
+		private ExportManagerAccessor $exportManager
 	) {
-		$this->tempDir = $tempDir;
-		$this->params = $params;
 		$this->acceptSetting = $params['settings']['accept'] ?? null;
-		$this->entityManager = $entityManager;
-		$this->user = $user;
-		$this->currencyManager = $currencyManager;
-		$this->signatureManager = $signatureManager;
-		$this->linkGenerator = $linkGenerator;
-		$this->emailEngine = $emailEngine;
-		$this->exportManager = $exportManager;
 	}
 
 
@@ -96,11 +55,11 @@ class InvoiceManager
 
 
 	/**
-	 * @return InvoiceCore[]
+	 * @return Invoice[]
 	 */
 	public function getAllInvoices(): array
 	{
-		return $this->entityManager->getRepository(InvoiceCore::class)
+		return $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
 				->select('i')
 				->andWhere('i.deleted = :false')
@@ -112,11 +71,11 @@ class InvoiceManager
 
 
 	/**
-	 * @return InvoiceCore[]
+	 * @return Invoice[]
 	 */
 	public function getInvoices(int $limit = 100, int $offset = 0): array
 	{
-		return $this->entityManager->getRepository(InvoiceCore::class)
+		return $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
 				->select('i')
 				->andWhere('i.deleted = :false')
@@ -130,28 +89,31 @@ class InvoiceManager
 
 
 	/**
-	 * @return InvoiceCore[]
+	 * @return Invoice[]
 	 */
 	public function getInvoicesBetweenDates(\DateTime $startDate, \DateTime $stopDate): array
 	{
-		return $this->entityManager->getRepository(InvoiceCore::class)
+		return $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
 				->select('i')
 				->where('i.taxDate >= :startDate')
 				->andWhere('i.taxDate < :stopDate')
 				->andWhere('i.deleted = :false')
+				->andWhere('i.status != :status')
+				->andWhere('i.acceptStatus1 = :status1')
+				->andWhere('i.acceptStatus2 = :status2')
+				->andWhere('i.type IN (:types)')
 				->setParameter('startDate', $startDate->format('Y-m-d'))
 				->setParameter('stopDate', $stopDate->format('Y-m-d'))
 				->setParameter('false', false)
-				->andWhere('i.status != :status')
-				->setParameter('status', InvoiceStatus::CANCELLED)
-				->andWhere('i.acceptStatus1 = :status1')
-				->setParameter('status1', InvoiceStatus::ACCEPTED)
-				->andWhere('i.acceptStatus2 = :status2')
-				->setParameter('status2', InvoiceStatus::ACCEPTED)
-				->andWhere(
-					'(i INSTANCE OF ' . Invoice::class . ' OR i INSTANCE OF ' . InvoiceProforma::class . ' OR i INSTANCE OF ' . InvoicePayDocument::class . ')'
-				)
+				->setParameter('status', Invoice::STATUS_CANCELLED)
+				->setParameter('status1', Invoice::STATUS_ACCEPTED)
+				->setParameter('status2', Invoice::STATUS_ACCEPTED)
+				->setParameter('types', [
+					Invoice::TYPE_REGULAR,
+					Invoice::TYPE_PROFORMA,
+					Invoice::TYPE_PAY_DOCUMENT,
+				])
 				->orderBy('i.number', 'DESC')
 				->getQuery()
 				->getResult() ?? [];
@@ -159,21 +121,21 @@ class InvoiceManager
 
 
 	/**
-	 * @return InvoiceCore[]
+	 * @return Invoice[]
 	 */
 	public function getInvoicesUnpaid(): array
 	{
-		return $this->entityManager->getRepository(InvoiceCore::class)
+		return $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
 				->select('i')
 				->where('i.payDate IS NULL')
 				->andWhere('i.status != :status')
 				->andWhere('i.deleted = :false')
-				->setParameter('status', InvoiceStatus::CANCELLED)
+				->setParameter('status', Invoice::STATUS_CANCELLED)
 				->andWhere('i.acceptStatus1 = :status1')
-				->setParameter('status1', InvoiceStatus::ACCEPTED)
+				->setParameter('status1', Invoice::STATUS_ACCEPTED)
 				->andWhere('i.acceptStatus2 = :status2')
-				->setParameter('status2', InvoiceStatus::ACCEPTED)
+				->setParameter('status2', Invoice::STATUS_ACCEPTED)
 				->setParameter('false', false)
 				->orderBy('i.number', 'DESC')
 				->getQuery()
@@ -184,9 +146,9 @@ class InvoiceManager
 	/**
 	 * @throws NoResultException|NonUniqueResultException
 	 */
-	public function getInvoiceById(string $id): InvoiceCore
+	public function getInvoiceById(string $id): Invoice
 	{
-		return $this->entityManager->getRepository(InvoiceCore::class)
+		return $this->entityManager->getRepository(Invoice::class)
 			->createQueryBuilder('i')
 			->select('i')
 			->where('i.id = :id')
@@ -199,12 +161,12 @@ class InvoiceManager
 	/**
 	 * @throws \Exception
 	 */
-	public function removeInvoice(InvoiceCore $invoice, ?BaseUser $user = null): void
+	public function removeInvoice(Invoice $invoice, ?BaseUser $user = null): void
 	{
 		$invoice->setNumber('SMAZANA-' . $invoice->getNumber() . '-' . date('Y-m-d'));
 		$invoice->setVariableSymbol('SMAZANA-' . $invoice->getNumber() . '-' . date('Y-m-d'));
 		$invoice->setDeleted(true);
-		$invoice->setStatus(InvoiceStatus::CANCELLED);
+		$invoice->setStatus(Invoice::STATUS_CANCELLED);
 
 		$entities = [$invoice];
 
@@ -216,13 +178,13 @@ class InvoiceManager
 		$invoice->addHistory($history);
 		$entities[] = $history;
 
-		if ($invoice instanceof Invoice) {
+		if ($invoice->isRegular()) {
 			$fixInvoice = $invoice->getFixInvoice();
 			if ($fixInvoice !== null) {
 				$fixInvoice->setNumber('SMAZANA-' . $fixInvoice->getNumber() . '-' . date('Y-m-d'));
 				$fixInvoice->setVariableSymbol('SMAZANA-' . $fixInvoice->getNumber() . '-' . date('Y-m-d'));
 				$fixInvoice->setDeleted(true);
-				$fixInvoice->setStatus(InvoiceStatus::CANCELLED);
+				$fixInvoice->setStatus(Invoice::STATUS_CANCELLED);
 				$entities[] = $fixInvoice;
 
 				$history = new InvoiceHistory($invoice, 'Storno a odstranění dobropisu.');
@@ -233,13 +195,13 @@ class InvoiceManager
 				$invoice->addHistory($history);
 				$entities[] = $history;
 			}
-		} elseif ($invoice instanceof InvoiceProforma) {
-			$payDocument = $invoice->getPayDocument();
+		} elseif ($invoice->isProforma()) {
+			$payDocument = $invoice->getParentInvoice();
 			if ($payDocument !== null) {
 				$payDocument->setNumber('SMAZANA-' . $payDocument->getNumber() . '-' . date('Y-m-d'));
 				$payDocument->setVariableSymbol('SMAZANA-' . $payDocument->getNumber() . '-' . date('Y-m-d'));
 				$payDocument->setDeleted(true);
-				$payDocument->setStatus(InvoiceStatus::CANCELLED);
+				$payDocument->setStatus(Invoice::STATUS_CANCELLED);
 				$entities[] = $payDocument;
 
 				$history = new InvoiceHistory($invoice, 'Storno a odstranění potvrzení přijetí platby.');
@@ -258,7 +220,7 @@ class InvoiceManager
 	/**
 	 * @throws EntityManagerException|InvoiceException
 	 */
-	public function createPayDocumentFromInvoice(InvoiceCore $invoice): InvoicePayDocument
+	public function createPayDocumentFromInvoice(Invoice $invoice): Invoice
 	{
 		if (!$invoice->isReady()) {
 			throw new InvoiceException(
@@ -274,15 +236,15 @@ class InvoiceManager
 		$currencyRate = $currencyTemp->getRate();
 		$currencyDate = $currencyTemp->getLastUpdate();
 
-		if ($invoice instanceof InvoiceProforma) {
+		if ($invoice->isProforma()) {
 			$invoice->setRateDate($currencyDate);
 			$invoice->setRate($currencyRate);
 		}
 
 		$number = '77' . $invoice->getNumber();
 
-		$pd = new InvoicePayDocument($number);
-		$pd->setInvoice($invoice);
+		$pd = new Invoice($number, Invoice::TYPE_PAY_DOCUMENT);
+		$pd->setSubInvoice($invoice);
 		$pd->addDepositInvoice($invoice);
 		$invoice->addDepositingInvoice($pd);
 
@@ -292,8 +254,8 @@ class InvoiceManager
 		$user = $invoice->getCreateUser();
 		$pd->setCreateUser($user);
 		$pd->setEditUser($user);
-		$pd->setCreateDate(DateTime::from('NOW'));
-		$pd->setEditDate(DateTime::from('NOW'));
+		$pd->setCreateDate(new \DateTime('NOW'));
+		$pd->setEditDate(new \DateTime('NOW'));
 
 		//Nastaveni spolecnosti
 		$pd->setCompanyName($invoice->getCompanyName());
@@ -358,9 +320,9 @@ class InvoiceManager
 		$pd->setTextAfterItems($invoice->getTextAfterItems());
 
 		//Stav faktury
-		$pd->setStatus(InvoiceStatus::CREATED);
-		$pd->setAcceptStatus1(InvoiceStatus::ACCEPTED);
-		$pd->setAcceptStatus2(InvoiceStatus::ACCEPTED);
+		$pd->setStatus(Invoice::STATUS_CREATED);
+		$pd->setAcceptStatus1(Invoice::STATUS_ACCEPTED);
+		$pd->setAcceptStatus2(Invoice::STATUS_ACCEPTED);
 		$pd->setSubmitted(true);
 		$pd->setClosed(true);
 
@@ -407,7 +369,7 @@ class InvoiceManager
 		$pd->addHistory($history);
 
 		//Faktura
-		$invoice->setPayDocument($pd);
+		$invoice->setParentInvoice($pd);
 
 		$link = '/admin/invoice/show?id=' . $pd->getId();
 
@@ -436,7 +398,7 @@ class InvoiceManager
 	 * @return array
 	 * @throws EntityManagerException
 	 */
-	public function sendEmailToCompany(InvoiceCore $invoice): array
+	public function sendEmailToCompany(Invoice $invoice): array
 	{
 		$emails = $this->getInvoiceEmails($invoice);
 		if (count($emails) === 0) {
@@ -466,7 +428,7 @@ class InvoiceManager
 	/**
 	 * @return array
 	 */
-	public function getInvoiceEmails(InvoiceCore $invoice): array
+	public function getInvoiceEmails(Invoice $invoice): array
 	{
 		$emails = [];
 		$company = $invoice->getCompany();
@@ -502,7 +464,7 @@ class InvoiceManager
 	 * @param array $emails
 	 * @throws ConstantException
 	 */
-	public function sendEmail(InvoiceCore $invoice, array $emails): bool
+	public function sendEmail(Invoice $invoice, array $emails): bool
 	{
 		$production = (bool) ($this->params['invoiceEmail']['production'] ?? false);
 		$sender = $this->params['invoiceEmail']['email'] ?? 'test@app-universe.cz';
@@ -526,7 +488,7 @@ class InvoiceManager
 
 		try {
 			$tmp = $this->tempDir . '/' . $name;
-			$this->exportManager->get()->exportInvoiceToPDF($invoice, Destination::FILE, $tmp);
+			$this->exportManager->get()->exportInvoiceToPdf($invoice, Destination::FILE, $tmp);
 			$attachments[] = [
 				'file' => $tmp,
 				'name' => $name,
@@ -581,7 +543,7 @@ class InvoiceManager
 		foreach ($emails as $recipient) {
 			try {
 				$recipient = trim($recipient);
-				if ($invoice instanceof FixInvoice) {
+				if ($invoice->isFix()) {
 					$email = $this->emailEngine->get()->getEmailServiceByType(
 						InvoiceFixEmail::class, [
 							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
@@ -592,7 +554,7 @@ class InvoiceManager
 							'invoiceData' => $invoiceData,
 						]
 					);
-				} elseif ($invoice instanceof InvoicePayDocument) {
+				} elseif ($invoice->isPayDocument()) {
 					$email = $this->emailEngine->get()->getEmailServiceByType(
 						InvoicePayDocumentEmail::class, [
 							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
@@ -629,7 +591,7 @@ class InvoiceManager
 					$this->entityManager->persist($ih);
 
 					$invoice->addHistory($ih);
-					$invoice->setStatus(InvoiceStatus::SENT);
+					$invoice->setStatus(Invoice::STATUS_SENT);
 					$invoice->addEmail($recipient);
 				}
 				$this->entityManager->flush();
@@ -644,7 +606,7 @@ class InvoiceManager
 				$this->entityManager->persist($ih);
 
 				$invoice->addHistory($ih);
-				$invoice->setStatus(InvoiceStatus::SENT);
+				$invoice->setStatus(Invoice::STATUS_SENT);
 
 				$this->entityManager->flush();
 				$status = false;
@@ -661,11 +623,7 @@ class InvoiceManager
 	}
 
 
-	/**
-	 * @throws EntityManagerException
-	 * @throws InvoiceException
-	 */
-	public function createInvoiceFromInvoiceProforma(InvoiceProforma $proforma): Invoice
+	public function createInvoiceFromInvoiceProforma(Invoice $proforma): Invoice
 	{
 		if (!$proforma->isReady()) {
 			throw new InvoiceException(
@@ -677,7 +635,7 @@ class InvoiceManager
 		}
 
 		$number = $this->getNextInvoiceNumber();
-		$invoice = new Invoice($number);
+		$invoice = new Invoice($number, Invoice::TYPE_REGULAR);
 		$invoice->setProforma($proforma);
 		$invoice->addDepositInvoice($proforma);
 		$invoice->setCompany($proforma->getCompany());
@@ -693,8 +651,8 @@ class InvoiceManager
 
 		$invoice->setCreateUser($user ?? $proforma->getCreateUser());
 		$invoice->setEditUser($user ?? $proforma->getCreateUser());
-		$invoice->setCreateDate(DateTime::from('NOW'));
-		$invoice->setEditDate(DateTime::from('NOW'));
+		$invoice->setCreateDate(new \DateTime('NOW'));
+		$invoice->setEditDate(new \DateTime('NOW'));
 
 		//Nastaveni spolecnosti
 		$invoice->setCompanyName($proforma->getCompanyName());
@@ -715,7 +673,7 @@ class InvoiceManager
 		$invoice->setVariableSymbol($number);
 
 		//Nastaveni meny
-		$currencyTemp = $this->currencyManager->getCurrencyRateByDate($proforma->getCurrency(), DateTime::from('NOW'));
+		$currencyTemp = $this->currencyManager->getCurrencyRateByDate($proforma->getCurrency(), new \DateTime('NOW'));
 		$currencyRate = $currencyTemp->getRate();
 		$currencyDate = $currencyTemp->getLastUpdate();
 
@@ -742,8 +700,8 @@ class InvoiceManager
 		$invoice->setTotalTax(0);
 
 		//Data
-		$invoice->setDate(DateTime::from('NOW'));
-		$invoice->setDueDate(DateTime::from('NOW'));
+		$invoice->setDate(new \DateTime('NOW'));
+		$invoice->setDueDate(new \DateTime('NOW'));
 		$invoice->setTaxDate($currencyDate);
 
 		//platební metody
@@ -792,15 +750,11 @@ class InvoiceManager
 
 		//odecteni zalohy (propojeni faktur)
 		$invoice->addDepositInvoice($proforma);
-		$proforma->setInvoice($invoice);
+		$proforma->setSubInvoice($invoice);
 		$proforma->addDepositingInvoice($invoice);
 
 		//Záznam do historie
-		try {
-			$link = $this->linkGenerator->link('Admin:Invoice:show', ['id' => $proforma->getId()]);
-		} catch (InvalidLinkException $e) {
-			$link = '#';
-		}
+		$link = Url::get()->getBaseUrl() . '/admin/invoice/detail?id=' . $proforma->getId();
 		$history = new InvoiceHistory(
 			$invoice,
 			'Vytvoření faktury na základě proformy č.: <a href="' . $link . '">' . $proforma->getNumber() . '</a>.'
@@ -811,11 +765,7 @@ class InvoiceManager
 		$invoice->addHistory($history);
 
 		//Proforma
-		try {
-			$link = $this->linkGenerator->link('Admin:Invoice:show', ['id' => $invoice->getId()]);
-		} catch (InvalidLinkException $e) {
-			$link = '#';
-		}
+		$link = Url::get()->getBaseUrl() . '/admin/invoice/detail?id=' . $invoice->getId();
 
 		$history = new InvoiceHistory(
 			$proforma,
@@ -845,12 +795,12 @@ class InvoiceManager
 			$month = $date->format('m');
 		}
 
-		$date = DateTime::from($year . '-' . $month . '-01');
+		$date = new \DateTime($year . '-' . $month . '-01');
 		$startDate = $date->modifyClone('-3 months');
 		$stopDate = $date->modifyClone('+1 months');
 
-		/** @var InvoiceCore[] $invoices */
-		$invoices = $this->entityManager->getRepository(InvoiceCore::class)
+		/** @var Invoice[] $invoices */
+		$invoices = $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
 				->select('i.number')
 				->where('i.taxDate >= :dateStart')
@@ -888,9 +838,9 @@ class InvoiceManager
 	/**
 	 * @throws NonUniqueResultException|NoResultException
 	 */
-	public function getInvoiceByCode(string $number): InvoiceCore
+	public function getInvoiceByCode(string $number): Invoice
 	{
-		return $this->entityManager->getRepository(InvoiceCore::class)
+		return $this->entityManager->getRepository(Invoice::class)
 			->createQueryBuilder('i')
 			->select('i')
 			->where('i.number = :number')
@@ -900,7 +850,7 @@ class InvoiceManager
 	}
 
 
-	public function getColorByInvoiceDocument(InvoiceCore $invoice): string
+	public function getColorByInvoiceDocument(Invoice $invoice): string
 	{
 		return $this->exportManager->get()->getColorByInvoiceDocument($invoice);
 	}
@@ -909,18 +859,18 @@ class InvoiceManager
 	/**
 	 * @return array<string|null>
 	 */
-	public function getInvoiceTemplateData(InvoiceCore $invoice): array
+	public function getInvoiceTemplateData(Invoice $invoice): array
 	{
 		return $this->exportManager->get()->getInvoiceTemplateData($invoice);
 	}
 
 
 	/**
-	 * @return array<Invoice|InvoiceProforma|InvoicePayDocument|FixInvoice>|Collection
+	 * @return array<int, Invoice>
 	 */
-	public function getInvoicesByCompany(Company $company): array|Collection
+	public function getInvoicesByCompany(Company $company): array
 	{
-		return $this->entityManager->getRepository(InvoiceCore::class)
+		return $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('ic')
 				->select('ic')
 				->where('ic.company = :companyId')
@@ -928,7 +878,6 @@ class InvoiceManager
 				->andWhere('ic.deleted = :f')
 				->setParameter('f', false)
 				->getQuery()
-				->getResult() ?? [];
+				->getResult();
 	}
-
 }

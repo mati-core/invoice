@@ -8,68 +8,69 @@ namespace MatiCore\Invoice;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Address\Entity\Country;
-use MatiCore\Currency\Currency;
 
 /**
  * @ORM\Entity()
+ * @deprecated
  */
 class ExpenseInvoice extends Expense
 {
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierInvoiceNumber = null;
+	private string|null $supplierInvoiceNumber = null;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $variableSymbol = null;
+	private string|null $variableSymbol = null;
 
 	/** @ORM\Column(type="string") */
-	protected string $supplierName;
+	private string $supplierName;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierCin = null;
+	private string|null $supplierCin = null;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierTin = null;
+	private string|null $supplierTin = null;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierStreet = null;
+	private string|null $supplierStreet = null;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierCity = null;
+	private string|null $supplierCity = null;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierZipCode = null;
+	private string|null $supplierZipCode = null;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
-	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id", nullable=true) */
-	protected Country $supplierCountry;
+	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id", nullable=true)
+	 */
+	private Country $supplierCountry;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierBankAccount = null;
+	private string|null $supplierBankAccount = null;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierIBAN = null;
+	private string|null $supplierIBAN = null;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $supplierSWIFT = null;
+	private string|null $supplierSWIFT = null;
 
 	/**
 	 * @var ExpenseInvoiceItem[]|Collection
 	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\ExpenseInvoiceItem", mappedBy="expense")
-	 * @ORM\OrderBy({"position"="ASC"}) */
-	protected array|Collection $items;
+	 * @ORM\OrderBy({"position"="ASC"})
+	 */
+	private array|Collection $items;
 
 	/** @ORM\Column(type="date", nullable=true) */
-	protected \DateTime|null $datePrint = null;
+	private \DateTime|null $datePrint = null;
 
 	/** @ORM\Column(type="integer") */
-	protected int $deliveryType = ExpenseDeliveryType::ROAD;
+	private int $deliveryType = ExpenseDeliveryType::ROAD;
 
 	/** @ORM\Column(type="float") */
-	protected float $weight = 0.0;
+	private float $weight = 0.0;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $productCode = null;
+	private string|null $productCode = null;
 
 
 	public function __construct(
@@ -353,5 +354,4 @@ class ExpenseInvoice extends Expense
 	{
 		$this->productCode = $productCode;
 	}
-
 }

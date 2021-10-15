@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Currency\Currency;
-use MatiCore\User\BaseUser;
-use Nette\SmartObject;
-use Nette\Utils\DateTime;
 
 /**
  * @ORM\Entity()
@@ -20,61 +16,62 @@ use Nette\Utils\DateTime;
  */
 class Expense
 {
-	use UuidIdentifier;
-	use SmartObject;
+	use IdentifierUnsigned;
 
 	/** @ORM\Column(type="string", unique=true) */
-	protected string $number;
+	private string $number;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $category = null;
+	private string|null $category = null;
 
 	/** @ORM\Column(type="string") */
-	protected string $description;
+	private string $description;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id") */
-	protected Currency $currency;
+	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id")
+	 */
+	private Currency $currency;
 
 	/** @ORM\Column(type="float") */
-	protected float $rate = 1.0;
+	private float $rate = 1.0;
 
 	/** @ORM\Column(type="float") */
-	protected float $totalPrice;
+	private float $totalPrice;
 
 	/** @ORM\Column(type="float") */
-	protected float $totalTax = 0.0;
+	private float $totalTax = 0.0;
 
 	/** @ORM\Column(type="date") */
-	protected \DateTime $date;
+	private \DateTime $date;
 
 	/** @ORM\Column(type="date", nullable=true) */
-	protected \DateTime|null $dueDate = null;
+	private \DateTime|null $dueDate = null;
 
 	/** @ORM\Column(type="boolean") */
-	protected bool $paid = false;
+	private bool $paid = false;
 
 	/** @ORM\Column(type="string", nullable=true) */
-	protected string|null $payMethod = null;
+	private string|null $payMethod = null;
 
 	/** @ORM\Column(type="date", nullable=true) */
-	protected \DateTime|null $payDate = null;
+	private \DateTime|null $payDate = null;
 
 	/** @ORM\Column(type="boolean") */
-	protected bool $hidden = false;
+	private bool $hidden = false;
 
 	/** @ORM\Column(type="datetime") */
-	protected \DateTime $createDate;
+	private \DateTime $createDate;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="create_user_id", referencedColumnName="id", nullable=true) */
-	protected BaseUser|null $createUser = null;
+	 * @ORM\JoinColumn(name="create_user_id", referencedColumnName="id", nullable=true)
+	 */
+	private BaseUser|null $createUser = null;
 
 	/** @ORM\Column(type="text", nullable=true) */
-	protected string|null $note = null;
+	private string|null $note = null;
 
 	/** @ORM\Column(type="boolean") */
-	protected bool $deleted = false;
+	private bool $deleted = false;
 
 
 	public function __construct(
@@ -89,7 +86,7 @@ class Expense
 		$this->currency = $currency;
 		$this->totalPrice = $totalPrice;
 		$this->date = $date;
-		$this->createDate = DateTime::from('NOW');
+		$this->createDate = new \DateTime;
 	}
 
 
@@ -289,5 +286,4 @@ class Expense
 	{
 		$this->deleted = $deleted;
 	}
-
 }

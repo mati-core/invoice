@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace MatiCore\Supplier;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
+use Baraja\Shop\Address\Entity\Address;
 use Doctrine\ORM\Mapping as ORM;
-use MatiCore\Address\Entity\Address;
-use MatiCore\Currency\Currency;
-use Nette\SmartObject;
 
 /**
  * @ORM\Entity()
@@ -17,8 +15,7 @@ use Nette\SmartObject;
  */
 class Supplier
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
 
 	/** @ORM\Column(type="string") */
 	private string $name;
@@ -27,11 +24,13 @@ class Supplier
 	private string|null $deliveryCompany = null;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Address")
-	 * @ORM\JoinColumn(name="address_id", referencedColumnName="id") */
+	 * @ORM\JoinColumn(name="address_id", referencedColumnName="id")
+	 */
 	private Address $address;
 
 	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="delivery_currency_id", referencedColumnName="id") */
+	 * @ORM\JoinColumn(name="delivery_currency_id", referencedColumnName="id")
+	 */
 	private Currency $currency;
 
 	/** @ORM\Column(type="boolean") */
@@ -104,5 +103,4 @@ class Supplier
 	{
 		$this->active = $active;
 	}
-
 }

@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Company;
 
 
-use MatiCore\Currency\Number;
 use MatiCore\Invoice\InvoiceManagerAccessor;
-use MatiCore\Invoice\InvoicePayDocument;
 use Nette\Application\UI\Control;
-use Nette\Utils\DateTime;
 
 class CompanyInvoiceStatisticsControl extends Control
 {
@@ -22,7 +19,7 @@ class CompanyInvoiceStatisticsControl extends Control
 	}
 
 
-	public function render(Company $company): void
+	public function getData(Company $company): array
 	{
 		$invoices = $this->invoiceManager->get()->getInvoicesByCompany($company);
 
@@ -38,20 +35,17 @@ class CompanyInvoiceStatisticsControl extends Control
 		$invoicesOverdueCount = 0;
 		$invoicesOverduePercent = 100;
 
-		$now = DateTime::from('NOW');
-
+		$now = new \DateTimeImmutable();
 		foreach ($invoices as $invoice) {
-			if (!$invoice instanceof InvoicePayDocument) {
+			if (!$invoice->isPayDocument()) {
 				$invoicesPrice += $invoice->getTotalPrice();
 				$invoicesCount++;
-
 				if ($invoice->isPaid()) {
 					$invoicesPaidPrice += $invoice->getTotalPrice();
 					$invoicesPaidCount++;
 				} else {
 					$invoicesActivePrice += $invoice->getTotalPrice();
 					$invoicesActiveCount++;
-
 					if ($now > $invoice->getDueDate()) {
 						$invoicesOverduePrice += $invoice->getTotalPrice();
 						$invoicesOverdueCount++;
@@ -66,21 +60,18 @@ class CompanyInvoiceStatisticsControl extends Control
 			$invoicesOverduePercent = (100 / $invoicesCount) * $invoicesOverdueCount;
 		}
 
-		$this->template->invoiceData = [
-			'invoicesPrice' => Number::formatPrice($invoicesPrice, $company->getCurrency()),
+		return [
+			'invoicesPrice' => $invoicesPrice,
 			'invoicesCount' => $invoicesCount,
-			'invoicesPaidPrice' => Number::formatPrice($invoicesPaidPrice, $company->getCurrency()),
+			'invoicesPaidPrice' => $invoicesPaidPrice,
 			'invoicesPaidCount' => $invoicesPaidCount,
 			'invoicesPaidPercent' => round($invoicesPaidPercent),
-			'invoicesActivePrice' => Number::formatPrice($invoicesActivePrice, $company->getCurrency()),
+			'invoicesActivePrice' => $invoicesActivePrice,
 			'invoicesActiveCount' => $invoicesActiveCount,
 			'invoicesActivePercent' => round($invoicesActivePercent),
-			'invoicesOverduePrice' => Number::formatPrice($invoicesOverduePrice, $company->getCurrency()),
+			'invoicesOverduePrice' => $invoicesOverduePrice,
 			'invoicesOverdueCount' => $invoicesOverdueCount,
 			'invoicesOverduePercent' => round($invoicesOverduePercent),
 		];
-
-		$this->template->setFile(__DIR__ . '/default.latte');
-		$this->template->render();
 	}
 }

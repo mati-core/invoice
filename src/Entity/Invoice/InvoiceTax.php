@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
-use Baraja\Doctrine\UUID\UuidIdentifier;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
-use Nette\SmartObject;
 
 /**
  * @ORM\Entity()
@@ -15,11 +14,10 @@ use Nette\SmartObject;
  */
 class InvoiceTax
 {
-	use SmartObject;
-	use UuidIdentifier;
+	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\InvoiceCore", inversedBy="taxList") */
-	private InvoiceCore $invoice;
+	/** @ORM\ManyToOne(targetEntity="Invoice", inversedBy="taxList") */
+	private Invoice $invoice;
 
 	/** @ORM\Column(type="float") */
 	private float $tax;
@@ -28,7 +26,7 @@ class InvoiceTax
 	private float $price;
 
 
-	public function __construct(InvoiceCore $invoice, float $tax, float $price)
+	public function __construct(Invoice $invoice, float $tax, float $price)
 	{
 		$this->invoice = $invoice;
 		$this->tax = $tax;
