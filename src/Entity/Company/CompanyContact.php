@@ -8,51 +8,49 @@ namespace MatiCore\Company;
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="company__company_contact")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__company_contact')]
 class CompanyContact
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company", inversedBy="contacts") */
+	#[ORM\ManyToOne(targetEntity: Company::class)]
 	private Company $company;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock", inversedBy="contacts") */
-	private CompanyStock|null $companyStock;
+	#[ORM\ManyToOne(targetEntity: CompanyStock::class)]
+	private ?CompanyStock $companyStock = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $role;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $role = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $firstName;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $firstName = null;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $lastName;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $email;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $email = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $phone;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $phone = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $mobilePhone;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $mobilePhone = null;
 
-	/** @ORM\Column(type="text", nullable=true) */
-	private string|null $note;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $note = null;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $sendInvoice = false;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $sendOffer = false;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $sendOrder = false;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $sendMarketing = true;
 
 

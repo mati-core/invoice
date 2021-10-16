@@ -123,16 +123,14 @@ class CompanyManager
 
 
 	/**
-	 * @return array
+	 * @return array<string, string>
 	 */
 	public function getCompanyTypes(): array
 	{
 		static $list;
-
 		if ($list === null) {
-			$list = CompanyType::getList();
-
-			foreach ($list as $key => $item) {
+			$list = [];
+			foreach (CompanyType::LIST as $key => $item) {
 				$list[$key] = $this->translator->translate($item);
 			}
 		}
@@ -143,7 +141,7 @@ class CompanyManager
 
 	public function getDefaultCompanyType(): string
 	{
-		return CompanyType::getDefault();
+		return CompanyType::STANDARD;
 	}
 
 

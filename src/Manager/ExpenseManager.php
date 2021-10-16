@@ -356,22 +356,28 @@ class ExpenseManager
 			$number = $this->expenseManager->get()->getNextNumber();
 
 			$expense = new ExpenseInvoice(
-				$number, $expenseData['description'], $currency, (float) $expenseData['price'], $date,
+				$number,
+				$expenseData['description'],
+				$currency,
+				(float) $expenseData['price'],
+				$date,
 				$expenseData['customer']['name']
 			);
 			$expense->setCategory($expenseData['category']);
-
 			$expense->setCreateUser($userId);
 
 			$this->entityManager->persist($expense);
 			$isNew = true;
-
 			$expenseData['id'] = $expense->getId();
 		} else {
 			$number = $this->expenseManager->get()->getNextNumber();
 
 			$expense = new Expense(
-				$number, $expenseData['description'], $currency, (float) $expenseData['price'], $date
+				$number,
+				$expenseData['description'],
+				$currency,
+				(float) $expenseData['price'],
+				$date
 			);
 
 			if ($expenseData['type'] === 'tax') {
@@ -383,8 +389,8 @@ class ExpenseManager
 			} elseif ($expenseData['type'] === 'default') {
 				$expense->setCategory($expenseData['category']);
 			}
-			$expense->setCreateUser($userId);
 
+			$expense->setCreateUser($userId);
 			$this->entityManager->persist($expense);
 			$isNew = true;
 			$expenseData['id'] = $expense->getId();

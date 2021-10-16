@@ -11,10 +11,8 @@ use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="company__company")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__company')]
 class Company
 {
 	use IdentifierUnsigned;
@@ -24,48 +22,37 @@ class Company
 		TYPE_VIP = 'vip',
 		TYPE_CONTRACT = 'contract';
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $name;
 
-	/**
-	 * @var CompanyStock[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyStock", mappedBy="company")
-	 * @ORM\OrderBy({"name"="ASC"})
-	 */
+	/** @var CompanyStock[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'company', targetEntity: CompanyStock::class)]
+	#[ORM\OrderBy((['name' => 'ASC']))]
 	private array|Collection $stocks;
 
-	/**
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Currency::class)]
 	private Currency $currency;
 
-	/**
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Address")
-	 * @ORM\JoinColumn(name="invoice_address_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Address::class)]
 	private Address $invoiceAddress;
 
-	/**
-	 * @var CompanyContact[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyContact", mappedBy="company")
-	 * @ORM\OrderBy({"lastName"="ASC","firstName"="ASC"})
-	 */
+	/** @var CompanyContact[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'company', targetEntity: CompanyContact::class)]
 	private array|Collection $contacts;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $sendInvoicesInOneFile = false;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $invoiceDueDayCount = 14;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string $note;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string $type = CompanyType::STANDARD;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $blackList = false;
 
 

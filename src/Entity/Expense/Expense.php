@@ -9,12 +9,8 @@ use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="invoice__expense")
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="discriminator", type="string")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__expense')]
 class Expense
 {
 	use IdentifierUnsigned;
@@ -35,59 +31,55 @@ class Expense
 		self::PAY_METHOD_CARD => 'Kartou',
 	];
 
-	/** @ORM\Column(type="string", unique=true) */
+	#[ORM\Column(type: 'string', unique: true)]
 	private string $number;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $category = null;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $description;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Currency::class)]
 	private Currency $currency;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $rate = 1.0;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $totalPrice;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $totalTax = 0.0;
 
-	/** @ORM\Column(type="date") */
+	#[ORM\Column(type: 'date')]
 	private \DateTime $date;
 
-	/** @ORM\Column(type="date", nullable=true) */
+	#[ORM\Column(type: 'date', nullable: true)]
 	private \DateTime|null $dueDate = null;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $paid = false;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $payMethod = null;
 
-	/** @ORM\Column(type="date", nullable=true) */
+	#[ORM\Column(type: 'date', nullable: true)]
 	private \DateTime|null $payDate = null;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $hidden = false;
 
-	/** @ORM\Column(type="datetime") */
+	#[ORM\Column(type: 'datetime')]
 	private \DateTime $createDate;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="create_user_id", referencedColumnName="id", nullable=true)
-	 */
-	private BaseUser|null $createUser = null;
+	#[ORM\Column(type: 'integer', nullable: true)]
+	private ?int $createUser = null;
 
-	/** @ORM\Column(type="text", nullable=true) */
+	#[ORM\Column(type: 'text', nullable: true)]
 	private string|null $note = null;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $deleted = false;
 
 

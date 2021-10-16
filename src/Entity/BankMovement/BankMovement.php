@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-
 namespace MatiCore\Invoice;
 
 
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
+use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="invoice__bank_movement")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__bank_movement')]
 class BankMovement
 {
+	use IdentifierUnsigned;
+
 	public const
 		STATUS_NOT_PROCESSED = 'not-processed',
 		STATUS_SUCCESS = 'success',
@@ -26,54 +26,49 @@ class BankMovement
 		STATUS_IS_PAID = 'is-paid',
 		STATUS_SYSTEM_ERROR = 'error';
 
-	use IdentifierUnsigned;
-
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $messageId;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $status = self::STATUS_NOT_PROCESSED;
 
 	#[ORM\ManyToOne(targetEntity: Invoice::class)]
 	private ?Invoice $invoice = null;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $bankAccountName;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $bankAccount;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $currencyIsoCode;
 
-	/**
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Currency::class)]
 	private Currency $currency;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $customerBankAccount;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $customerName;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $variableSymbol;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $constantSymbol;
 
-	/** @ORM\Column(type="text", nullable=true) */
+	#[ORM\Column(type: 'text', nullable: true)]
 	private string|null $message;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $price;
 
-	/** @ORM\Column(type="date") */
+	#[ORM\Column(type: 'date')]
 	private \DateTime $date;
 
-	/** @ORM\Column(type="datetime") */
+	#[ORM\Column(type: 'datetime')]
 	private \DateTime $createDate;
 
 

@@ -11,7 +11,7 @@ use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'supplier__supplier')]
+#[ORM\Table(name: 'invoice__supplier')]
 class Supplier
 {
 	use IdentifierUnsigned;

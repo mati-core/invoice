@@ -295,11 +295,9 @@ class InvoicePayCheckCommand extends Command
 
 		if (preg_match('/^Variabilní\ssymbol:\s(\d+)/u', $lines[9], $m) && isset($m[1])) {
 			$vs = $m[1];
-
 			while ($vs[0] === '0') {
 				$vs = substr($vs, 1);
 			}
-
 			$data['variableSymbol'] = $vs;
 		} else {
 			throw new BankMailException('Can not parse variable symbol from line 12.');

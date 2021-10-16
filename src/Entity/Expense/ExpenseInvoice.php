@@ -12,64 +12,62 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
  * @deprecated
  */
+#[ORM\Entity]
 class ExpenseInvoice extends Expense
 {
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierInvoiceNumber = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $variableSymbol = null;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $supplierName;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierCin = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierTin = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierStreet = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierCity = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierZipCode = null;
 
 	#[ORM\ManyToOne(targetEntity: Country::class)]
 	private Country $supplierCountry;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierBankAccount = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierIBAN = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierSWIFT = null;
 
-	/**
-	 * @var ExpenseInvoiceItem[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\ExpenseInvoiceItem", mappedBy="expense")
-	 * @ORM\OrderBy({"position"="ASC"})
-	 */
+	/** @var ExpenseInvoiceItem[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'expense', targetEntity: ExpenseInvoiceItem::class)]
+	#[ORM\OrderBy(['position' => 'ASC'])]
 	private array|Collection $items;
 
-	/** @ORM\Column(type="date", nullable=true) */
+	#[ORM\Column(type: 'date', nullable: true)]
 	private \DateTime|null $datePrint = null;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $deliveryType = Expense::DELIVERY_TYPE_ROAD;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $weight = 0.0;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $productCode = null;
 
 

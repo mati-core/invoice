@@ -10,10 +10,8 @@ use Baraja\Shop\Entity\Currency\Currency;
 use Baraja\Shop\Entity\Unit\Unit;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="invoice__invoice_item")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__invoice_item')]
 class InvoiceItem
 {
 	use IdentifierUnsigned;
@@ -21,41 +19,37 @@ class InvoiceItem
 	#[ORM\ManyToOne(targetEntity: Invoice::class)]
 	private Invoice $invoice;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $description;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $code;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $quantity;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Unit\Unit")
-	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Unit::class)]
 	private Unit $unit;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $vat = 21.0;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $pricePerItem;
 
-	/** @ORM\Column(type="float", nullable=true) */
+	#[ORM\Column(type: 'float', nullable: true)]
 	private float|null $buyPrice;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="buy_curreny_id", referencedColumnName="id", nullable=true)
-	 */
+	#[ORM\ManyToOne(targetEntity: Currency::class)]
 	private Currency|null $buyCurrency;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $position = 0;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $sale = 0;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $saleDescription = 'Sleva';
 
 

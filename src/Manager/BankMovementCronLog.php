@@ -6,8 +6,6 @@ namespace MatiCore\Invoice;
 
 
 use Nette\Utils\FileSystem;
-use Nette\Utils\Json;
-use Nette\Utils\JsonException;
 
 class BankMovementCronLog
 {
@@ -17,35 +15,35 @@ class BankMovementCronLog
 	}
 
 
-	/**
-	 * @throws JsonException
-	 */
 	public function setLog(bool $status): void
 	{
 		FileSystem::write(
 			$this->logDir . '/bankMovementCron.log',
-			Json::encode(
+			(string) json_encode(
 				[
 					'date' => date('d.m.Y H:i:s'),
 					'status' => $status,
-				]
+				],
+				JSON_THROW_ON_ERROR
 			)
 		);
 	}
 
 
 	/**
-	 * @return array|null
-	 * @throws JsonException
+	 * @return array{date: string|null, status: bool|null}
 	 */
-	public function getLog(): ?array
+	public function getLog(): array
 	{
 		if (!is_file($this->logDir . '/bankMovementCron.log')) {
-			return null;
+			return [
+				'date' => null,
+				'status' => null,
+			];
 		}
 
 		$data = FileSystem::read($this->logDir . '/bankMovementCron.log');
 
-		return Json::decode($data, Json::FORCE_ARRAY);
+		return (array) json_decode($data, true, 512, JSON_THROW_ON_ERROR);
 	}
 }

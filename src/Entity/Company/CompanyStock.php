@@ -10,33 +10,27 @@ use Baraja\Shop\Address\Entity\Address;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="company__company_stock")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__company_stock')]
 class CompanyStock
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company", inversedBy="stocks") */
+	#[ORM\ManyToOne(targetEntity: Company::class)]
 	private Company $company;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $name;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Address")
-	 * @ORM\JoinColumn(name="address_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Address::class)]
 	private Address $address;
 
-	/**
-	 * @var CompanyContact[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Company\CompanyContact", mappedBy="companyStock")
-	 */
+	/** @var CompanyContact[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'companyStock', targetEntity: CompanyContact::class)]
 	private array|Collection $contacts;
 
-	/** @ORM\Column(type="text", nullable=true) */
-	private string|null $note;
+	#[ORM\Column(type: 'text', nullable: true)]
+	private string|null $note = null;
 
 
 	public function __construct(Company $company, string $name, Address $address)

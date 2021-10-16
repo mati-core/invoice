@@ -88,24 +88,20 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 		$grid = new MatiDataGrid($this, $name);
 
 		if ($this->checkAccess('page__expense__admin')) {
-			$grid->setDataSource(
-				$this->entityManager
-					->createQueryBuilder()
-					->from(Expense::class, 'e')
-					->where('e.deleted = :f')
-					->setParameter('f', false)
-					->orderBy('e.number', 'DESC')
-			);
+			$rows = $this->entityManager
+				->getRepository(Expense::class)
+				->createQueryBuilder('e')
+				->where('e.deleted = :f')
+				->setParameter('f', false)
+				->orderBy('e.number', 'DESC');
 		} else {
-			$grid->setDataSource(
-				$this->entityManager
-					->createQueryBuilder()
-					->from(Expense::class, 'e')
-					->where('e.hidden = :f')
-					->andWhere('e.deleted = :f')
-					->setParameter('f', false)
-					->orderBy('e.number', 'DESC')
-			);
+			$rows = $this->entityManager
+				->getRepository(Expense::class)
+				->createQueryBuilder('e')
+				->where('e.hidden = :f')
+				->andWhere('e.deleted = :f')
+				->setParameter('f', false)
+				->orderBy('e.number', 'DESC');
 		}
 
 		$grid->addColumnText('number', 'Číslo')

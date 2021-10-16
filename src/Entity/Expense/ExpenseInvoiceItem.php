@@ -6,6 +6,7 @@ namespace MatiCore\Invoice;
 
 
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
+use Baraja\Shop\Entity\Unit\Unit;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]

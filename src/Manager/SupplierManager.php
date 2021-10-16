@@ -7,7 +7,6 @@ namespace MatiCore\Supplier;
 
 use Baraja\Country\Entity\Country;
 use Baraja\Doctrine\EntityManager;
-use Baraja\Doctrine\EntityManagerException;
 use Baraja\Shop\Address\Entity\Address;
 use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\ORM\NonUniqueResultException;
@@ -77,8 +76,7 @@ class SupplierManager
 		string $city,
 		Country $country
 	): Supplier {
-		$address = new Address($country, $name, null, $street, $city);
-
+		$address = new Address($country, $name, null, $street, $city, '');
 		$this->entityManager->persist($address);
 		$supplier = new Supplier($name, $currency, $address);
 		$this->entityManager->persist($supplier);

@@ -7,6 +7,7 @@ namespace MatiCore\Invoice;
 
 use Baraja\Shop\Currency\CurrencyManager;
 use Doctrine\ORM\EntityManager;
+use Latte\Engine;
 use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
 use Mpdf\MpdfException;
@@ -38,8 +39,7 @@ class ExportManager
 
 
 	/**
-	 * @param array $invoices
-	 * @throws CurrencyException|MpdfException
+	 * @param array<int, Invoice> $invoices
 	 */
 	public function exportInvoicesToPDF(array $invoices): ?string
 	{
@@ -173,38 +173,37 @@ class ExportManager
 		string $destination = Destination::DOWNLOAD,
 		string $file = 'attachment.pdf'
 	): ?string {
-		$pdf = new Mpdf();
-
+		$mpdf = new Mpdf();
 		try {
 			$first = true;
-			foreach ($files as $importedPDF) {
-				if (is_file($importedPDF)) {
-					$pageCount = $pdf->setSourceFile($importedPDF);
+			foreach ($files as $importedPdf) {
+				if (is_file($importedPdf)) {
+					$pageCount = $mpdf->setSourceFile($importedPdf);
 					for ($i = 1; $i <= $pageCount; $i++) {
 						if ($first) {
 							$first = false;
 						} else {
-							$pdf->WriteHTML('<pagebreak>');
+							$mpdf->WriteHTML('<pagebreak>');
 						}
-						$pageId = $pdf->ImportPage($i);
-						$pdf->UseTemplate($pageId);
+						$pageId = $mpdf->ImportPage($i);
+						$mpdf->UseTemplate($pageId);
 					}
 				} else {
-					throw new MpdfException('Missing imported file: ' . $importedPDF);
+					throw new MpdfException('Missing imported file: ' . $importedPdf);
 				}
 			}
 		} catch (CrossReferenceException | PdfParserException | PdfTypeException $e) {
 			Debugger::log($e);
-			throw new MpdfException('Error merge PDF: ' . $e->getMessage());
+			throw new \RuntimeException('Error merge PDF: ' . $e->getMessage());
 		}
 
 		if ($destination === Destination::FILE) {
-			$pdf->Output($file, Destination::FILE);
+			$mpdf->Output($file, Destination::FILE);
 
 			return null;
 		}
 
-		return $pdf->Output($file, $destination);
+		return $mpdf->Output($file, $destination);
 	}
 
 
@@ -218,10 +217,6 @@ class ExportManager
 		string $destination = Destination::DOWNLOAD,
 		?string $file = null
 	): ?string {
-		$template = $this->templateFactory->createTemplate();
-		$template->invoice = $invoice;
-		$template->newDueDate = $newDueDate;
-
 		if ($alertNumber === 3) {
 			$name = $this->config['alertThree']['filename'] . $invoice->getNumber() . '.pdf';
 		} elseif ($alertNumber === 2) {
@@ -241,9 +236,6 @@ class ExportManager
 			}
 		}
 
-		$template->setFile($templateFile);
-		$html = $template->renderToString();
-
 		$styleFile = $this->config['alertOne']['style'];
 		if ($styleFile === null || $styleFile === '') {
 			if ($alertNumber === 3) {
@@ -255,13 +247,16 @@ class ExportManager
 			}
 		}
 
-		$style = FileSystem::read($styleFile);
-
 		$pdf = new Mpdf();
 		$pdf->SetAuthor($this->config['author']);
 		$pdf->autoPageBreak = false;
-		$pdf->WriteHTML($style, HTMLParserMode::HEADER_CSS);
-		$pdf->WriteHTML($html);
+		$pdf->WriteHTML(FileSystem::read($styleFile), HTMLParserMode::HEADER_CSS);
+		$pdf->WriteHTML(
+			(new Engine)->renderToString($templateFile, [
+				'invoice' => $invoice,
+				'newDueDate' => $newDueDate,
+			])
+		);
 
 		if ($destination === Destination::FILE) {
 			$pdf->Output($file, Destination::FILE);

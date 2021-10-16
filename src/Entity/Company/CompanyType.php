@@ -12,22 +12,9 @@ class CompanyType
 		VIP = 'vip',
 		CONTRACT = 'contract';
 
-
-	/**
-	 * @return string[]
-	 */
-	public static function getList(): array
-	{
-		return [
-			self::STANDARD => self::STANDARD,
-			self::VIP => self::VIP,
-			self::CONTRACT => self::CONTRACT,
-		];
-	}
-
-
-	public static function getDefault(): string
-	{
-		return self::STANDARD;
-	}
+	public const LIST = [
+		self::STANDARD => self::STANDARD,
+		self::VIP => self::VIP,
+		self::CONTRACT => self::CONTRACT,
+	];
 }

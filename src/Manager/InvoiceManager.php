@@ -62,12 +62,12 @@ class InvoiceManager
 	public function getAllInvoices(): array
 	{
 		return $this->entityManager->getRepository(Invoice::class)
-				->createQueryBuilder('i')
-				->andWhere('i.deleted = :false')
-				->setParameter('false', false)
-				->orderBy('i.number', 'DESC')
-				->getQuery()
-				->getResult();
+			->createQueryBuilder('i')
+			->andWhere('i.deleted = :false')
+			->setParameter('false', false)
+			->orderBy('i.number', 'DESC')
+			->getQuery()
+			->getResult();
 	}
 
 
@@ -77,14 +77,14 @@ class InvoiceManager
 	public function getInvoices(int $limit = 100, int $offset = 0): array
 	{
 		return $this->entityManager->getRepository(Invoice::class)
-				->createQueryBuilder('i')
-				->andWhere('i.deleted = :false')
-				->setParameter('false', false)
-				->orderBy('i.number', 'DESC')
-				->setMaxResults($limit)
-				->setFirstResult($offset)
-				->getQuery()
-				->getResult();
+			->createQueryBuilder('i')
+			->andWhere('i.deleted = :false')
+			->setParameter('false', false)
+			->orderBy('i.number', 'DESC')
+			->setMaxResults($limit)
+			->setFirstResult($offset)
+			->getQuery()
+			->getResult();
 	}
 
 
@@ -94,31 +94,31 @@ class InvoiceManager
 	public function getInvoicesBetweenDates(\DateTime $startDate, \DateTime $stopDate): array
 	{
 		return $this->entityManager->getRepository(Invoice::class)
-				->createQueryBuilder('i')
-				->where('i.taxDate >= :startDate')
-				->andWhere('i.taxDate < :stopDate')
-				->andWhere('i.deleted = :false')
-				->andWhere('i.status != :status')
-				->andWhere('i.acceptStatus1 = :status1')
-				->andWhere('i.acceptStatus2 = :status2')
-				->andWhere('i.type IN (:types)')
-				->setParameter('startDate', $startDate->format('Y-m-d'))
-				->setParameter('stopDate', $stopDate->format('Y-m-d'))
-				->setParameter('false', false)
-				->setParameter('status', Invoice::STATUS_CANCELLED)
-				->setParameter('status1', Invoice::STATUS_ACCEPTED)
-				->setParameter('status2', Invoice::STATUS_ACCEPTED)
-				->setParameter(
-					'types',
-					[
+			->createQueryBuilder('i')
+			->where('i.taxDate >= :startDate')
+			->andWhere('i.taxDate < :stopDate')
+			->andWhere('i.deleted = :false')
+			->andWhere('i.status != :status')
+			->andWhere('i.acceptStatus1 = :status1')
+			->andWhere('i.acceptStatus2 = :status2')
+			->andWhere('i.type IN (:types)')
+			->setParameter('startDate', $startDate->format('Y-m-d'))
+			->setParameter('stopDate', $stopDate->format('Y-m-d'))
+			->setParameter('false', false)
+			->setParameter('status', Invoice::STATUS_CANCELLED)
+			->setParameter('status1', Invoice::STATUS_ACCEPTED)
+			->setParameter('status2', Invoice::STATUS_ACCEPTED)
+			->setParameter(
+				'types',
+				[
 					Invoice::TYPE_REGULAR,
 					Invoice::TYPE_PROFORMA,
 					Invoice::TYPE_PAY_DOCUMENT,
 				]
-				)
-				->orderBy('i.number', 'DESC')
-				->getQuery()
-				->getResult() ;
+			)
+			->orderBy('i.number', 'DESC')
+			->getQuery()
+			->getResult();
 	}
 
 
@@ -128,19 +128,19 @@ class InvoiceManager
 	public function getInvoicesUnpaid(): array
 	{
 		return $this->entityManager->getRepository(Invoice::class)
-				->createQueryBuilder('i')
-				->where('i.payDate IS NULL')
-				->andWhere('i.status != :status')
-				->andWhere('i.deleted = :false')
-				->setParameter('status', Invoice::STATUS_CANCELLED)
-				->andWhere('i.acceptStatus1 = :status1')
-				->setParameter('status1', Invoice::STATUS_ACCEPTED)
-				->andWhere('i.acceptStatus2 = :status2')
-				->setParameter('status2', Invoice::STATUS_ACCEPTED)
-				->setParameter('false', false)
-				->orderBy('i.number', 'DESC')
-				->getQuery()
-				->getResult();
+			->createQueryBuilder('i')
+			->where('i.payDate IS NULL')
+			->andWhere('i.status != :status')
+			->andWhere('i.deleted = :false')
+			->setParameter('status', Invoice::STATUS_CANCELLED)
+			->andWhere('i.acceptStatus1 = :status1')
+			->setParameter('status1', Invoice::STATUS_ACCEPTED)
+			->andWhere('i.acceptStatus2 = :status2')
+			->setParameter('status2', Invoice::STATUS_ACCEPTED)
+			->setParameter('false', false)
+			->orderBy('i.number', 'DESC')
+			->getQuery()
+			->getResult();
 	}
 
 
@@ -750,9 +750,6 @@ class InvoiceManager
 	}
 
 
-	/**
-	 * @throws InvoiceException
-	 */
 	public function getNextInvoiceNumber(?\DateTime $date = null): string
 	{
 		if ($date === null) {
@@ -769,14 +766,14 @@ class InvoiceManager
 
 		/** @var Invoice[] $invoices */
 		$invoices = $this->entityManager->getRepository(Invoice::class)
-				->createQueryBuilder('i')
-				->select('i.number')
-				->where('i.taxDate >= :dateStart')
-				->andWhere('i.taxDate < :dateStop')
-				->setParameter('dateStart', $startDate)
-				->setParameter('dateStop', $stopDate)
-				->getQuery()
-				->getScalarResult();
+			->createQueryBuilder('i')
+			->select('i.number')
+			->where('i.taxDate >= :dateStart')
+			->andWhere('i.taxDate < :dateStop')
+			->setParameter('dateStart', $startDate)
+			->setParameter('dateStop', $stopDate)
+			->getQuery()
+			->getScalarResult();
 
 		$numbers = [];
 		foreach ($invoices as $invoice) {
