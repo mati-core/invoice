@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
+use Baraja\Shop\Currency\CurrencyManager;
 use Doctrine\ORM\EntityManager;
 use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
@@ -23,35 +24,16 @@ use Tracy\Debugger;
 
 class ExportManager
 {
-	private string $tempDir;
-
-	/**
-	 * @var array
-	 */
-	private array $config;
-
-	private EntityManager $entityManager;
-
-	private ITemplateFactory $templateFactory;
-
-	private CurrencyManager $currencyManager;
-
-
 	/**
 	 * @param array $config
 	 */
 	public function __construct(
-		string $tempDir,
-		array $config,
-		EntityManager $entityManager,
-		ITemplateFactory $templateFactory,
-		CurrencyManager $currencyManager
+		private string $tempDir,
+		private array $config,
+		private EntityManager $entityManager,
+		private ITemplateFactory $templateFactory,
+		private CurrencyManager $currencyManager
 	) {
-		$this->tempDir = $tempDir;
-		$this->config = $config;
-		$this->entityManager = $entityManager;
-		$this->templateFactory = $templateFactory;
-		$this->currencyManager = $currencyManager;
 	}
 
 
@@ -61,10 +43,9 @@ class ExportManager
 	 */
 	public function exportInvoicesToPDF(array $invoices): ?string
 	{
-		$files = [];
-
 		FileSystem::createDir($this->tempDir . '/export');
 
+		$files = [];
 		if (is_dir($this->tempDir . '/export')) {
 			$dir = opendir($this->tempDir . '/export');
 			while ($f = readdir($dir)) {
@@ -409,7 +390,6 @@ class ExportManager
 		/** @var ExpenseInvoice[] $expenseList */
 		$expenseList = $this->entityManager->getRepository(ExpenseInvoice::class)
 				->createQueryBuilder('ei')
-				->select('ei')
 				->join('ei.supplierCountry', 'country')
 				->where('ei.date >= :startDate AND ei.date < :stopDate')
 				->andWhere('country.isoCode != :countryCode')
@@ -418,7 +398,7 @@ class ExportManager
 				->setParameter('countryCode', 'CZE')
 				->orderBy('ei.date', 'ASC')
 				->getQuery()
-				->getResult() ?? [];
+				->getResult();
 
 		$spreadsheet = new Spreadsheet();
 

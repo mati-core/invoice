@@ -81,10 +81,10 @@
 									<select v-model="expense.category" name="category" id="category"
 											class="form-control">
 										{if $adminAccess === 1}
-											<option n:foreach="\MatiCore\Invoice\ExpenseCategory::getAdminList() as $id => $name"
+											<option n:foreach="\MatiCore\Invoice\ExpenseCategory::ADMIN_LIST as $id => $name"
 													value="{$id}">{$name}</option>
 										{else}
-											<option n:foreach="\MatiCore\Invoice\ExpenseCategory::getList() as $id => $name"
+											<option n:foreach="\MatiCore\Invoice\ExpenseCategory::LIST as $id => $name"
 													value="{$id}">{$name}</option>
 										{/if}
 									</select>
@@ -210,13 +210,13 @@
 												<label for="vs">Doprava</label>
 												<select id="vs" type="text" class="form-control form-control-sm"
 														v-model="expense.deliveryType">
-													<option value="{\MatiCore\Invoice\ExpenseDeliveryType::ROAD}">
+													<option value="{\MatiCore\Invoice\Expense::DELIVERY_TYPE_ROAD}">
 														Silniční
 													</option>
-													<option value="{\MatiCore\Invoice\ExpenseDeliveryType::AIRPLANE}">
+													<option value="{\MatiCore\Invoice\Expense::DELIVERY_TYPE_AIRPLANE}">
 														Letecká
 													</option>
-													<option value="{\MatiCore\Invoice\ExpenseDeliveryType::ROAD_AND_AIRPLANE}">
+													<option value="{\MatiCore\Invoice\Expense::DELIVERY_TYPE_ROAD_AND_AIRPLANE}">
 														Silniční, letecká
 													</option>
 												</select>
@@ -292,7 +292,7 @@
 												<label for="currency">Způsob úhrady</label>
 												<select name="currency" v-model="expense.payMethod"
 														class="form-control form-control-sm">
-													<option n:foreach="\MatiCore\Invoice\ExpensePayMethod::getList() as $index => $name"
+													<option n:foreach="\MatiCore\Invoice\Expense::PAY_METHODS as $index => $name"
 															value="{$index}">{$name}</option>
 												</select>
 											</div>
@@ -586,7 +586,7 @@
 										<label for="currency">Způsob úhrady</label>
 										<select name="currency" v-model="expense.payMethod"
 												class="form-control">
-											<option n:foreach="\MatiCore\Invoice\ExpensePayMethod::getList() as $index => $name"
+											<option n:foreach="\MatiCore\Invoice\Expense::PAY_METHODS as $index => $name"
 													value="{$index}">{$name}</option>
 										</select>
 									</div>

@@ -10,12 +10,9 @@ use Nette\Application\UI\Control;
 
 class CompanyInvoiceStatisticsControl extends Control
 {
-	private InvoiceManagerAccessor $invoiceManager;
-
-
-	public function __construct(InvoiceManagerAccessor $invoiceManager)
-	{
-		$this->invoiceManager = $invoiceManager;
+	public function __construct(
+		private InvoiceManagerAccessor $invoiceManager,
+	) {
 	}
 
 

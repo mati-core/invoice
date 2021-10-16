@@ -11,12 +11,9 @@ use Nette\Utils\JsonException;
 
 class BankMovementCronLog
 {
-	private string $logDir;
-
-
-	public function __construct(string $logDir)
-	{
-		$this->logDir = $logDir;
+	public function __construct(
+		private string $logDir,
+	) {
 	}
 
 

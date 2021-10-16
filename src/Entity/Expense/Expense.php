@@ -6,6 +6,7 @@ namespace MatiCore\Invoice;
 
 
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
+use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -17,6 +18,22 @@ use Doctrine\ORM\Mapping as ORM;
 class Expense
 {
 	use IdentifierUnsigned;
+
+	public const
+		DELIVERY_TYPE_ROAD = 3,
+		DELIVERY_TYPE_AIRPLANE = 4,
+		DELIVERY_TYPE_ROAD_AND_AIRPLANE = 5;
+
+	public const
+		PAY_METHOD_CASH = 'cash',
+		PAY_METHOD_BANK = 'bank',
+		PAY_METHOD_CARD = 'card';
+
+	public const PAY_METHODS = [
+		self::PAY_METHOD_CASH => 'Hotově',
+		self::PAY_METHOD_BANK => 'Bankovní převod',
+		self::PAY_METHOD_CARD => 'Kartou',
+	];
 
 	/** @ORM\Column(type="string", unique=true) */
 	private string $number;

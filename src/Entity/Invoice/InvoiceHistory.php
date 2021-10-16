@@ -8,34 +8,30 @@ namespace MatiCore\Invoice;
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="invoice__invoice_history")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__invoice_history')]
 class InvoiceHistory
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="Invoice", inversedBy="history") */
+	#[ORM\ManyToOne(targetEntity: Invoice::class)]
 	private Invoice $invoice;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
-	 */
-	private BaseUser|null $user;
+	#[ORM\Column(type: 'integer', nullable: true)]
+	private ?int $userId = null;
 
-	/** @ORM\Column(type="text") */
+	#[ORM\Column(type: 'text')]
 	private string $description;
 
-	/** @ORM\Column(type="datetime") */
-	private \DateTime $date;
+	#[ORM\Column(type: 'datetime')]
+	private \DateTime $insertedDate;
 
 
 	public function __construct(Invoice $invoice, string $description)
 	{
 		$this->invoice = $invoice;
 		$this->description = $description;
-		$this->date = new \DateTime;
+		$this->insertedDate = new \DateTime;
 	}
 
 
@@ -51,15 +47,15 @@ class InvoiceHistory
 	}
 
 
-	public function getUser(): ?BaseUser
+	public function getUserId(): ?int
 	{
-		return $this->user;
+		return $this->userId;
 	}
 
 
-	public function setUser(?BaseUser $user): void
+	public function setUserId(?int $userId): void
 	{
-		$this->user = $user;
+		$this->userId = $userId;
 	}
 
 
@@ -75,14 +71,14 @@ class InvoiceHistory
 	}
 
 
-	public function getDate(): \DateTime
+	public function getInsertedDate(): \DateTime
 	{
-		return $this->date;
+		return $this->insertedDate;
 	}
 
 
-	public function setDate(\DateTime $date): void
+	public function setInsertedDate(\DateTime $insertedDate): void
 	{
-		$this->date = $date;
+		$this->insertedDate = $insertedDate;
 	}
 }

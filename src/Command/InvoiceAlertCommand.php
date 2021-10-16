@@ -62,11 +62,10 @@ class InvoiceAlertCommand extends Command
 		/** @var Invoice[] $invoices */
 		$invoices = $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
-				->select('i')
 				->where('i.payDate IS NULL')
 				->orderBy('i.number', 'ASC')
 				->getQuery()
-				->getResult() ?? [];
+				->getResult();
 
 		$rows = [];
 		foreach ($invoices as $invoice) {
@@ -236,7 +235,7 @@ class InvoiceAlertCommand extends Command
 				$email->send();
 
 				$ih = new InvoiceHistory($invoice, 'Odeslána ' . $numberOfAlert . '. upomínka na ' . $recipient);
-				$ih->setUser(null);
+				$ih->setUserId(null);
 				$this->entityManager->persist($ih);
 
 				$invoice->addHistory($ih);

@@ -18,8 +18,6 @@ use Nette\Utils\ArrayHash;
 #[PublicEndpoint]
 class CmsInvoiceUserEndpoint extends BaseEndpoint
 {
-	use FormFactoryTrait;
-
 	private BaseUser|IUser|null $editedUser;
 
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
+use Baraja\Country\Entity\Country;
+use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -39,9 +41,7 @@ class ExpenseInvoice extends Expense
 	/** @ORM\Column(type="string", nullable=true) */
 	private string|null $supplierZipCode = null;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
-	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id", nullable=true)
-	 */
+	#[ORM\ManyToOne(targetEntity: Country::class)]
 	private Country $supplierCountry;
 
 	/** @ORM\Column(type="string", nullable=true) */
@@ -64,7 +64,7 @@ class ExpenseInvoice extends Expense
 	private \DateTime|null $datePrint = null;
 
 	/** @ORM\Column(type="integer") */
-	private int $deliveryType = ExpenseDeliveryType::ROAD;
+	private int $deliveryType = Expense::DELIVERY_TYPE_ROAD;
 
 	/** @ORM\Column(type="float") */
 	private float $weight = 0.0;
@@ -240,12 +240,9 @@ class ExpenseInvoice extends Expense
 	}
 
 
-	/**
-	 * @param ExpenseInvoiceItem[]|Collection $items
-	 */
-	public function setItems(array|Collection $items): void
+	public function resetItems(): void
 	{
-		$this->items = $items;
+		$this->items = new ArrayCollection;
 	}
 
 
@@ -322,7 +319,7 @@ class ExpenseInvoice extends Expense
 
 	public function getDeliveryType(): int
 	{
-		return $this->deliveryType ?? ExpenseDeliveryType::ROAD;
+		return $this->deliveryType ?? Expense::DELIVERY_TYPE_ROAD;
 	}
 
 

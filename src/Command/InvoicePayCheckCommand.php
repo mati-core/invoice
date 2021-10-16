@@ -8,6 +8,7 @@ namespace MatiCore\Invoice\Command;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Invoice\BankMailException;
@@ -346,7 +347,6 @@ class InvoicePayCheckCommand extends Command
 		try {
 			$this->entityManager->getRepository(BankMovement::class)
 				->createQueryBuilder('bm')
-				->select('bm')
 				->where('bm.variableSymbol = :id')
 				->setParameter('id', $data['variableSymbol'])
 				->getQuery()
@@ -393,7 +393,6 @@ class InvoicePayCheckCommand extends Command
 			/** @var Invoice $invoice */
 			$invoice = $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('i')
-				->select('i')
 				->where('i.variableSymbol = :vs')
 				->setParameter('vs', $bm->getVariableSymbol())
 				->getQuery()

@@ -34,11 +34,8 @@ class BankMovement
 	/** @ORM\Column(type="string") */
 	private string $status = self::STATUS_NOT_PROCESSED;
 
-	/**
-	 * @ORM\ManyToOne(targetEntity="Invoice")
-	 * @ORM\JoinColumn(name="invoice_id", referencedColumnName="id", nullable=true)
-	 */
-	private Invoice|null $invoice;
+	#[ORM\ManyToOne(targetEntity: Invoice::class)]
+	private ?Invoice $invoice = null;
 
 	/** @ORM\Column(type="string") */
 	private string $bankAccountName;

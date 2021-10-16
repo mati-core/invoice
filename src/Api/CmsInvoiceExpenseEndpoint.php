@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
+use Baraja\Country\CountryManagerAccessor;
+use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
+use Baraja\Shop\Unit\UnitManagerAccessor;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
@@ -17,7 +21,6 @@ use MatiCore\Invoice\ExpenseHistory;
 use MatiCore\Invoice\ExpenseInvoice;
 use MatiCore\Invoice\ExpenseInvoiceItem;
 use MatiCore\Invoice\ExpenseManagerAccessor;
-use MatiCore\Invoice\IntrastatProductCodes;
 use MatiCore\Supplier\SupplierManagerAccessor;
 use Nette\Application\AbortException;
 use Nette\Application\UI\Form;
@@ -31,10 +34,9 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 
 	private Expense|null $expense;
 
-	use FormFactoryTrait;
-
 
 	public function __construct(
+		private EntityManager $entityManager,
 		private CurrencyManagerAccessor $currencyManager,
 		private UnitManagerAccessor $unitManager,
 		private CountryManagerAccessor $countryManager,
@@ -53,8 +55,8 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 				'currencyList' => $this->currencyManager->get()->getActiveCurrencies(),
 				'unitList' => $this->unitManager->get()->getUnits(),
 				'countries' => $this->countryManager->get()->getCountriesActive(),
-				'supplierList' => $this->supplierManager->get()->getSuppliers(),
-				'productCodes' => IntrastatProductCodes::getList(),
+				'supplierList' => $this->supplierManager->get()->getAll(),
+				'productCodes' => ExpenseManager::getProductCodes(),
 			]
 		);
 	}
@@ -89,7 +91,6 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 			$grid->setDataSource(
 				$this->entityManager
 					->createQueryBuilder()
-					->select('e')
 					->from(Expense::class, 'e')
 					->where('e.deleted = :f')
 					->setParameter('f', false)
@@ -99,7 +100,6 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 			$grid->setDataSource(
 				$this->entityManager
 					->createQueryBuilder()
-					->select('e')
 					->from(Expense::class, 'e')
 					->where('e.hidden = :f')
 					->andWhere('e.deleted = :f')
@@ -115,7 +115,7 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 					$link = $this->link('show', ['id' => $expense->getId()]);
 
 					return '<a href="' . $link . '">' . $expense->getNumber() . '</a>'
-						. '<br><small>' . ExpenseCategory::getName($expense->getCategory()) . '</small>';
+						. '<br><small>' . (ExpenseCategory::LIST[$expense->getCategory()] ?? '?') . '</small>';
 				}
 			)
 			->setTemplateEscaping(false)
@@ -310,9 +310,9 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 
 		//Category
 		if ($this->checkAccess('page__expense__admin')) {
-			$categoryList = ExpenseCategory::getListAll();
+			$categoryList = ExpenseCategory::LIST;
 		} else {
-			$categoryList = ExpenseCategory::getList();
+			$categoryList = ExpenseCategory::LIST;
 		}
 		$categoryList = array_merge(['' => 'Vše'], $categoryList);
 		$grid->addFilterSelect('category', 'Kategorie:', $categoryList, 'category');
@@ -347,51 +347,51 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 		$dateStop = $dateStart->modifyClone('+1 month');
 
 		$expenseDataMonth = $this->entityManager->getRepository(Expense::class)
-				->createQueryBuilder('e')
-				->select('SUM(e.totalPrice * e.rate) as totalPrice, SUM(e.totalTax) as totalTax')
-				->where('e.date >= :dateStart')
-				->andWhere('e.date < :dateStop')
-				->andWhere('e.deleted = :f')
-				->setParameter('f', false)
-				->setParameter('dateStart', $dateStart->format('Y-m-d'))
-				->setParameter('dateStop', $dateStop->format('Y-m-d'))
-				->getQuery()
-				->getScalarResult() ?? [];
+			->createQueryBuilder('e')
+			->select('SUM(e.totalPrice * e.rate) as totalPrice, SUM(e.totalTax) as totalTax')
+			->where('e.date >= :dateStart')
+			->andWhere('e.date < :dateStop')
+			->andWhere('e.deleted = :f')
+			->setParameter('f', false)
+			->setParameter('dateStart', $dateStart->format('Y-m-d'))
+			->setParameter('dateStop', $dateStop->format('Y-m-d'))
+			->getQuery()
+			->getScalarResult();
 
 		$dateStart = new \DateTime(date('Y') . '-01-01 00:00:00');
 		$dateStop = $dateStart->modifyClone('+1 year');
 
 		$expenseDataYear = $this->entityManager->getRepository(Expense::class)
-				->createQueryBuilder('e')
-				->select('SUM(e.totalPrice * e.rate) as totalPrice, SUM(e.totalTax) as totalTax')
-				->where('e.date >= :dateStart')
-				->andWhere('e.date < :dateStop')
-				->andWhere('e.deleted = :f')
-				->setParameter('f', false)
-				->setParameter('dateStart', $dateStart->format('Y-m-d'))
-				->setParameter('dateStop', $dateStop->format('Y-m-d'))
-				->getQuery()
-				->getScalarResult() ?? [];
+			->createQueryBuilder('e')
+			->select('SUM(e.totalPrice * e.rate) as totalPrice, SUM(e.totalTax) as totalTax')
+			->where('e.date >= :dateStart')
+			->andWhere('e.date < :dateStop')
+			->andWhere('e.deleted = :f')
+			->setParameter('f', false)
+			->setParameter('dateStart', $dateStart->format('Y-m-d'))
+			->setParameter('dateStop', $dateStop->format('Y-m-d'))
+			->getQuery()
+			->getScalarResult();
 
 		$expenseUnpaid = $this->entityManager->getRepository(Expense::class)
-				->createQueryBuilder('e')
-				->select('SUM(e.totalPrice * e.rate) as totalPrice, COUNT(e) as count')
-				->where('e.paid = :f')
-				->andWhere('e.deleted = :f')
-				->setParameter('f', false)
-				->getQuery()
-				->getScalarResult() ?? [];
+			->createQueryBuilder('e')
+			->select('SUM(e.totalPrice * e.rate) as totalPrice, COUNT(e) as count')
+			->where('e.paid = :f')
+			->andWhere('e.deleted = :f')
+			->setParameter('f', false)
+			->getQuery()
+			->getScalarResult();
 
 		$expenseOverDate = $this->entityManager->getRepository(Expense::class)
-				->createQueryBuilder('e')
-				->select('SUM(e.totalPrice * e.rate) as totalPrice, COUNT(e) as count')
-				->where('e.paid = :f')
-				->andWhere('e.deleted = :f')
-				->andWhere('e.dueDate < :date')
-				->setParameter('f', false)
-				->setParameter('date', (new \DateTime)->format('Y-m-d'))
-				->getQuery()
-				->getScalarResult() ?? [];
+			->createQueryBuilder('e')
+			->select('SUM(e.totalPrice * e.rate) as totalPrice, COUNT(e) as count')
+			->where('e.paid = :f')
+			->andWhere('e.deleted = :f')
+			->andWhere('e.dueDate < :date')
+			->setParameter('f', false)
+			->setParameter('date', (new \DateTime)->format('Y-m-d'))
+			->getQuery()
+			->getScalarResult();
 
 		return [
 			'monthName' => Date::getCzechMonthName(new \DateTime),
@@ -428,7 +428,7 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 				$user = $this->getUser()->getIdentity()->getUser();
 				$text = 'Uhrazeno dne ' . $values->date->format('d.m.Y');
 				$history = new ExpenseHistory($this->expense, $text);
-				$history->setUser($user);
+				$history->setUserId($user);
 
 				$this->entityManager->persist($history);
 				$this->entityManager->flush();

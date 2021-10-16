@@ -6,19 +6,22 @@ namespace App\Api;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Company\CompanyManagerAccessor;
 use MatiCore\Invoice\InvoiceException;
+use MatiCore\Invoice\InvoiceManager;
+use Nette\Security\User;
 
 #[PublicEndpoint]
 class InvoiceEndpoint extends BaseEndpoint
 {
 	public function __construct(
-		private $user,
-		private $invoiceHelper,
+		private User $user,
+		private InvoiceManager $invoiceManager,
 		private CompanyManagerAccessor $companyManager,
 		private CurrencyManagerAccessor $currencyManager,
 	) {
@@ -29,9 +32,9 @@ class InvoiceEndpoint extends BaseEndpoint
 	{
 		try {
 			if ($id === '') {
-				$invoiceData = $this->invoiceHelper->getNewInvoice();
+				$invoiceData = $this->invoiceManager->getNewInvoice();
 			} else {
-				$invoiceData = $this->invoiceHelper->getInvoiceById($id);
+				$invoiceData = $this->invoiceManager->getInvoiceById($id);
 			}
 
 			$this->sendJson(
@@ -48,7 +51,7 @@ class InvoiceEndpoint extends BaseEndpoint
 	public function postLoadFixInvoice(string $id): void
 	{
 		try {
-			$invoiceData = $this->invoiceHelper->getFixInvoiceById($id);
+			$invoiceData = $this->invoiceManager->getFixInvoiceById($id);
 			$this->sendJson(
 				[
 					'invoice' => $invoiceData,
@@ -66,7 +69,7 @@ class InvoiceEndpoint extends BaseEndpoint
 		try {
 			$this->sendJson(
 				[
-					'invoice' => $this->invoiceHelper->addDepositInvoice($invoiceData, $depositNumber),
+					'invoice' => $this->invoiceManager->addDepositInvoice($invoiceData, $depositNumber),
 				]
 			);
 		} catch (InvoiceException $e) {
@@ -84,11 +87,10 @@ class InvoiceEndpoint extends BaseEndpoint
 			$company = $this->companyManager->get()->getCompanyById($id);
 			$now = new \DateTime;
 			$dueSelect = $company->getInvoiceDueDayCount();
-			if (!in_array($dueSelect, [0, 7, 10, 14, 30])) {
+			if (in_array($dueSelect, [0, 7, 10, 14, 30], true) === false) {
 				$dueSelect = '';
 			}
 
-			$depositList = $this->invoiceHelper->getDepositList($company);
 			$this->sendJson(
 				[
 					'customer' => [
@@ -100,7 +102,7 @@ class InvoiceEndpoint extends BaseEndpoint
 						'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
 						'cin' => $company->getInvoiceAddress()->getCin(),
 						'tin' => $company->getInvoiceAddress()->getTin(),
-						'depositList' => $depositList,
+						'depositList' => $this->invoiceManager->getDepositList($company),
 					],
 					'currency' => $company->getCurrency()->getCode(),
 					'date' => $now->format('Y-m-d'),
@@ -130,22 +132,16 @@ class InvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws \Exception
-	 */
 	public function postLoadCompanyByCIN(string $cin): void
 	{
 		$now = new \DateTime;
-
 		try {
 			$company = $this->companyManager->get()->getCompanyByCIN($cin);
 			$dueSelect = $company->getInvoiceDueDayCount();
 
-			if (!in_array($dueSelect, [0, 7, 10, 14, 30])) {
+			if (in_array($dueSelect, [0, 7, 10, 14, 30], true) === false) {
 				$dueSelect = '';
 			}
-
-			$depositList = $this->invoiceHelper->getDepositList($company);
 
 			$this->sendJson(
 				[
@@ -158,7 +154,7 @@ class InvoiceEndpoint extends BaseEndpoint
 						'country' => $company->getInvoiceAddress()->getCountry()->getIsoCode(),
 						'cin' => $company->getInvoiceAddress()->getCin(),
 						'tin' => $company->getInvoiceAddress()->getTin(),
-						'depositList' => $depositList,
+						'depositList' => $this->invoiceManager->getDepositList($company),
 					],
 					'currency' => $company->getCurrency()->getCode(),
 					'date' => $now->format('Y-m-d'),
@@ -191,7 +187,7 @@ class InvoiceEndpoint extends BaseEndpoint
 						'dateDueSelect' => 14,
 					]
 				);
-			} catch (IdentificationNumberNotFoundException $e) {
+			} catch (IdentificationNumberNotFoundException) {
 				$this->sendJson(
 					[
 						'customer' => [
@@ -223,11 +219,9 @@ class InvoiceEndpoint extends BaseEndpoint
 	public function postReloadInvoiceNumber(array $invoiceData): void
 	{
 		try {
-			$invoiceData = $this->invoiceHelper->reloadInvoiceNumber($invoiceData);
-
 			$this->sendJson(
 				[
-					'invoice' => $invoiceData,
+					'invoice' => $this->invoiceManager->reloadInvoiceNumber($invoiceData),
 				]
 			);
 		} catch (InvoiceException $e) {
@@ -245,7 +239,7 @@ class InvoiceEndpoint extends BaseEndpoint
 			$currency = $this->currencyManager->get()->getCurrencyByIsoCode($isoCode);
 			$currencyTemp = $this->currencyManager->get()->getCurrencyRateByDate(
 				$currency,
-				new \DateTime($invoiceData['dateTax'] ?? 'NOW')
+				new \DateTime($invoiceData['dateTax'] ?? 'now')
 			);
 
 			$this->sendJson(
@@ -271,8 +265,7 @@ class InvoiceEndpoint extends BaseEndpoint
 	public function postSave(array $invoiceData): void
 	{
 		try {
-			$invoiceData = $this->invoiceHelper->saveInvoice($invoiceData);
-
+			$invoiceData = $this->invoiceManager->saveInvoice($invoiceData);
 			$this->sendJson(
 				[
 					'invoice' => $invoiceData,

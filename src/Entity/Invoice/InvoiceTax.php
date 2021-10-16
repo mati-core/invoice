@@ -8,21 +8,19 @@ namespace MatiCore\Invoice;
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="invoice__invoice_tax")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__invoice_tax')]
 class InvoiceTax
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="Invoice", inversedBy="taxList") */
+	#[ORM\ManyToOne(targetEntity: Invoice::class)]
 	private Invoice $invoice;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $tax;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $price;
 
 
@@ -31,6 +29,12 @@ class InvoiceTax
 		$this->invoice = $invoice;
 		$this->tax = $tax;
 		$this->price = $price;
+	}
+
+
+	public function getInvoice(): Invoice
+	{
+		return $this->invoice;
 	}
 
 

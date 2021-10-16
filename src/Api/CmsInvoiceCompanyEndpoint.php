@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
+use Baraja\Country\CountryManagerAccessor;
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
@@ -31,9 +33,6 @@ use Tracy\Debugger;
 class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 {
 	protected string $pageRight = 'page__company';
-
-
-	use FormFactoryTrait;
 
 	private Data|null $aresData = null;
 
@@ -960,7 +959,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 		$grid->setDataSource(
 			$this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('invoice')
-				->select('invoice')
 				->where('invoice.deleted = :f')
 				->setParameter('f', 0)
 				->andWhere('invoice.company = :company')
@@ -1047,7 +1045,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 			->setRenderer(
 				static function (Invoice $invoiceCore): string
 				{
-					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
+					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreatedByUserId()
 							->getName() . '</small>';
 				}
 			)

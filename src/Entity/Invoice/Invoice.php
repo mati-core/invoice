@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
+use Baraja\Country\Entity\Country;
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
+use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -80,336 +82,204 @@ class Invoice
 	#[ORM\OneToMany(targetEntity: self::class)]
 	private ?self $subInvoice = null;
 
-	/**
-	 * Relace na spolecnost
-	 *
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\Company")
-	 * @ORM\JoinColumn(name="company_id", referencedColumnName="id", nullable=true)
-	 */
-	private Company|null $company = null;
+	#[ORM\ManyToOne(targetEntity: Company::class)]
+	private ?Company $company = null;
 
-	/**
-	 * Relace na pobocku spolecnosti
-	 *
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Company\CompanyStock")
-	 * @ORM\JoinColumn(name="company_stock_id", referencedColumnName="id", nullable=true)
-	 */
-	private CompanyStock|null $companyStock = null;
+	#[ORM\ManyToOne(targetEntity: CompanyStock::class)]
+	private ?CompanyStock $companyStock = null;
 
-	/**
-	 * Cislo bankovniho uctu
-	 *
-	 * @ORM\Column(type="string")
-	 */
+	#[ORM\Column(type: 'string')]
 	private string $bankAccount;
 
-	/**
-	 * Kod banky
-	 *
-	 * @ORM\Column(type="string")
-	 */
+	#[ORM\Column(type: 'string')]
 	private string $bankCode;
 
-	/**
-	 * Nazev banky
-	 *
-	 * @ORM\Column(type="string")
-	 */
+	#[ORM\Column(type: 'string')]
 	private string $bankName;
 
-	/**
-	 * IBAN
-	 *
-	 * @ORM\Column(type="string", nullable=true)
-	 */
-	private string|null $iban;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $iban = null;
 
-	/**
-	 * SWIFT
-	 *
-	 * @ORM\Column(type="string", nullable=true)
-	 */
-	private string|null $swift;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private string|null $swift = null;
 
-	/**
-	 * Variabilni symbol
-	 *
-	 * @ORM\Column(type="string", unique=true)
-	 */
+	#[ORM\Column(type: 'string', unique: true)]
 	private string $variableSymbol;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $companyName;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $companyAddress;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $companyCity;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $companyPostalCode;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
-	 * @ORM\JoinColumn(name="company_country_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Country::class)]
 	private Country $companyCountry;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $companyCin;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $companyCin = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $companyTin;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $companyTin = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $companyLogo;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $companyLogo = null;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $customerName;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $customerAddress;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $customerCity;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $customerPostalCode;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Country")
-	 * @ORM\JoinColumn(name="customer_country_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Country::class)]
 	private Country $customerCountry;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $customerCin;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $customerCin = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $customerTin;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $customerTin = null;
 
-	/**
-	 * Cislo objednavky
-	 *
-	 * @ORM\Column(type="string", nullable=true)
-	 */
-	private string|null $orderNumber;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $orderNumber = null;
 
-	/**
-	 * Cislo najemni smlouvy
-	 *
-	 * @ORM\Column(type="string", nullable=true)
-	 */
-	private string|null $rentNumber;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $rentNumber = null;
 
-	/**
-	 * Cislo zakazky
-	 *
-	 * @ORM\Column(type="string", nullable=true)
-	 */
-	private string|null $contractNumber;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $contractNumber = null;
 
-	/**
-	 * @var InvoiceTax[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceTax", mappedBy="invoice")
-	 */
+	/** @var InvoiceTax[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'invoice', targetEntity: InvoiceTax::class)]
 	private array|Collection $taxList;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $taxEnabled = false;
 
-	/**
-	 * Celkova castka
-	 *
-	 * @ORM\Column(type="float")
-	 */
+	#[ORM\Column(type: 'float')]
 	private float $totalPrice;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $totalTax;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="currency_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Currency::class)]
 	private Currency $currency;
 
-	/**
-	 * Smenny kurz
-	 *
-	 * @ORM\Column(type="float")
-	 */
+	#[ORM\Column(type: 'float')]
 	private float $rate = 1.0;
 
-	/**
-	 * Datum smenneho kurzu
-	 *
-	 * @ORM\Column(type="date")
-	 */
+	#[ORM\Column(type: 'date')]
 	private \DateTime $rateDate;
 
-	/**
-	 * Datum vytvoreni
-	 *
-	 * @ORM\Column(type="datetime")
-	 */
+	#[ORM\Column(type: 'datetime')]
 	private \DateTime $createDate;
 
-	/**
-	 * Datum posledni editace
-	 *
-	 * @ORM\Column(type="datetime")
-	 */
+	#[ORM\Column(type: 'datetime')]
 	private \DateTime $editDate;
 
-	/**
-	 * Datum vystaveni
-	 *
-	 * @ORM\Column(type="date")
-	 */
+	#[ORM\Column(type: 'date')]
 	private \DateTime $date;
 
-	/**
-	 * Datum splatnosti
-	 *
-	 * @ORM\Column(type="date")
-	 */
+	#[ORM\Column(type: 'date')]
 	private \DateTime $dueDate;
 
-	/**
-	 * Datum zdanitelneho plneni
-	 *
-	 * @ORM\Column(type="date")
-	 */
+	#[ORM\Column(type: 'date')]
 	private \DateTime $taxDate;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $payMethod = self::PAY_METHOD_BANK;
 
-	/**
-	 * Datum uhrazeni
-	 *
-	 * @ORM\Column(type="date", nullable=true)
-	 */
+	#[ORM\Column(type: 'date', nullable: true)]
 	private \DateTime|null $payDate;
 
-	/**
-	 * Soubor
-	 *
-	 * @var string[]
-	 * @ORM\Column(type="json")
-	 */
+	/** @var array<int, string> */
+	#[ORM\Column(type: 'json')]
 	private array $files = [];
 
-	/**
-	 * Obrazek podpisu
-	 *
-	 * @ORM\Column(type="string", nullable=true)
-	 */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $signImage;
 
-	/**
-	 * Dokoncena (zakazana editace)
-	 *
-	 * @ORM\Column(type="boolean")
-	 */
+	#[ORM\Column(type: 'boolean')]
 	private bool $closed = false;
 
-	/**
-	 * Autor faktury
-	 *
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="create_user_id", referencedColumnName="id")
-	 */
-	private BaseUser $createUser;
+	#[ORM\Column(type: 'integer')]
+	private int $createdByUserId;
 
-	/**
-	 * Autor posledni zmeny
-	 *
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="edit_user_id", referencedColumnName="id")
-	 */
-	private BaseUser $editUser;
+	#[ORM\Column(type: 'integer')]
+	private int $editedByUserId;
 
-	/**
-	 * Polozky faktury
-	 *
-	 * @var InvoiceItem[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceItem", mappedBy="invoice", fetch="EXTRA_LAZY")
-	 * @ORM\OrderBy({"position"="ASC"})
-	 */
+	/** @var InvoiceItem[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'invoice', targetEntity: InvoiceItem::class, fetch: 'EXTRA_LAZY')]
+	#[ORM\OrderBy(['position' => 'ASC'])]
 	private array|Collection $items;
 
-	/**
-	 * @var InvoiceHistory[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceHistory", mappedBy="invoice", fetch="EXTRA_LAZY")
-	 * @ORM\OrderBy({"date"="DESC"})
-	 */
+	/** @var InvoiceHistory[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'invoice', targetEntity: InvoiceHistory::class, fetch: 'EXTRA_LAZY')]
+	#[ORM\OrderBy(['date' => 'DESC'])]
 	private array|Collection $history;
 
-	/**
-	 * @var InvoiceComment[]|Collection
-	 * @ORM\OneToMany(targetEntity="\MatiCore\Invoice\InvoiceComment", mappedBy="invoice", fetch="EXTRA_LAZY")
-	 * @ORM\OrderBy({"date"="DESC"})
-	 */
+	/** @var InvoiceComment[]|Collection */
+	#[ORM\OneToMany(mappedBy: 'invoice', targetEntity: InvoiceComment::class, fetch: 'EXTRA_LAZY')]
+	#[ORM\OrderBy(['date' => 'DESC'])]
 	private array|Collection $comments;
 
-	/** @ORM\Column(type="text", nullable=true) */
+	#[ORM\Column(type: 'text', nullable: true)]
 	private string|null $textBeforeItems;
 
-	/** @ORM\Column(type="text", nullable=true) */
+	#[ORM\Column(type: 'text', nullable: true)]
 	private string|null $textAfterItems;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $submitted = false;
 
-	/** @ORM\Column(type="string") */
-	private string $acceptStatus1 = Invoice::STATUS_WAITING;
+	#[ORM\Column(type: 'string')]
+	private string $acceptStatus1 = self::STATUS_WAITING;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="accept_user_1_id", referencedColumnName="id", nullable=true)
-	 */
-	private BaseUser|null $acceptStatus1User;
+	#[ORM\Column(type: 'integer', nullable: true)]
+	private ?int $acceptStatusFirstUserId = null;
 
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'integer', nullable: true)]
+	private ?int $acceptStatusSecondUserId = null;
+
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $acceptStatus1Description;
 
-	/** @ORM\Column(type="string") */
-	private string $acceptStatus2 = Invoice::STATUS_WAITING;
+	#[ORM\Column(type: 'string')]
+	private string $acceptStatus2 = self::STATUS_WAITING;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="accept_user_2_id", referencedColumnName="id", nullable=true)
-	 */
-	private BaseUser|null $acceptStatus2User;
-
-	/** @ORM\Column(type="string", nullable=true) */
+	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $acceptStatus2Description;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $deleted = false;
 
-	/** @ORM\Column(type="text", nullable=true) */
+	#[ORM\Column(type: 'text', nullable: true)]
 	private string|null $emails;
 
-	/** @ORM\Column(type="string") */
-	private string $payAlertStatus = Invoice::STATUS_PAY_ALERT_NONE;
+	#[ORM\Column(type: 'string')]
+	private string $payAlertStatus = self::STATUS_PAY_ALERT_NONE;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $disableStatistics = false;
 
-	/**
-	 * Faktury, ktere pouzivaji tuto fakturu jako zalohu
-	 *
-	 * @var Invoice[]|Collection|null
-	 * @ORM\ManyToMany(targetEntity="Invoice", inversedBy="depositInvoices", fetch="EXTRA_LAZY")
-	 * @ORM\JoinTable(name="invoice__invoice_deposit")
-	 */
-	private array|Collection|null $depositingInvoices;
+	/** @var Invoice[]|Collection */
+	#[ORM\ManyToMany(targetEntity: self::class, inversedBy: 'depositInvoices', fetch: 'EXTRA_LAZY')]
+	#[ORM\JoinTable(name: 'invoice__invoice_deposit')]
+	private array|Collection $depositingInvoices;
 
-	/**
-	 * Odecteni zalohy
-	 *
-	 * @var Invoice[]|Collection
-	 * @ORM\ManyToMany(targetEntity="Invoice", mappedBy="depositingInvoices", fetch="EXTRA_LAZY")
-	 */
+	/** @var Invoice[]|Collection */
+	#[ORM\ManyToMany(targetEntity: self::class, mappedBy: 'depositingInvoices', fetch: 'EXTRA_LAZY')]
 	private array|Collection $depositInvoices;
 
 
@@ -795,15 +665,15 @@ class Invoice
 	}
 
 
-	public function getEditUser(): BaseUser
+	public function getEditedByUserId(): BaseUser
 	{
-		return $this->editUser;
+		return $this->editedByUserId;
 	}
 
 
-	public function setEditUser(BaseUser $editUser): void
+	public function setEditedByUserId(BaseUser $editedByUserId): void
 	{
-		$this->editUser = $editUser;
+		$this->editedByUserId = $editedByUserId;
 	}
 
 
@@ -896,27 +766,27 @@ class Invoice
 	}
 
 
-	public function getAcceptStatus1User(): ?BaseUser
+	public function getAcceptStatusFirstUserId(): ?BaseUser
 	{
-		return $this->acceptStatus1User;
+		return $this->acceptStatusFirstUserId;
 	}
 
 
-	public function setAcceptStatus1User(?BaseUser $acceptStatus1User): void
+	public function setAcceptStatusFirstUserId(?BaseUser $acceptStatusFirstUserId): void
 	{
-		$this->acceptStatus1User = $acceptStatus1User;
+		$this->acceptStatusFirstUserId = $acceptStatusFirstUserId;
 	}
 
 
-	public function getAcceptStatus2User(): ?BaseUser
+	public function getAcceptStatusSecondUserId(): ?BaseUser
 	{
-		return $this->acceptStatus2User;
+		return $this->acceptStatusSecondUserId;
 	}
 
 
-	public function setAcceptStatus2User(?BaseUser $acceptStatus2User): void
+	public function setAcceptStatusSecondUserId(?BaseUser $acceptStatusSecondUserId): void
 	{
-		$this->acceptStatus2User = $acceptStatus2User;
+		$this->acceptStatusSecondUserId = $acceptStatusSecondUserId;
 	}
 
 
@@ -1108,7 +978,7 @@ class Invoice
 
 	public function getAuthorName(): string
 	{
-		$user = $this->getCreateUser();
+		$user = $this->getCreatedByUserId();
 		$f = $user->getFirstName();
 		$s = $user->getLastName();
 
@@ -1119,15 +989,15 @@ class Invoice
 	}
 
 
-	public function getCreateUser(): BaseUser
+	public function getCreatedByUserId(): int
 	{
-		return $this->createUser;
+		return $this->createdByUserId;
 	}
 
 
-	public function setCreateUser(BaseUser $createUser): void
+	public function setCreatedByUserId(int $createdByUserId): void
 	{
-		$this->createUser = $createUser;
+		$this->createdByUserId = $createdByUserId;
 	}
 
 
@@ -1400,8 +1270,8 @@ class Invoice
 	public function isReady(): bool
 	{
 		return $this->isSubmitted()
-			&& $this->getAcceptStatus1() === Invoice::STATUS_ACCEPTED
-			&& $this->getAcceptStatus2() === Invoice::STATUS_ACCEPTED;
+			&& $this->getAcceptStatus1() === self::STATUS_ACCEPTED
+			&& $this->getAcceptStatus2() === self::STATUS_ACCEPTED;
 	}
 
 

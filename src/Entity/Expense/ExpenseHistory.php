@@ -8,28 +8,22 @@ namespace MatiCore\Invoice;
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="invoice__expense_history")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__expense_history')]
 class ExpenseHistory
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\Expense")
-	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Expense::class)]
 	private Expense $expense;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\User\BaseUser")
-	 * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
-	 */
-	private BaseUser|null $user = null;
+	#[ORM\Column(type: 'integer', nullable: true)]
+	private ?int $user = null;
 
-	/** @ORM\Column(type="text") */
+	#[ORM\Column(type: 'text')]
 	private string $description;
 
-	/** @ORM\Column(type="datetime") */
+	#[ORM\Column(type: 'datetime')]
 	private \DateTime $date;
 
 
@@ -47,13 +41,13 @@ class ExpenseHistory
 	}
 
 
-	public function getUser(): ?BaseUser
+	public function getUserId(): ?int
 	{
 		return $this->user;
 	}
 
 
-	public function setUser(?BaseUser $user): void
+	public function setUserId(?int $user): void
 	{
 		$this->user = $user;
 	}

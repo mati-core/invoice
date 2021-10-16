@@ -9,29 +9,25 @@ use Baraja\Country\Entity\Country;
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
 use Baraja\Shop\Address\Entity\Address;
+use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 
 class SupplierManager
 {
-	private EntityManager $entityManager;
-
-
-	public function __construct(EntityManager $entityManager)
-	{
-		$this->entityManager = $entityManager;
+	public function __construct(
+		private EntityManager $entityManager,
+	) {
 	}
 
 
 	/**
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function getSupplierById(string $id): Supplier
 	{
 		return $this->entityManager->getRepository(Supplier::class)
 			->createQueryBuilder('supplier')
-			->select('supplier')
 			->where('supplier.id = :id')
 			->setParameter('id', $id)
 			->getQuery()
@@ -40,17 +36,16 @@ class SupplierManager
 
 
 	/**
-	 * @return array
+	 * @return array<int, string>
 	 */
 	public function getSuppliersForForm(): array
 	{
 		static $cache;
 		if ($cache === null) {
-			$items = [];
-			foreach ($this->getSuppliers() as $supplier) {
-				$items[$supplier->getId()] = $supplier->getName();
+			$cache = [];
+			foreach ($this->getAll() as $supplier) {
+				$cache[$supplier->getId()] = $supplier->getName();
 			}
-			$cache = $items;
 		}
 
 		return $cache;
@@ -58,18 +53,17 @@ class SupplierManager
 
 
 	/**
-	 * @return Supplier[]
+	 * @return array<int, Supplier>
 	 */
-	public function getSuppliers(): array
+	public function getAll(): array
 	{
 		static $cache;
 		if ($cache === null) {
 			$cache = $this->entityManager->getRepository(Supplier::class)
-					->createQueryBuilder('supplier')
-					->select('supplier')
-					->orderBy('supplier.name', 'ASC')
-					->getQuery()
-					->getResult() ?? [];
+				->createQueryBuilder('supplier')
+				->orderBy('supplier.name', 'ASC')
+				->getQuery()
+				->getResult();
 		}
 
 		return $cache;
@@ -94,16 +88,9 @@ class SupplierManager
 	}
 
 
-	/**
-	 * @throws SupplierException
-	 */
 	public function removeSupplier(Supplier $supplier): void
 	{
-		try {
-			$this->entityManager->remove($supplier);
-			$this->entityManager->flush();
-		} catch (EntityManagerException) {
-			SupplierException::isUsed();
-		}
+		$this->entityManager->remove($supplier);
+		$this->entityManager->flush();
 	}
 }

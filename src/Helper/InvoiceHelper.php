@@ -6,9 +6,11 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
+use Baraja\Country\CountryManagerAccessor;
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
-use Doctrine\Common\Collections\Collection;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
+use Baraja\Shop\Unit\UnitManagerAccessor;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Company\Company;
@@ -17,11 +19,10 @@ use Nette\Security\User;
 
 class InvoiceHelper
 {
-	/**
-	 * @param array $companyData
-	 */
+	private array $companyData = [];
+
+
 	public function __construct(
-		private array $companyData,
 		private CompanyManagerAccessor $companyManager,
 		private EntityManager $entityManager,
 		private InvoiceManagerAccessor $invoiceManager,
@@ -36,9 +37,6 @@ class InvoiceHelper
 
 	/**
 	 * @return array
-	 * @throws CurrencyException
-	 * @throws InvoiceException
-	 * @throws UnitException
 	 */
 	public function getInvoiceById(string $id): array
 	{
@@ -565,9 +563,9 @@ class InvoiceHelper
 				$invoice = new Invoice($invoiceNumber, Invoice::TYPE_PROFORMA);
 			}
 
-			$invoice->setCreateUser($user);
+			$invoice->setCreatedByUserId($user);
 			$invoice->setCreateDate(new \DateTime);
-			$invoice->setEditUser($user);
+			$invoice->setEditedByUserId($user);
 			$invoice->setEditDate(new \DateTime);
 
 			if ($invoice->isFix()) {
@@ -578,7 +576,7 @@ class InvoiceHelper
 				$changeDescription = 'Vytvoření faktury';
 			}
 		} else {
-			$invoice->setEditUser($user);
+			$invoice->setEditedByUserId($user);
 			$invoice->setEditDate(new \DateTime);
 
 			if ($invoice->isFix()) {
@@ -700,7 +698,7 @@ class InvoiceHelper
 		$invoice->setPayMethod($invoiceData['payMethod']);
 
 		//Podpis autora faktury
-		$invoice->setSignImage($this->signatureManager->get()->getSignatureLink($invoice->getCreateUser()));
+		$invoice->setSignImage($this->signatureManager->get()->getSignatureLink($invoice->getCreatedByUserId()));
 
 		//Poznamky
 		$invoice->setTextBeforeItems($invoiceData['textBeforeItems']);
@@ -712,7 +710,7 @@ class InvoiceHelper
 
 		//Historie faktury
 		$invoiceHistory = new InvoiceHistory($invoice, $changeDescription);
-		$invoiceHistory->setUser($user ?? null);
+		$invoiceHistory->setUserId($user ?? null);
 
 		$this->entityManager->persist($invoiceHistory);
 
@@ -817,7 +815,6 @@ class InvoiceHelper
 	/**
 	 * @param array $invoiceData
 	 * @return array
-	 * @throws InvoiceException
 	 */
 	public function addDepositInvoice(array $invoiceData, string $depositNumber): array
 	{
@@ -835,18 +832,18 @@ class InvoiceHelper
 					'tin' => $depositInvoice->getCustomerTin() ?? '',
 				];
 			} elseif ($invoiceData['customer']['cin'] !== $depositInvoice->getCustomerCin()) {
-				throw new InvoiceException(
+				throw new \InvalidArgumentException(
 					'IČ odběratele na zálohové faktuře se neshoduje s IČ odběratele na upravované faktuře.'
 				);
 			}
 
 			if ($invoiceData['currency'] !== $depositInvoice->getCurrency()->getCode()) {
-				throw new InvoiceException('Měna na zálohové faktuře se neshoduje s měnou na upravované faktuře.');
+				throw new \InvalidArgumentException('Měna na zálohové faktuře se neshoduje s měnou na upravované faktuře.');
 			}
 
 			foreach ($invoiceData['deposit'] as $deposit) {
 				if ($deposit['id'] === $depositInvoice->getId()) {
-					throw new InvoiceException('Záloha byla již odečtena.');
+					throw new \LogicException('Záloha byla již odečtena.');
 				}
 			}
 
@@ -882,16 +879,15 @@ class InvoiceHelper
 	{
 		/** @var Invoice[] $invoices */
 		$invoices = $this->entityManager->getRepository(Invoice::class)
-				->createQueryBuilder('proforma')
-				->select('proforma')
-				->where('proforma.company = :companyId')
-				->andWhere('proforma.type = :type')
-				->andWhere('proforma.invoice IS NULL')
-				->andWhere('proforma.payDate IS NOT NULL')
-				->setParameter('companyId', $company->getId())
-				->setParameter('type', Invoice::TYPE_PROFORMA)
-				->getQuery()
-				->getResult();
+			->createQueryBuilder('proforma')
+			->where('proforma.company = :companyId')
+			->andWhere('proforma.type = :type')
+			->andWhere('proforma.invoice IS NULL')
+			->andWhere('proforma.payDate IS NOT NULL')
+			->setParameter('companyId', $company->getId())
+			->setParameter('type', Invoice::TYPE_PROFORMA)
+			->getQuery()
+			->getResult();
 
 		$ret = [];
 		foreach ($invoices as $invoice) {

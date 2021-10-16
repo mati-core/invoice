@@ -6,6 +6,8 @@ namespace MatiCore\Invoice;
 
 
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
+use Baraja\Shop\Entity\Currency\Currency;
+use Baraja\Shop\Entity\Unit\Unit;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -16,7 +18,7 @@ class InvoiceItem
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="Invoice", inversedBy="items") */
+	#[ORM\ManyToOne(targetEntity: Invoice::class)]
 	private Invoice $invoice;
 
 	/** @ORM\Column(type="string") */

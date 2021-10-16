@@ -9,51 +9,48 @@ use Nette\Utils\FileSystem;
 
 class SignatureManager
 {
-	private string $wwwDir;
-
-
-	public function __construct(string $wwwDir)
-	{
-		$this->wwwDir = $wwwDir;
+	public function __construct(
+		private string $wwwDir,
+	) {
 	}
 
 
-	public function getSignature(BaseUser $user): ?string
+	public function getSignature(int $user): ?string
 	{
 		if ($this->hasSignature($user)) {
-			return $this->wwwDir . '/img/signatures/' . $user->getId() . '.png';
+			return $this->wwwDir . '/img/signatures/' . $user . '.png';
 		}
 
 		return null;
 	}
 
 
-	public function getSignatureLink(BaseUser $user): ?string
+	public function getSignatureLink(int $user): ?string
 	{
 		if ($this->hasSignature($user)) {
-			return '/img/signatures/' . $user->getId() . '.png';
+			return '/img/signatures/' . $user . '.png';
 		}
 
 		return null;
 	}
 
 
-	public function setSignature(BaseUser $user, string $file): void
+	public function setSignature(int $user, string $file): void
 	{
-		FileSystem::copy($file, $this->wwwDir . '/img/signatures/' . $user->getId() . '.png');
+		FileSystem::copy($file, $this->wwwDir . '/img/signatures/' . $user . '.png');
 	}
 
 
-	public function removeSignature(BaseUser $user): void
+	public function removeSignature(int $user): void
 	{
 		if ($this->hasSignature($user)) {
-			unlink($this->wwwDir . '/img/signatures/' . $user->getId() . '.png');
+			unlink($this->wwwDir . '/img/signatures/' . $user . '.png');
 		}
 	}
 
 
-	public function hasSignature(BaseUser $user): bool
+	public function hasSignature(int $user): bool
 	{
-		return is_file($this->wwwDir . '/img/signatures/' . $user->getId() . '.png');
+		return is_file($this->wwwDir . '/img/signatures/' . $user . '.png');
 	}
 }

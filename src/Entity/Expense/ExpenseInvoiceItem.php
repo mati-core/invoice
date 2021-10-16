@@ -8,38 +8,31 @@ namespace MatiCore\Invoice;
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="invoice__expense_item")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'invoice__expense_item')]
 class ExpenseInvoiceItem
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Invoice\ExpenseInvoice", inversedBy="items")
-	 * @ORM\JoinColumn(name="expense_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: ExpenseInvoice::class)]
 	private Expense $expense;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $description;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $quantity;
 
-	/**
-	 * @ORM\ManyToOne(targetEntity="\MatiCore\Unit\Unit")
-	 * @ORM\JoinColumn(name="unit_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Unit::class)]
 	private Unit $unit;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $vat;
 
-	/** @ORM\Column(type="float") */
+	#[ORM\Column(type: 'float')]
 	private float $pricePerItem;
 
-	/** @ORM\Column(type="integer") */
+	#[ORM\Column(type: 'integer')]
 	private int $position;
 
 

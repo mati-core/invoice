@@ -7,33 +7,28 @@ namespace MatiCore\Supplier;
 
 use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Baraja\Shop\Address\Entity\Address;
+use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="supplier__supplier")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'supplier__supplier')]
 class Supplier
 {
 	use IdentifierUnsigned;
 
-	/** @ORM\Column(type="string") */
+	#[ORM\Column(type: 'string')]
 	private string $name;
 
-	/** @ORM\Column(type="string", nullable=true) */
-	private string|null $deliveryCompany = null;
+	#[ORM\Column(type: 'string', nullable: true)]
+	private ?string $deliveryCompany = null;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Address\Entity\Address")
-	 * @ORM\JoinColumn(name="address_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Address::class)]
 	private Address $address;
 
-	/** @ORM\ManyToOne(targetEntity="\MatiCore\Currency\Currency")
-	 * @ORM\JoinColumn(name="delivery_currency_id", referencedColumnName="id")
-	 */
+	#[ORM\ManyToOne(targetEntity: Currency::class)]
 	private Currency $currency;
 
-	/** @ORM\Column(type="boolean") */
+	#[ORM\Column(type: 'boolean')]
 	private bool $active = true;
 
 

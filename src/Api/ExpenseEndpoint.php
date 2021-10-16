@@ -6,13 +6,14 @@ namespace App\Api;
 
 
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Company\CompanyManagerAccessor;
 use MatiCore\Invoice\ExpenseException;
-use MatiCore\Invoice\ExpenseHelper;
+use MatiCore\Invoice\ExpenseManager;
 use Nette\Application\UI\InvalidLinkException;
 use Nette\Security\User;
 
@@ -21,7 +22,7 @@ class ExpenseEndpoint extends BaseEndpoint
 {
 	public function __construct(
 		private User $user,
-		private ExpenseHelper $expenseHelper,
+		private ExpenseManager $expenseHelper,
 		private CompanyManagerAccessor $companyManager,
 		private CurrencyManagerAccessor $currencyManager,
 	) {

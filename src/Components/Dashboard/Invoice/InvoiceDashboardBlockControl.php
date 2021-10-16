@@ -79,7 +79,6 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 
 		$query = $this->entityManager->getRepository(Invoice::class)
 			->createQueryBuilder('invoice')
-			->select('invoice')
 			->where('invoice.deleted = :f')
 			->setParameter('f', 0)
 			->setMaxResults(5);
@@ -161,7 +160,7 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 			->setRenderer(
 				static function (Invoice $invoiceCore): string
 				{
-					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
+					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreatedByUserId()
 							->getName() . '</small>';
 				}
 			)

@@ -27,7 +27,6 @@ class BankMovementManager
 	{
 		return $this->entityManager->getRepository(BankMovement::class)
 			->createQueryBuilder('bm')
-			->select('bm')
 			->where('bm.id = :id')
 			->setParameter('id', $id)
 			->getQuery()

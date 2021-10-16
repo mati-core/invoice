@@ -1,3 +1,6 @@
+extensions:
+	invoice: MatiCore\Invoice\InvoiceExtension
+
 parameters:
 	logDir: %appDir%./../log/
 	menu:
@@ -192,43 +195,3 @@ parameters:
 				title: 'Your Company - Intrastat '
 				template: null
 				style: null
-
-orm.annotations:
-	paths:
-		MatiCore\Invoice: %appDir%/../vendor/mati-core/invoice/src/Entity
-		MatiCore\Company: %appDir%/../vendor/mati-core/invoice/src/Entity/Company
-		MatiCore\Supplier: %appDir%/../vendor/mati-core/invoice/src/Entity/Supplier
-
-services:
-	- MatiCore\Company\CompanyManager
-	- MatiCore\Company\CompanyManagerAccessor
-	- MatiCore\Company\CompanyInvoiceStatisticsControl
-	- MatiCore\Supplier\SupplierManager
-	- MatiCore\Supplier\SupplierManagerAccessor
-	- MatiCore\Invoice\ExpenseManager
-	- MatiCore\Invoice\ExpenseManagerAccessor
-	- MatiCore\Invoice\ExpenseHelper
-	- MatiCore\Invoice\BankMovementCronLog(%logDir%)
-	- MatiCore\Invoice\BankMovementCronLogAccessor
-	- MatiCore\Invoice\BankMovementManager
-	- MatiCore\Invoice\BankMovementManagerAccessor
-	- MatiCore\Invoice\ExportManager(%tempDir%, %invoice.export%)
-	- MatiCore\Invoice\ExportManagerAccessor
-	- MatiCore\Invoice\InvoiceManager(%tempDir%, %invoice%)
-	- MatiCore\Invoice\InvoiceManagerAccessor
-	- MatiCore\Invoice\SignatureManager(%wwwDir%)
-	- MatiCore\Invoice\SignatureManagerAccessor
-	- MatiCore\Invoice\InvoiceHelper(%invoice.company%)
-	- MatiCore\Invoice\Email\InvoiceAlertOneEmail(%invoice.alertEmail.firstAlert.template%)
-	- MatiCore\Invoice\Email\InvoiceAlertTwoEmail(%invoice.alertEmail.secondAlert.template%)
-	- MatiCore\Invoice\Email\InvoiceAlertThreeEmail(%invoice.alertEmail.thirdAlert.template%)
-	- MatiCore\Invoice\Email\InvoiceEmail(%invoice.invoiceEmail.templates.invoice%)
-	- MatiCore\Invoice\Email\InvoiceFixEmail(%invoice.invoiceEmail.templates.fix%)
-	- MatiCore\Invoice\Email\InvoicePayDocumentEmail(%invoice.invoiceEmail.templates.payDocument%)
-	- MatiCore\Invoice\Command\InvoicePayCheckCommand(%tempDir%, %invoice%)
-	- MatiCore\Invoice\Command\InvoiceAlertCommand(%tempDir%,  %invoice%)
-	- MatiCore\Invoice\Command\InvoiceTaxListFixCommand
-	invoiceDashboardControl: MatiCore\Invoice\InvoiceDashboardBlockControl(%invoice.settings.accept%)
-	dashboardControl:
-		setup:
-			- addBlock(@MatiCore\Invoice\InvoiceDashboardBlockControl, 50)

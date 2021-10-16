@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
+use Baraja\Country\CountryManager;
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use MatiCore\Supplier\Supplier;
-use MatiCore\Supplier\SupplierException;
 use MatiCore\Supplier\SupplierManagerAccessor;
 use Nette\Application\AbortException;
 use Nette\Forms\Form;
@@ -21,32 +23,26 @@ use Tracy\Debugger;
 #[PublicEndpoint]
 class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 {
-	private Supplier|null $editedSupplier;
-
-
-	use FormFactoryTrait;
+	private ?Supplier $editedSupplier = null;
 
 
 	public function __construct(
 		private SupplierManagerAccessor $supplierManager,
 		private CurrencyManagerAccessor $currencyManager,
-		private CountryManagerAccessor $countryManager,
+		private CountryManager $countryManager,
+		private EntityManagerInterface $entityManager,
 	) {
 	}
 
 
 	public function actionDefault(): void
 	{
-		try {
-			$this->countryManager->get()->getCountryByIsoCode('CZE')->getId();
-		} catch (NonUniqueResultException | NoResultException $e) {
-			$this->flashMessage(
-				'Seznam zemí není nainstalován. <a href="' . $this->link('Country:install') . '">Instalovat..</a>',
-				'warning'
-			);
-		}
-
-		$this->template->suppliers = $this->supplierManager->get()->getSuppliers();
+		$this->countryManager->getByCode('CZE')->getId();
+		$this->sendJson(
+			[
+				'suppliers' => $this->supplierManager->get()->getAll(),
+			]
+		);
 	}
 
 
@@ -77,11 +73,8 @@ class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 			$this->flashMessage('Dodavatel ' . $supplier->getName() . ' byl úspěšně odebrán ze seznamu.', 'info');
 		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Požadovaný dodavatel neexistuje.', 'error');
-		} catch (SupplierException $e) {
-			$this->flashMessage($e->getMessage(), 'error');
 		}
-
-		$this->redirect('default');
+		$this->sendOk();
 	}
 
 
@@ -110,87 +103,71 @@ class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 	 */
 	public function createComponentCreateForm(): Form
 	{
-		try {
-			$form = $this->formFactory->create();
+		$form = $this->formFactory->create();
 
-			$form->addText('name', 'Název')
-				->setRequired('Zadejte název dodavatele');
+		$form->addText('name', 'Název')
+			->setRequired('Zadejte název dodavatele');
 
-			$form->addText('deliveryCompany', 'Přepravní společnost');
+		$form->addText('deliveryCompany', 'Přepravní společnost');
 
-			$form->addSelect('currency', 'Měna', $this->currencyManager->get()->getCurrenciesForForm())
-				->setDefaultValue($this->currencyManager->get()->getDefaultCurrency()->getId());
+		$form->addSelect('currency', 'Měna', $this->currencyManager->get()->getCurrenciesForForm())
+			->setDefaultValue($this->currencyManager->get()->getMainCurrency()->getId());
 
-			$form->addText('street', 'Ulice, č.p.');
+		$form->addText('street', 'Ulice, č.p.');
 
-			$form->addText('city', 'Město');
+		$form->addText('city', 'Město');
 
-			$form->addText('zipCode', 'PSČ');
+		$form->addText('zipCode', 'PSČ');
 
-			$form->addText('cin', 'IČ');
+		$form->addText('cin', 'IČ');
 
-			$form->addText('tin', 'DIČ');
+		$form->addText('tin', 'DIČ');
 
-			$form->addSelect('country', 'Země', $this->countryManager->getCountriesForForm())
-				->setDefaultValue($this->countryManager->getCountryByIsoCode('CZE')->getId());
+		$form->addSelect('country', 'Země', $this->countryManager->getCountriesForForm())
+			->setDefaultValue($this->countryManager->getByCode('CZE')->getId());
 
-			$form->addSubmit('submit', 'Create');
+		$form->addSubmit('submit', 'Create');
 
-			$form->onSuccess[] = function (Form $form, ArrayHash $values): void
-			{
+		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
+		{
+			try {
+				$currency = $this->currencyManager->get()->getCurrency($values->currency);
+			} catch (NonUniqueResultException | NoResultException) {
+				$currency = $this->currencyManager->get()->getMainCurrency();
+			}
+			try {
+				$country = $this->countryManager->getById($values->country);
+			} catch (NoResultException | NonUniqueResultException) {
+				$country = $this->countryManager->getByCode('CZE');
+			}
 
-				try {
-					$currency = $this->currencyManager->get()->getCurrencyById($values->currency);
-				} catch (NonUniqueResultException | NoResultException $e) {
-					$currency = $this->currencyManager->get()->getDefaultCurrency();
-				}
+			$supplier = $this->supplierManager->get()->createSupplier(
+				$values->name,
+				$currency,
+				$values->street ?? '',
+				$values->city ?? '',
+				$country,
+			);
+			$supplier->getAddress()->setCin($values->cin === '' ? null : $values->cin);
+			$supplier->getAddress()->setTin($values->tin === '' ? null : $values->tin);
+			$supplier->setDeliveryCompany(
+				$values->deliveryCompany === ''
+					? null
+					: $values->deliveryCompany
+			);
+			$this->entityManager->flush();
+			$this->flashMessage('Dodavatel ' . $supplier->getName() . ' byl úspěšně přidán do seznamu.', 'success');
+			$this->redirect('default');
+		};
 
-				try {
-					$country = $this->countryManager->get()->getCountryById($values->country);
-				} catch (NoResultException | NonUniqueResultException $e) {
-					$country = $this->countryManager->get()->getCountryByIsoCode('CZE');
-				}
-
-				$supplier = $this->supplierManager->get()->createSupplier(
-					$values->name, $currency, $values->street ?? '', $values->city ?? '', $country
-				);
-				$supplier->getAddress()->setCin($values->cin === '' ? null : $values->cin);
-				$supplier->getAddress()->setTin($values->tin === '' ? null : $values->tin);
-				$supplier->setDeliveryCompany(
-					$values->deliveryCompany === ''
-						? null
-						: $values->deliveryCompany
-				);
-				$this->entityManager->flush();
-				$this->flashMessage('Dodavatel ' . $supplier->getName() . ' byl úspěšně přidán do seznamu.', 'success');
-				$this->redirect('default');
-			};
-
-			return $form;
-		} catch (CurrencyException $e) {
-			$this->flashMessage($e->getMessage(), 'error');
-
-			$this->redirect('Supplier:default');
-		} catch (NoResultException | NonUniqueResultException $e) {
-			$this->flashMessage('Seznam států není nainstalován.', 'error');
-
-			$this->redirect('Supplier:default');
-		} catch (EntityManagerException $e) {
-			Debugger::log($e);
-			$this->flashMessage('Chyba při ukládání do databáze.', 'error');
-			$this->redirect('Supplier:default');
-		}
+		return $form;
 	}
 
 
-	/**
-	 * @throws AbortException
-	 * @throws SupplierException
-	 */
 	public function createComponentEditForm(): Form
 	{
 		if ($this->editedSupplier === null) {
-			throw new SupplierException('Edited Supplier is null!');
+			throw new \LogicException('Edited Supplier is null!');
 		}
 
 		try {
@@ -232,11 +209,10 @@ class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 
 			$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 			{
-
 				try {
-					$currency = $this->currencyManager->get()->getCurrencyById($values->currency);
-				} catch (NonUniqueResultException | NoResultException $e) {
-					$currency = $this->currencyManager->get()->getDefaultCurrency();
+					$currency = $this->currencyManager->get()->getCurrency($values->currency);
+				} catch (NonUniqueResultException | NoResultException) {
+					$currency = $this->currencyManager->get()->getMainCurrency();
 				}
 
 				$this->editedSupplier->setCurrency($currency);

@@ -8,6 +8,8 @@ namespace App\AdminModule\Presenters;
 
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
+use Baraja\Shop\Currency\CurrencyManager;
+use Baraja\Shop\Unit\UnitManager;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
@@ -40,9 +42,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 {
 	protected string $pageRight = 'page__invoice';
 
-
-	use FormFactoryTrait;
-
 	private Invoice|null $editedInvoice;
 
 	private int $returnButton = 0;
@@ -70,10 +69,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		try {
 			$this->editedInvoice = $this->invoiceManager->get()->getInvoiceById($id);
-
-			$color = $this->invoiceManager->get()->getColorByInvoiceDocument($this->editedInvoice);
-
-			$this->template->color = $color;
+			$this->template->color = $this->invoiceManager->get()->getColorByInvoiceDocument($this->editedInvoice);
 			$this->template->templateData = $this->invoiceManager->get()->getInvoiceTemplateData($this->editedInvoice);
 			$this->template->invoice = $this->editedInvoice;
 			$this->template->contacts = $this->invoiceManager->get()->getInvoiceEmails($this->editedInvoice);
@@ -116,7 +112,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		}
 
 		$log = $this->bankMovementCronLog->get()->getLog();
-
 		$this->template->lastUpdate = $log['date'] ?? null;
 		$this->template->lastUpdateStatus = $log['status'] ?? null;
 	}
@@ -145,16 +140,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 * @throws CurrencyException
-	 */
 	public function actionExport(string $id): void
 	{
 		try {
-			$invoice = $this->invoiceManager->get()->getInvoiceById($id);
-
-			$this->exportManager->get()->exportInvoiceToPdf($invoice);
+			$this->exportManager->get()->exportInvoiceToPdf(
+				$this->invoiceManager->get()->getInvoiceById($id)
+			);
 		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Faktura nebyla nalezena.', 'error');
 			$this->redirect('default');
@@ -165,11 +156,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 * @throws EntityManagerException
-	 * @throws InvoiceException
-	 */
 	public function actionGenerateInvoice(string $id): void
 	{
 		try {
@@ -182,7 +168,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 			$invoice = $this->invoiceManager->get()->createInvoiceFromInvoiceProforma($proforma);
 			$this->flashMessage('Faktura byla úspěšně vygenerována.', 'success');
 			$this->redirect('detail', ['id' => $invoice->getId()]);
-		} catch (NoResultException | NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException) {
 			$this->flashMessage('Faktura nebyla nalezena.', 'error');
 			$this->redirect('default');
 		}
@@ -196,7 +182,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	{
 		try {
 			$mainInvoice = $this->invoiceManager->get()->getInvoiceById($id);
-
 			$company = $mainInvoice->getCompany();
 
 			$this->template->invoice = $mainInvoice;
@@ -229,12 +214,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->setStatus(Invoice::STATUS_ACCEPTED);
 				$invoice->setClosed(true);
 
-				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$userId = $this->getUser()->getId();
 				$history = new InvoiceHistory(
-					$invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>'
+					$invoice,
+					'<span class="text-success text-bold">Doklad odevzdán a schválen</span>'
 				);
-				$history->setUser($user);
+				$history->setUserId($userId);
 				$this->entityManager->persist($history);
 
 				$invoice->addHistory($history);
@@ -255,12 +240,11 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->setStatus(Invoice::STATUS_ACCEPTED);
 				$invoice->setClosed(true);
 
-				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$userId = $this->getUser()->getId();
 				$history = new InvoiceHistory(
 					$invoice, '<span class="text-success text-bold">Doklad odevzdán a schválen</span>'
 				);
-				$history->setUser($user);
+				$history->setUserId($userId);
 				$this->entityManager->persist($history);
 
 				$invoice->addHistory($history);
@@ -279,12 +263,11 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->setAcceptStatus1(Invoice::STATUS_ACCEPTED);
 				$invoice->setAcceptStatus2(Invoice::STATUS_WAITING);
 
-				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$userId = $this->getUser()->getId();
 				$history = new InvoiceHistory(
 					$invoice, '<span class="text-success text-bold">Doklad odevzdán a odeslán ke schválení.</span>'
 				);
-				$history->setUser($user);
+				$history->setUserId($userId);
 				$this->entityManager->persist($history);
 
 				$invoice->addHistory($history);
@@ -301,10 +284,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$invoice->setAcceptStatus1(Invoice::STATUS_WAITING);
 				$invoice->setAcceptStatus2(Invoice::STATUS_WAITING);
 
-				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$userId = $this->getUser()->getId();
 				$history = new InvoiceHistory($invoice, 'Doklad odevzdán ke schválení.');
-				$history->setUser($user);
+				$history->setUserId($userId);
 				$this->entityManager->persist($history);
 
 				$invoice->addHistory($history);
@@ -323,12 +305,10 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 			if ($sendEmail === true) {
 				$status = $this->invoiceManager->get()->sendEmailToCompany($invoice);
-				$show = $status['message'] ?? false;
-				if ($show) {
+				if ($status['message'] ?? false) { // show?
 					$this->flashMessage($status['message'], $status['type']);
 				}
 			}
-
 			$this->redirect('default');
 		} catch (NoResultException | NonUniqueResultException $e) {
 			$this->flashMessage('Požadovaná faktura nebyla nalezena.', 'error');
@@ -359,10 +339,9 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$sendEmail = true;
 			}
 
-			/** @var BaseUser $user */
-			$user = $this->getUser()->getIdentity()->getUser();
+			$userId = $this->getUser()->getId();
 			$history = new InvoiceHistory($invoice, '<b class="text-success">Faktura schválena.</b>');
-			$history->setUser($user);
+			$history->setUserId($userId);
 			$this->entityManager->persist($history);
 
 			$invoice->addHistory($history);
@@ -370,20 +349,18 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 			if ($sendEmail === true) {
 				$status = $this->invoiceManager->get()->sendEmailToCompany($invoice);
-				$show = $status['message'] ?? false;
-				if ($show) {
+				if ($status['message'] ?? false) { // show?
 					$this->flashMessage($status['message'], $status['type']);
 				}
 			}
 
 			$this->flashMessage('Faktura byla schválena.', 'info');
-
 			if ($this->returnButton === 1) {
 				$this->redirect('Homepage:default');
 			} else {
 				$this->redirect('Invoice:default');
 			}
-		} catch (NoResultException | NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException) {
 			$this->flashMessage('Požadovaná faktura nebyla nalezena.', 'error');
 			$this->redirect('default');
 		}
@@ -427,13 +404,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$this->editedInvoice->setPayDate($values->date);
 				$this->editedInvoice->setStatus(Invoice::STATUS_PAID);
 
-				/** @var BaseUser|null $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$user = $this->getUser()->getId();
 				$text = ($this->editedInvoice->isProforma() ? 'Proforma' : 'Faktura')
 					. ' uhrazena dne '
 					. $values->date->format('d.m.Y');
 				$history = new InvoiceHistory($this->editedInvoice, $text);
-				$history->setUser($user);
+				$history->setUserId($user);
 
 				$this->entityManager->persist($history);
 				$this->editedInvoice->addHistory($history);
@@ -472,7 +448,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$grid->setDataSource(
 			$this->entityManager->getRepository(BankMovement::class)
 				->createQueryBuilder('bm')
-				->select('bm')
 				->orderBy('bm.date', 'DESC')
 		);
 
@@ -660,19 +635,16 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 					return;
 				}
-
 				if ($status === Invoice::STATUS_DENIED) {
 					$row->addClass('table-danger');
 
 					return;
 				}
-
 				if ($status === Invoice::STATUS_CREATED) {
 					$row->addClass('table-warning');
 
 					return;
 				}
-
 				if ($status === Invoice::STATUS_PAY_ALERT_THREE) {
 					$row->addClass('table-danger');
 
@@ -725,7 +697,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 			->setRenderer(
 				static function (Invoice $invoiceCore): string
 				{
-					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreateUser()
+					return $invoiceCore->getDate()->format('d.m.Y') . '<br><small>' . $invoiceCore->getCreatedByUserId()
 							->getName() . '</small>';
 				}
 			)
@@ -955,13 +927,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		$invoiceUsers = $this->entityManager->getRepository(BaseUser::class)
 				->createQueryBuilder('u')
-				->select('u')
 				->join(Invoice::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
 				->groupBy('u.id')
 				->orderBy('u.lastName', 'ASC')
 				->addOrderBy('u.firstName', 'ASC')
 				->getQuery()
-				->getResult() ?? [];
+				->getResult();
 
 		foreach ($invoiceUsers as $user) {
 			$invoiceUserList[$user->getId()] = $user->getName();
@@ -1068,12 +1039,11 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		if (count($ids) > 0) {
 			$invoices = $this->entityManager->getRepository(Invoice::class)
 					->createQueryBuilder('i')
-					->select('i')
 					->where('i.id IN (:ids)')
 					->setParameter('ids', $ids)
 					->orderBy('i.number', 'ASC')
 					->getQuery()
-					->getResult() ?? [];
+					->getResult();
 
 			$this->exportManager->get()->exportInvoicesToPDF($invoices);
 		}
@@ -1110,12 +1080,11 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		if (count($ids) > 0) {
 			$invoices = $this->entityManager->getRepository(Invoice::class)
 					->createQueryBuilder('i')
-					->select('i')
 					->where('i.id IN (:ids)')
 					->setParameter('ids', $ids)
 					->orderBy('i.number', 'ASC')
 					->getQuery()
-					->getResult() ?? [];
+					->getResult();
 
 			$this->exportManager->get()->exportInvoiceSummaryToPDF($invoices);
 		}
@@ -1141,7 +1110,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 				$this->editedInvoice->setAcceptStatus1(Invoice::STATUS_DENIED);
 				$this->editedInvoice->setAcceptStatus1Description($values->description ?? '');
-				$this->editedInvoice->setAcceptStatus1User($user);
+				$this->editedInvoice->setAcceptStatusFirstUserId($user);
 
 				$this->editedInvoice->setAcceptStatus2(Invoice::STATUS_DENIED);
 
@@ -1152,7 +1121,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 						"\n", '<br>', $values->description ?? ''
 					)
 				);
-				$history->setUser($user);
+				$history->setUserId($user);
 
 				$this->entityManager->persist($history);
 				$this->editedInvoice->addHistory($history);
@@ -1188,7 +1157,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 				$this->editedInvoice->setAcceptStatus2(Invoice::STATUS_DENIED);
 				$this->editedInvoice->setAcceptStatus2Description($values->description ?? '');
-				$this->editedInvoice->setAcceptStatus2User($user);
+				$this->editedInvoice->setAcceptStatusSecondUserId($user);
 
 				$this->editedInvoice->setStatus(Invoice::STATUS_DENIED);
 
@@ -1197,7 +1166,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 						"\n", '<br>', $values->description ?? ''
 					)
 				);
-				$history->setUser($user);
+				$history->setUserId($user);
 
 				$this->entityManager->persist($history);
 				$this->editedInvoice->addHistory($history);
@@ -1404,7 +1373,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				/** @var BaseUser $user */
 				$user = $this->user->getIdentity()->getUser();
 				if ($user !== null) {
-					$comment->setUser($user);
+					$comment->setUserId($user);
 				}
 
 				$this->entityManager->persist($comment);
@@ -1450,7 +1419,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				}
 
 				$history = new InvoiceHistory($this->editedInvoice, 'Přidán email: ' . $values->email);
-				$history->setUser($user);
+				$history->setUserId($user);
 
 				$this->entityManager->persist($history);
 				$this->editedInvoice->addHistory($history);
@@ -1486,7 +1455,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		}
 
 		$history = new InvoiceHistory($this->editedInvoice, 'Odebrán email: ' . $contact);
-		$history->setUser($user);
+		$history->setUserId($user);
 
 		$this->entityManager->persist($history);
 		$this->editedInvoice->addHistory($history);

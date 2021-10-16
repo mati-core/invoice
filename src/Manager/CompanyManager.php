@@ -33,7 +33,6 @@ class CompanyManager
 	{
 		return $this->entityManager->getRepository(Company::class)
 			->createQueryBuilder('company')
-			->select('company')
 			->where('company.id = :id')
 			->setParameter('id', $id)
 			->getQuery()
@@ -48,7 +47,6 @@ class CompanyManager
 	{
 		return $this->entityManager->getRepository(CompanyStock::class)
 			->createQueryBuilder('cs')
-			->select('cs')
 			->where('cs.id = :id')
 			->setParameter('id', $id)
 			->getQuery()
@@ -63,7 +61,6 @@ class CompanyManager
 	{
 		return $this->entityManager->getRepository(Company::class)
 			->createQueryBuilder('company')
-			->select('company')
 			->join('company.invoiceAddress', 'invoiceAddress')
 			->where('invoiceAddress.cin = :cin')
 			->setParameter('cin', $cin)
@@ -82,10 +79,9 @@ class CompanyManager
 		if ($cache === null) {
 			$cache = $this->entityManager->getRepository(Company::class)
 					->createQueryBuilder('company')
-					->select('company')
 					->orderBy('company.name', 'ASC')
 					->getQuery()
-					->getResult() ?? [];
+					->getResult();
 		}
 
 		return $cache;
@@ -106,7 +102,7 @@ class CompanyManager
 					->select('company.id as id, company.name as name')
 					->orderBy('company.name', 'ASC')
 					->getQuery()
-					->getScalarResult() ?? [];
+					->getScalarResult();
 
 			foreach ($list as $company) {
 				$cache[$company['id']] = $company['name'];
@@ -186,7 +182,6 @@ class CompanyManager
 	{
 		return $this->entityManager->getRepository(CompanyContact::class)
 			->createQueryBuilder('c')
-			->select('c')
 			->where('c.id = :id')
 			->setParameter('id', $id)
 			->getQuery()
@@ -199,17 +194,16 @@ class CompanyManager
 	 */
 	public function getInvoicedItems(Company $company): array
 	{
-		$list = [];
-
+		/** @var Invoice[] $invoices */
 		$invoices = $this->entityManager->getRepository(Invoice::class)
 				->createQueryBuilder('invoice')
-				->select('invoice')
 				->where('invoice.company = :company')
 				->setParameter('company', $company->getId())
 				->orderBy('invoice.date', 'DESC')
 				->getQuery()
-				->getResult() ?? [];
+				->getResult();
 
+		$list = [];
 		foreach ($invoices as $invoice) {
 			if ($invoice->isDeleted() === false) {
 				foreach ($invoice->getItems() as $item) {
