@@ -6,11 +6,13 @@ declare(strict_types=1);
 namespace App\AdminModule\Presenters;
 
 
+use Baraja\Cms\User\Entity\User;
 use Baraja\Doctrine\EntityManager;
 use Baraja\Doctrine\EntityManagerException;
 use Baraja\Shop\Currency\CurrencyManager;
 use Baraja\Shop\Unit\UnitManager;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
+use Baraja\StructuredApi\Attributes\Role;
 use Baraja\StructuredApi\BaseEndpoint;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -20,19 +22,15 @@ use MatiCore\Company\CompanyManager;
 use MatiCore\Invoice\BankMovement;
 use MatiCore\Invoice\BankMovementCronLogAccessor;
 use MatiCore\Invoice\BankMovementManagerAccessor;
-use MatiCore\Invoice\BankMovementStatus;
 use MatiCore\Invoice\ExportManagerAccessor;
-use MatiCore\Invoice\InvoiceComment;
 use MatiCore\Invoice\Invoice;
-use MatiCore\Invoice\InvoiceException;
+use MatiCore\Invoice\InvoiceComment;
 use MatiCore\Invoice\InvoiceHistory;
 use MatiCore\Invoice\InvoiceManagerAccessor;
 use Mpdf\MpdfException;
-use Nette\Application\AbortException;
 use Nette\Application\UI\Form;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Html;
-use Nette\Utils\JsonException;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use Tracy\Debugger;
@@ -60,34 +58,23 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException|CurrencyException
-	 */
-	public function actionShow(string $id, int $ret = 0): void
+	public function actionDetail(string $id): void
 	{
-		$this->returnButton = $ret;
-
-		try {
-			$this->editedInvoice = $this->invoiceManager->get()->getInvoiceById($id);
-			$this->template->color = $this->invoiceManager->get()->getColorByInvoiceDocument($this->editedInvoice);
-			$this->template->templateData = $this->invoiceManager->get()->getInvoiceTemplateData($this->editedInvoice);
-			$this->template->invoice = $this->editedInvoice;
-			$this->template->contacts = $this->invoiceManager->get()->getInvoiceEmails($this->editedInvoice);
-		} catch (NoResultException | NonUniqueResultException $e) {
-			$this->redirect('default');
-		}
-
-		$this->template->returnButton = $this->returnButton;
-		$this->template->currency = $this->currencyManager->getDefaultCurrency();
-	}
-
-
-	public function actionDetail(?string $id = null): void
-	{
-		$this->template->invoiceId = $id;
-		$this->template->currencyList = $this->currencyManager->getActiveCurrencies();
-		$this->template->unitList = $this->unitManager->getUnits();
-		$this->template->companyList = $this->companyManager->getCompanies();
+		$invoice = $this->invoiceManager->get()->getInvoiceById($id);
+		$this->sendJson(
+			[
+				'invoice' => $invoice,
+				'color' => $this->invoiceManager->get()->getColorByInvoiceDocument($invoice),
+				'templateData' => $this->invoiceManager->get()->getInvoiceTemplateData($invoice),
+				'contacts' => $this->invoiceManager->get()->getInvoiceEmails($invoice),
+				'invoiceId' => $id,
+				'currencyList' => $this->currencyManager->getActiveCurrencies(),
+				'unitList' => $this->unitManager->getUnits(),
+				'companyList' => $this->companyManager->getCompanies(),
+				'returnButton' => $this->returnButton,
+				'currency' => $this->currencyManager->getDefaultCurrency(),
+			]
+		);
 	}
 
 
@@ -99,44 +86,27 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws JsonException
-	 */
+	#[Role('page--invoice-bank-movements')]
 	public function actionBankMovements(): void
 	{
-		if ($this->checkAccess('page__invoice__bank_movements') === false) {
-			$this->template->setFile(__DIR__ . '/templates/Error/permissionDeny.latte');
-			$this->template->missingPermissions = ['admin'];
-
-			return;
-		}
-
-		$log = $this->bankMovementCronLog->get()->getLog();
-		$this->template->lastUpdate = $log['date'] ?? null;
-		$this->template->lastUpdateStatus = $log['status'] ?? null;
+		$this->sendJson(
+			$this->bankMovementCronLog->get()->getLog()
+		);
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
-	public function actionDetailBankMovement(string $id): void
-	{
-		if ($this->checkAccess('page__invoice__bank_movements') === false) {
-			$this->template->setFile(__DIR__ . '/templates/Error/permissionDeny.latte');
-			$this->template->missingPermissions = ['admin'];
-
-			return;
-		}
-
+	#[Role('page--invoice-bank-movements')]
+	public function actionDetailBankMovement(
+		string $id
+	): void {
 		try {
 			$bankMovement = $this->bankMovementManager->get()->getById($id);
 			$this->template->bankMovement = $bankMovement;
 			$this->template->invoice = $bankMovement->getInvoice();
-		} catch (NoResultException | NonUniqueResultException $e) {
+		} catch (NoResultException | NonUniqueResultException) {
 			$this->flashMessage('Požadovaný bankovní pohyb nebyl nalezen.', 'error');
-			$this->redirect('bankMovements');
 		}
+		$this->sendOk();
 	}
 
 
@@ -175,9 +145,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionInvoicedItems(string $id): void
 	{
 		try {
@@ -194,9 +161,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleSubmit(string $invoiceId): void
 	{
 		try {
@@ -317,10 +281,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 * @throws EntityManagerException
-	 */
 	public function handleAccept(string $invoiceId, string $type): void
 	{
 		try {
@@ -367,89 +327,96 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleDelete(string $id): void
 	{
 		try {
 			$invoice = $this->invoiceManager->get()->getInvoiceById($id);
 			$this->invoiceManager->get()->removeInvoice($invoice);
-
-			$this->flashMessage('Faktura byla stornována a odstraněna.', 'info');
+			$this->flashMessage('Faktura byla stornována a odstraněna.', self::FLASH_MESSAGE_SUCCESS);
 		} catch (NoResultException | NonUniqueResultException $e) {
-			$this->flashMessage('Požadovaná faktura nebyla nalezena.', 'error');
+			$this->flashMessage('Požadovaná faktura nebyla nalezena.', self::FLASH_MESSAGE_ERROR);
 		} catch (\Exception $e) {
 			Debugger::log($e);
 			$this->flashMessage('Chyba: ' . $e->getMessage(), 'error');
 		}
-
-		$this->redirect('default');
+		$this->sendOk();
 	}
 
 
-	public function createComponentPayForm(): Form
+	public function postPayForm(\DateTime $paymentDate): Form
 	{
-		$form = $this->formFactory->create();
+		try {
+			$this->editedInvoice->setPayDate($paymentDate);
+			$this->editedInvoice->setStatus(Invoice::STATUS_PAID);
 
-		$form->addDate('date', 'Datum úhrady')
-			->setDefaultValue(date('Y-m-d'))
-			->setRequired('Zadejte datum úhrady.');
+			$user = $this->getUser()->getId();
+			$text = ($this->editedInvoice->isProforma() ? 'Proforma' : 'Faktura')
+				. ' uhrazena dne '
+				. $paymentDate->format('d.m.Y');
+			$history = new InvoiceHistory($this->editedInvoice, $text);
+			$history->setUserId($user);
 
-		$form->addSubmit('submit', 'Save');
+			$this->entityManager->persist($history);
+			$this->editedInvoice->addHistory($history);
+			$this->entityManager->flush();
 
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
-		{
-			try {
-				$this->editedInvoice->setPayDate($values->date);
-				$this->editedInvoice->setStatus(Invoice::STATUS_PAID);
-
-				$user = $this->getUser()->getId();
-				$text = ($this->editedInvoice->isProforma() ? 'Proforma' : 'Faktura')
-					. ' uhrazena dne '
-					. $values->date->format('d.m.Y');
-				$history = new InvoiceHistory($this->editedInvoice, $text);
-				$history->setUserId($user);
-
-				$this->entityManager->persist($history);
-				$this->editedInvoice->addHistory($history);
-				$this->entityManager->flush();
-
-				if ($this->editedInvoice->isProforma()) {
-					$pd = $this->invoiceManager->get()->createPayDocumentFromInvoice($this->editedInvoice);
-					$this->flashMessage(
-						'Proforma byla uhrazena a byl vygenerován doklad o zaplacení č.:' . $pd->getNumber(),
-						'success'
-					);
-					$this->redirect('show', ['id' => $pd->getId()]);
-				}
-
-				$this->flashMessage('Faktura byla uhrazena.', 'success');
-				$this->redirect('show', ['id' => $this->editedInvoice->getId()]);
-			} catch (EntityManagerException $e) {
-				Debugger::log($e);
-
-				$this->flashMessage('Při ukládání nastala chyba.<br>' . $e->getMessage(), 'error');
-				$this->redirect('show', ['id' => $this->editedInvoice->getId()]);
+			if ($this->editedInvoice->isProforma()) {
+				$pd = $this->invoiceManager->get()->createPayDocumentFromInvoice($this->editedInvoice);
+				$this->flashMessage(
+					'Proforma byla uhrazena a byl vygenerován doklad o zaplacení č.:' . $pd->getNumber(),
+					'success'
+				);
+				$this->redirect('show', ['id' => $pd->getId()]);
 			}
-		};
-
-		return $form;
+			$this->flashMessage('Faktura byla uhrazena.', self::FLASH_MESSAGE_SUCCESS);
+			$this->redirect('show', ['id' => $this->editedInvoice->getId()]);
+		} catch (EntityManagerException $e) {
+			Debugger::log($e);
+			$this->flashMessage('Při ukládání nastala chyba.<br>' . $e->getMessage(), self::FLASH_MESSAGE_ERROR);
+		}
+		$this->sendOk(['id' => $this->editedInvoice->getId()]);
 	}
 
 
-	/**
-	 * @throws DataGridException
-	 */
-	public function createComponentBankMovementTable(string $name): MatiDataGrid
+	public function actionBankMovementList(string $name, ?string $status = null, int $limit = 20): void
 	{
-		$grid = new MatiDataGrid($this, $name);
+		$select = $this->entityManager->getRepository(BankMovement::class)
+			->createQueryBuilder('bm')
+			->orderBy('bm.date', 'DESC')
+			->setMaxResults($limit);
 
-		$grid->setDataSource(
-			$this->entityManager->getRepository(BankMovement::class)
-				->createQueryBuilder('bm')
-				->orderBy('bm.date', 'DESC')
-		);
+		if ($status === 'not') {
+			$select->andWhere('bm.status != :status1')
+				->setParameter('status1', BankMovement::STATUS_DONE);
+			$select->andWhere('bm.status != :status2')
+				->setParameter('status2', BankMovement::STATUS_SUCCESS);
+		} elseif ($status === 'ok') {
+			$select->andWhere('bm.status = :status1 OR bm.status = :status2')
+				->setParameter('status1', BankMovement::STATUS_DONE)
+				->setParameter('status2', BankMovement::STATUS_SUCCESS);
+		}
+
+		/** @var BankMovement[] $items */
+		$items = $select->getQuery()->getResult();
+
+		$return = [];
+		foreach ($items as $bm) {
+			$item = [
+				'id' => $bm->getId(),
+				'invoiceId' => $bm->getInvoice()->getId(),
+				'status' => $bm->getStatus(),
+				'statusClass' => null,
+				'date' => $bm->getDate(),
+				'color' => BankMovement::STATUS_COLORS[$bm->getStatus()] ?? null,
+				'name' => BankMovement::STATUS_NAMES[$bm->getStatus()] ?? null,
+				'variableSymbol' => $bm->getVariableSymbol(),
+				'price' => Number::formatPrice($bm->getPrice(), $bm->getCurrency(), 2),
+				'bankAccountName' => $bm->getBankAccountName(),
+				'bankAccount' => $bm->getBankAccount(),
+			];
+
+			$return[] = $item;
+		}
 
 		$grid->setRowCallback(
 			static function (BankMovement $bm, Html $row): void
@@ -458,55 +425,19 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				if ($status === BankMovement::STATUS_SUCCESS || $status === BankMovement::STATUS_DONE) {
 					return;
 				}
-
 				if ($status === BankMovement::STATUS_NOT_PROCESSED) {
 					$row->addClass('table-info');
 
 					return;
 				}
-
 				if ($status === BankMovement::STATUS_IS_PAID || $status === BankMovement::STATUS_BAD_VARIABLE_SYMBOL) {
 					$row->addClass('table-warning');
 
 					return;
 				}
-
 				$row->addClass('table-danger');
 			}
 		);
-
-		$grid->addColumnText('date', 'Datum')
-			->setRenderer(
-				static function (BankMovement $bm): string
-				{
-					return $bm->getDate()->format('d.m.Y')
-						. '<br>'
-						. '<small class="' . BankMovementStatus::getColor(
-							$bm->getStatus()
-						) . '">' . BankMovementStatus::getName($bm->getStatus()) . '</small>';
-				}
-			)
-			->setTemplateEscaping(false)
-			->setFitContent(true);
-
-		$grid->addColumnText('variableSymbol', 'VS')
-			->setRenderer(
-				function (BankMovement $bm): string
-				{
-					if ($bm->getInvoice() === null) {
-						return $bm->getVariableSymbol();
-					}
-
-					$link = $this->link(
-						'Invoice:show', [
-							'id' => $bm->getInvoice()->getId(),
-						]
-					);
-
-					return '<a href="' . $link . '">' . $bm->getVariableSymbol() . '</a>';
-				}
-			)
-			->setTemplateEscaping(false);
 
 		$grid->addColumnText('customerBankAccount', 'Proti účet')
 			->setRenderer(
@@ -524,86 +455,20 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 			)
 			->setTemplateEscaping(false);
 
-		$grid->addColumnText('bankAccount', 'Bankovní účet')
-			->setRenderer(
-				static function (BankMovement $bm): string
-				{
-					return $bm->getBankAccountName() . '<br><small>' . $bm->getBankAccount() . '</small>';
-				}
-			)
-			->setTemplateEscaping(false);
-
-		$grid->addColumnText('price', 'Částka')
-			->setRenderer(
-				static function (BankMovement $bm): string
-				{
-					return Number::formatPrice($bm->getPrice(), $bm->getCurrency(), 2);
-				}
-			)
-			->setTemplateEscaping(false);
-
-		$grid->addAction('detail', 'Detail')
-			->setRenderer(
-				function (BankMovement $bm): string
-				{
-					$link = $this->link('detailBankMovement', ['id' => $bm->getId()]);
-
-					return '<a href="' . $link . '" class="btn btn-xs btn-info"><i class="fas fa-search"></i>&nbsp; detail</a>';
-				}
-			)
-			->setTemplateEscaping(false);
-
-		$grid->setDefaultPerPage(20);
-
-		//filtr
-
-		//Datum
-		$grid->addFilterDateRange('date', 'Datum:');
-
-		//VS
-		$grid->addFilterText('variableSymbol', 'VS:');
-
-		//Castka
-		$grid->addFilterRange('price', 'Částka:');
-
-		//Firma
-		$grid->addFilterText('customerName', 'Firma:');
-
-		//Stav
-		$statusList = [
-			'' => 'Vše',
-			'not' => 'Nevyřešené',
-			'ok' => 'Vyřešené',
-		];
-		$grid->addFilterSelect('status', 'Stav:', $statusList, 'status')
-			->setCondition(
-				static function (QueryBuilder $qb, string $status): QueryBuilder
-				{
-					if ($status === 'not') {
-						$qb->andWhere('bm.status != :status1')
-							->setParameter('status1', BankMovement::STATUS_DONE);
-						$qb->andWhere('bm.status != :status2')
-							->setParameter('status2', BankMovement::STATUS_SUCCESS);
-					} elseif ($status === 'ok') {
-						$qb->andWhere('(bm.status = :status1 OR bm.status = :status2)')
-							->setParameter('status1', BankMovement::STATUS_DONE)
-							->setParameter('status2', BankMovement::STATUS_SUCCESS);
-					}
-
-					return $qb;
-				}
-			);
-
-		$grid->setOuterFilterRendering();
-
-		return $grid;
+		$this->sendJson(
+			[
+				'statuses' => [
+					'' => 'Vše',
+					'not' => 'Nevyřešené',
+					'ok' => 'Vyřešené',
+				],
+				'status' => $status,
+				'items' => $return,
+			]
+		);
 	}
 
 
-	/**
-	 * @throws CurrencyException
-	 * @throws DataGridException
-	 */
 	public function createComponentInvoiceTable(string $name): MatiDataGrid
 	{
 		$currency = $this->currencyManager->getDefaultCurrency();
@@ -619,10 +484,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				->leftJoin('invoice.depositingInvoices', 'deposit')
 				->andWhere('invoice.deleted = FALSE')
 				->andWhere('invoice.type IN (:types)')
-				->setParameter('types', [
-					Invoice::TYPE_REGULAR,
-					Invoice::TYPE_PROFORMA,
-				])
+				->setParameter(
+					'types', [
+						Invoice::TYPE_REGULAR,
+						Invoice::TYPE_PROFORMA,
+					]
+				)
 				->orderBy('invoice.number', 'DESC')
 		);
 
@@ -925,14 +792,14 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 			'' => 'Vše',
 		];
 
-		$invoiceUsers = $this->entityManager->getRepository(BaseUser::class)
-				->createQueryBuilder('u')
-				->join(Invoice::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
-				->groupBy('u.id')
-				->orderBy('u.lastName', 'ASC')
-				->addOrderBy('u.firstName', 'ASC')
-				->getQuery()
-				->getResult();
+		$invoiceUsers = $this->entityManager->getRepository(User::class)
+			->createQueryBuilder('u')
+			->join(Invoice::class, 'invoice', Join::WITH, 'u.id = invoice.createUser')
+			->groupBy('u.id')
+			->orderBy('u.lastName', 'ASC')
+			->addOrderBy('u.firstName', 'ASC')
+			->getQuery()
+			->getResult();
 
 		foreach ($invoiceUsers as $user) {
 			$invoiceUserList[$user->getId()] = $user->getName();
@@ -1013,8 +880,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @param array $ids
-	 * @throws AbortException
+	 * @param array<int, int> $ids
 	 */
 	public function printInvoices(array $ids): void
 	{
@@ -1025,11 +891,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 * @throws CurrencyException
-	 * @throws MpdfException
-	 */
 	public function handleExportInvoices(): void
 	{
 		$session = $this->getSession('exportInvoices');
@@ -1038,12 +899,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		if (count($ids) > 0) {
 			$invoices = $this->entityManager->getRepository(Invoice::class)
-					->createQueryBuilder('i')
-					->where('i.id IN (:ids)')
-					->setParameter('ids', $ids)
-					->orderBy('i.number', 'ASC')
-					->getQuery()
-					->getResult();
+				->createQueryBuilder('i')
+				->where('i.id IN (:ids)')
+				->setParameter('ids', $ids)
+				->orderBy('i.number', 'ASC')
+				->getQuery()
+				->getResult();
 
 			$this->exportManager->get()->exportInvoicesToPDF($invoices);
 		}
@@ -1054,8 +915,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @param array $ids
-	 * @throws AbortException
+	 * @param array<int, int> $ids
 	 */
 	public function invoiceSummary(array $ids): void
 	{
@@ -1066,11 +926,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 * @throws CurrencyException
-	 * @throws MpdfException
-	 */
 	public function handleExportSummary(): void
 	{
 		$session = $this->getSession('summaryInvoices');
@@ -1079,12 +934,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 		if (count($ids) > 0) {
 			$invoices = $this->entityManager->getRepository(Invoice::class)
-					->createQueryBuilder('i')
-					->where('i.id IN (:ids)')
-					->setParameter('ids', $ids)
-					->orderBy('i.number', 'ASC')
-					->getQuery()
-					->getResult();
+				->createQueryBuilder('i')
+				->where('i.id IN (:ids)')
+				->setParameter('ids', $ids)
+				->orderBy('i.number', 'ASC')
+				->getQuery()
+				->getResult();
 
 			$this->exportManager->get()->exportInvoiceSummaryToPDF($invoices);
 		}
@@ -1105,15 +960,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			if ($this->editedInvoice !== null) {
-				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$user = $this->getUser()->getId();
 
 				$this->editedInvoice->setAcceptStatus1(Invoice::STATUS_DENIED);
 				$this->editedInvoice->setAcceptStatus1Description($values->description ?? '');
 				$this->editedInvoice->setAcceptStatusFirstUserId($user);
-
 				$this->editedInvoice->setAcceptStatus2(Invoice::STATUS_DENIED);
-
 				$this->editedInvoice->setStatus(Invoice::STATUS_DENIED);
 
 				$history = new InvoiceHistory(
@@ -1152,8 +1004,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
 		{
 			if ($this->editedInvoice !== null) {
-				/** @var BaseUser $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$user = $this->getUser()->getId();
 
 				$this->editedInvoice->setAcceptStatus2(Invoice::STATUS_DENIED);
 				$this->editedInvoice->setAcceptStatus2Description($values->description ?? '');
@@ -1162,9 +1013,8 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 				$this->editedInvoice->setStatus(Invoice::STATUS_DENIED);
 
 				$history = new InvoiceHistory(
-					$this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>' . str_replace(
-						"\n", '<br>', $values->description ?? ''
-					)
+					$this->editedInvoice, '<b class="text-danger">Doklad zamítnut</b><br>'
+					. str_replace("\n", '<br>', $values->description ?? '')
 				);
 				$history->setUserId($user);
 
@@ -1186,9 +1036,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleResolveBankMovement(string $id): void
 	{
 		try {
@@ -1196,7 +1043,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 			$bm->setStatus(BankMovement::STATUS_DONE);
 			$this->entityManager->flush();
 			$this->flashMessage(
-				'Stav bankovního pohybu byl změněn na ' . BankMovementStatus::getName(BankMovement::STATUS_DONE) . '.',
+				'Stav bankovního pohybu byl změněn na ' . BankMovement::STATUS_NAMES[BankMovement::STATUS_DONE] . '.',
 				'success'
 			);
 			$this->redirect(
@@ -1253,13 +1100,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 
 	/**
 	 * @return array
-	 * @throws CurrencyException
 	 */
 	public function getStatistics(): array
 	{
 		$data['monthName'] = Date::getCzechMonthName(new \DateTime);
 
-		//Mesic
+		// month
 		$dateStart = new \DateTime(date('Y-m-01 00:00:00'));
 		$dateStop = $dateStart->modifyClone('+1 month');
 
@@ -1369,9 +1215,7 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		{
 			if ($values->description !== '' && $values->description !== null) {
 				$comment = new InvoiceComment($this->editedInvoice, $values->description);
-
-				/** @var BaseUser $user */
-				$user = $this->user->getIdentity()->getUser();
+				$user = $this->getUser()->getId();
 				if ($user !== null) {
 					$comment->setUserId($user);
 				}
@@ -1390,18 +1234,6 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	public function insertLinks(?string $txt): ?string
-	{
-		if ($txt === null) {
-			return null;
-		}
-
-		//TODO implement link parsing in future!
-
-		return $txt;
-	}
-
-
 	public function createComponentAddContactForm(): Form
 	{
 		$form = $this->formFactory->create();
@@ -1413,17 +1245,12 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 		{
 			if (Validators::isEmail($values->email) && $this->editedInvoice->isReady() === false) {
 				$this->editedInvoice->addEmail(trim($values->email));
-				$user = $this->getUser()->getIdentity()->getUser();
-				if (!$user instanceof BaseUser) {
-					$user = null;
-				}
 
 				$history = new InvoiceHistory($this->editedInvoice, 'Přidán email: ' . $values->email);
-				$history->setUserId($user);
+				$history->setUserId($this->getUser()->getId());
 
 				$this->entityManager->persist($history);
 				$this->editedInvoice->addHistory($history);
-
 				$this->entityManager->flush();
 
 				$this->template->contacts = $this->invoiceManager->get()->getInvoiceEmails($this->editedInvoice);
@@ -1437,29 +1264,21 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws \Exception
-	 */
 	public function handleDeleteContact(string $contact): void
 	{
-		$list = [];
+		$emails = [];
 		foreach ($this->editedInvoice->getEmailList() as $email) {
 			if ($email !== $contact) {
-				$list[] = $email;
+				$emails[] = $email;
 			}
 		}
 
-		$user = $this->getUser()->getIdentity()->getUser();
-		if (!$user instanceof BaseUser) {
-			$user = null;
-		}
-
 		$history = new InvoiceHistory($this->editedInvoice, 'Odebrán email: ' . $contact);
-		$history->setUserId($user);
+		$history->setUserId($this->getUser()->getId());
 
 		$this->entityManager->persist($history);
 		$this->editedInvoice->addHistory($history);
-		$this->editedInvoice->setEmails(implode(';', $list));
+		$this->editedInvoice->setEmails(implode(';', $emails));
 		$this->entityManager->flush();
 
 		$this->template->contacts = $this->invoiceManager->get()->getInvoiceEmails($this->editedInvoice);
@@ -1490,68 +1309,34 @@ class CmsInvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	public function createComponentExportInvoicesForm(): Form
+	public function postExportInvoicesForm(?\DateTime $dateStart = null, ?\DateTime $dateStop = null): void
 	{
-		$form = $this->formFactory->create();
+		if (!$dateStart instanceof \DateTime) {
+			$dateStart = new \DateTime;
+		}
+		if (!$dateStop instanceof \DateTime) {
+			$dateStop = new \DateTime;
+		}
 
-		$form->addDate('dateStart', 'dateStart');
-		$form->addDate('dateStop', 'dateStop');
-
-		$form->addSubmit('submit', 'Export');
-
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
-		{
-			/** @var \DateTime $dateStart */
-			$dateStart = $values->dateStart;
-			if (!$dateStart instanceof \DateTime) {
-				$dateStart = new \DateTime;
-			}
-
-			/** @var \DateTime $dateStop */
-			$dateStop = $values->dateStop;
-			if (!$dateStop instanceof \DateTime) {
-				$dateStop = new \DateTime;
-			}
-
-			$invoices = $this->invoiceManager->get()->getInvoicesBetweenDates($dateStart, $dateStop);
-
-			$this->exportManager->get()->exportInvoicesToPDF($invoices);
-
-			die;
-		};
-
-		return $form;
+		$this->exportManager->get()->exportInvoicesToPDF(
+			$this->invoiceManager->get()->getInvoicesBetweenDates($dateStart, $dateStop)
+		);
+		$this->sendOk();
 	}
 
 
-	public function createComponentExportInvoiceListForm(): Form
+	public function postExportInvoiceListForm(?\DateTime $dateStart = null, ?\DateTime $dateStop = null): void
 	{
-		$form = $this->formFactory->create();
+		if (!$dateStart instanceof \DateTime) {
+			$dateStart = new \DateTime;
+		}
+		if (!$dateStop instanceof \DateTime) {
+			$dateStop = new \DateTime;
+		}
 
-		$form->addDate('dateStart', 'dateStart');
-		$form->addDate('dateStop', 'dateStop');
-
-		$form->addSubmit('submit', 'Export');
-
-		$form->onSuccess[] = function (Form $form, ArrayHash $values): void
-		{
-			/** @var \DateTime $dateStart */
-			$dateStart = $values->dateStart;
-			if (!$dateStart instanceof \DateTime) {
-				$dateStart = new \DateTime;
-			}
-
-			/** @var \DateTime $dateStop */
-			$dateStop = $values->dateStop;
-			if (!$dateStop instanceof \DateTime) {
-				$dateStop = new \DateTime;
-			}
-
-			$invoices = $this->invoiceManager->get()->getInvoicesBetweenDates($dateStart, $dateStop);
-			$this->exportManager->get()->exportInvoiceSummaryToPDF($invoices);
-			die;
-		};
-
-		return $form;
+		$this->exportManager->get()->exportInvoiceSummaryToPDF(
+			$this->invoiceManager->get()->getInvoicesBetweenDates($dateStart, $dateStop)
+		);
+		$this->sendOk();
 	}
 }

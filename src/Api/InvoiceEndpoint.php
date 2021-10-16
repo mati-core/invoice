@@ -78,9 +78,6 @@ class InvoiceEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws \Exception
-	 */
 	public function postLoadCompanyById(string $id): void
 	{
 		try {

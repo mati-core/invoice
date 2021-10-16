@@ -6,7 +6,7 @@
 	<mj-body background-color="#fff">
 		<mj-section>
 			<mj-column width="600px" background-color="#fff" css-class="container">
-				<mj-image width="200px" src="https://app-universe.cz/img/email/logo.png"></mj-image>
+				<mj-image width="200px" src="/img/email/logo.png"></mj-image>
 				<mj-text padding-bottom="15px"> Dobrý den,</mj-text>
 				<mj-text> v příloze zasíláme opravný daňový doklad č.: {$invoice->getNumber()}.
 				</mj-text>

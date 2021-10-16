@@ -76,10 +76,10 @@ class Invoice
 	#[ORM\Column(type: 'string', length: 32, unique: true)]
 	private string $number;
 
-	#[ORM\ManyToOne(targetEntity: self::class)]
+	#[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'subInvoice')]
 	private ?self $parentInvoice = null;
 
-	#[ORM\OneToMany(targetEntity: self::class)]
+	#[ORM\OneToMany(mappedBy: 'parentInvoice', targetEntity: self::class)]
 	private ?self $subInvoice = null;
 
 	#[ORM\ManyToOne(targetEntity: Company::class)]
@@ -665,13 +665,13 @@ class Invoice
 	}
 
 
-	public function getEditedByUserId(): BaseUser
+	public function getEditedByUserId(): int
 	{
 		return $this->editedByUserId;
 	}
 
 
-	public function setEditedByUserId(BaseUser $editedByUserId): void
+	public function setEditedByUserId(int $editedByUserId): void
 	{
 		$this->editedByUserId = $editedByUserId;
 	}
@@ -766,25 +766,25 @@ class Invoice
 	}
 
 
-	public function getAcceptStatusFirstUserId(): ?BaseUser
+	public function getAcceptStatusFirstUserId(): ?int
 	{
 		return $this->acceptStatusFirstUserId;
 	}
 
 
-	public function setAcceptStatusFirstUserId(?BaseUser $acceptStatusFirstUserId): void
+	public function setAcceptStatusFirstUserId(?int $acceptStatusFirstUserId): void
 	{
 		$this->acceptStatusFirstUserId = $acceptStatusFirstUserId;
 	}
 
 
-	public function getAcceptStatusSecondUserId(): ?BaseUser
+	public function getAcceptStatusSecondUserId(): ?int
 	{
 		return $this->acceptStatusSecondUserId;
 	}
 
 
-	public function setAcceptStatusSecondUserId(?BaseUser $acceptStatusSecondUserId): void
+	public function setAcceptStatusSecondUserId(?int $acceptStatusSecondUserId): void
 	{
 		$this->acceptStatusSecondUserId = $acceptStatusSecondUserId;
 	}
@@ -838,9 +838,6 @@ class Invoice
 	}
 
 
-	/**
-	 * @throws \Exception
-	 */
 	public function getPayDateDiff(): int
 	{
 		if ($this->isPaid()) {

@@ -26,6 +26,30 @@ class BankMovement
 		STATUS_IS_PAID = 'is-paid',
 		STATUS_SYSTEM_ERROR = 'error';
 
+	public const STATUS_NAMES = [
+		self::STATUS_NOT_PROCESSED => 'Nezpracováno',
+		self::STATUS_SUCCESS => 'Hotovo',
+		self::STATUS_DONE => 'Vyřešeno',
+		self::STATUS_BAD_PRICE => 'Špatná částka',
+		self::STATUS_BAD_ACCOUNT => 'Špatné číslo účtu',
+		self::STATUS_BAD_CURRENCY => 'Špatná měna',
+		self::STATUS_BAD_VARIABLE_SYMBOL => 'Špatný VS',
+		self::STATUS_IS_PAID => 'Faktura již uhrazena',
+		self::STATUS_SYSTEM_ERROR => 'Chyba',
+	];
+
+	public const STATUS_COLORS = [
+		self::STATUS_NOT_PROCESSED => 'text-warning',
+		self::STATUS_SUCCESS => 'text-success',
+		self::STATUS_DONE => 'text-info',
+		self::STATUS_BAD_PRICE => 'text-danger',
+		self::STATUS_BAD_ACCOUNT => 'text-danger',
+		self::STATUS_BAD_CURRENCY => 'text-danger',
+		self::STATUS_BAD_VARIABLE_SYMBOL => 'text-danger',
+		self::STATUS_IS_PAID => 'text-danger',
+		self::STATUS_SYSTEM_ERROR => 'text-danger',
+	];
+
 	#[ORM\Column(type: 'string')]
 	private string $messageId;
 

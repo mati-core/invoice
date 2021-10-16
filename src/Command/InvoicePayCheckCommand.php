@@ -32,7 +32,7 @@ class InvoicePayCheckCommand extends Command
 	/** @var array */
 	private array $allowedSenders;
 
-	private SymfonyStyle|null $io;
+	private SymfonyStyle $io;
 
 
 	/**
@@ -128,26 +128,21 @@ class InvoicePayCheckCommand extends Command
 
 	protected function configure(): void
 	{
-		$this->setName('app:invoice:pay')
+		$this->setName('invoice:pay')
 			->setDescription('Check invoice paid.');
 	}
 
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
+		$this->io = new SymfonyStyle($input, $output);
 		try {
-			$this->io = new SymfonyStyle($input, $output);
-
 			$output->writeln('==============================================');
 			$output->writeln('                Invoice Pay check             ');
 			$output->writeln('');
 			$output->writeln('');
 
-			/**
-			 * @phpstan-ignore-next-line
-			 */
 			$server = '{' . $this->params['payEmail']['server'] . ':993/imap/ssl/novalidate-cert}INBOX';
-
 			if (!is_dir($this->tempDir . '/imap')) {
 				FileSystem::createDir($this->tempDir . '/imap');
 			}
@@ -261,7 +256,6 @@ class InvoicePayCheckCommand extends Command
 		$data['bankAccountName'] = 'Unknown Bank name';
 
 		$lines = explode("\n", $content);
-
 		if (preg_match('/^dne\s(\d+\.\d+\.\d{4})\sbyla\sna\súčtu\s(\d+)/u', $lines[0], $m) && isset($m[1], $m[2])) {
 			$data['date'] = new \DateTime($m[1] . ' 00:00:00');
 			$data['bankAccount'] = $m[2] . '/0300';
@@ -338,7 +332,6 @@ class InvoicePayCheckCommand extends Command
 
 	/**
 	 * @param array $data
-	 * @throws \Exception
 	 */
 	private function addBankMovement(array $data): void
 	{
@@ -382,9 +375,6 @@ class InvoicePayCheckCommand extends Command
 	}
 
 
-	/**
-	 * @throws \Exception
-	 */
 	private function processBankMovement(BankMovement $bm): void
 	{
 		try {

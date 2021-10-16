@@ -62,9 +62,6 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionShow(string $id): void
 	{
 		try {
@@ -79,9 +76,6 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws CurrencyException|DataGridException
-	 */
 	public function createComponentExpenseTable(string $name): MatiDataGrid
 	{
 		$currency = $this->currencyManager->get()->getDefaultCurrency();
@@ -335,7 +329,6 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 
 	/**
 	 * @return array
-	 * @throws CurrencyException
 	 */
 	public function getStatistics(): array
 	{
@@ -420,8 +413,7 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 				$this->expense->setPaid(true);
 				$this->expense->setPayDate($values->date);
 
-				/** @var BaseUser|null $user */
-				$user = $this->getUser()->getIdentity()->getUser();
+				$user = $this->getUser()->getId();
 				$text = 'Uhrazeno dne ' . $values->date->format('d.m.Y');
 				$history = new ExpenseHistory($this->expense, $text);
 				$history->setUserId($user);
@@ -443,9 +435,6 @@ class CmsInvoiceExpenseEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException|EntityManagerException
-	 */
 	public function handleDelete(string $id): void
 	{
 		try {

@@ -46,9 +46,6 @@ class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionDetail(string $id): void
 	{
 		try {
@@ -61,9 +58,6 @@ class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleDelete(string $id): void
 	{
 		try {
@@ -78,9 +72,6 @@ class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleActive(string $id): void
 	{
 		try {
@@ -98,9 +89,6 @@ class CmsInvoiceSupplierEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function createComponentCreateForm(): Form
 	{
 		$form = $this->formFactory->create();

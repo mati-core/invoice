@@ -67,10 +67,6 @@ class InvoiceDashboardBlockControl extends DashboardBlockControl
 	}
 
 
-	/**
-	 * @throws DataGridException
-	 * @throws CurrencyException
-	 */
 	public function createComponentInvoiceTable(string $name): MatiDataGrid
 	{
 		$currency = $this->currencyManager->get()->getDefaultCurrency();

@@ -7,7 +7,6 @@ namespace MatiCore\Invoice\Command;
 
 
 use Baraja\Doctrine\EntityManager;
-use Baraja\Doctrine\EntityManagerException;
 use Baraja\Emailer\EmailerAccessor;
 use MatiCore\Invoice\Email\InvoiceAlertOneEmail;
 use MatiCore\Invoice\Email\InvoiceAlertThreeEmail;
@@ -26,9 +25,6 @@ use Tracy\Debugger;
 
 class InvoiceAlertCommand extends Command
 {
-	private SymfonyStyle|null $io;
-
-
 	/**
 	 * @param array $params
 	 */
@@ -45,27 +41,24 @@ class InvoiceAlertCommand extends Command
 
 	protected function configure(): void
 	{
-		$this->setName('app:invoice:alert')
+		$this->setName('invoice:alert')
 			->setDescription('Send alert for unpaid invoices.');
 	}
 
 
-	/**
-	 * @throws \Exception
-	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$this->io = new SymfonyStyle($input, $output);
-		$this->io->newLine(2);
-		$this->io->writeln('Checking unpaid invoices (date: ' . date('Y-m-d') . ')...');
+		$io = new SymfonyStyle($input, $output);
+		$io->newLine(2);
+		$io->writeln('Checking unpaid invoices (date: ' . date('Y-m-d') . ')...');
 
 		/** @var Invoice[] $invoices */
 		$invoices = $this->entityManager->getRepository(Invoice::class)
-				->createQueryBuilder('i')
-				->where('i.payDate IS NULL')
-				->orderBy('i.number', 'ASC')
-				->getQuery()
-				->getResult();
+			->createQueryBuilder('i')
+			->where('i.payDate IS NULL')
+			->orderBy('i.number', 'ASC')
+			->getQuery()
+			->getResult();
 
 		$rows = [];
 		foreach ($invoices as $invoice) {
@@ -77,8 +70,10 @@ class InvoiceAlertCommand extends Command
 				$date2 = $nowDate->modifyClone($this->params['alertEmail']['secondAlert']['sendAt']);
 				$date3 = $nowDate->modifyClone($this->params['alertEmail']['thirdAlert']['sendAt']);
 
-				if ($invoice->getAcceptStatus1() === Invoice::STATUS_ACCEPTED && $invoice->getAcceptStatus2(
-					) === Invoice::STATUS_ACCEPTED) {
+				if (
+					$invoice->getAcceptStatus1() === Invoice::STATUS_ACCEPTED
+					&& $invoice->getAcceptStatus2() === Invoice::STATUS_ACCEPTED
+				) {
 					$payStatus = $invoice->getPayAlertStatus();
 					try {
 						if (
@@ -105,15 +100,13 @@ class InvoiceAlertCommand extends Command
 						} else {
 							$status = 'Čeká';
 						}
-					} catch (ConstantException | EmailException | EntityManagerException $e) {
+					} catch (\Throwable $e) {
 						Debugger::log($e);
 						$status = 'Chyba';
 					}
 				} else {
 					$status = 'Neschváleno';
 				}
-
-
 				$rows[] = [
 					$invoice->getNumber(),
 					$invoice->getDueDate()->format('Y-m-d'),
@@ -127,7 +120,7 @@ class InvoiceAlertCommand extends Command
 		$table->addRows($rows);
 		$table->render();
 
-		$this->io->newLine(4);
+		$io->newLine(4);
 
 		return 0;
 	}
@@ -135,25 +128,16 @@ class InvoiceAlertCommand extends Command
 
 	private function sendAlert(int $numberOfAlert, Invoice $invoice): void
 	{
-		$production = (bool) ($this->params['alertEmail']['production'] ?? false);
-		$sender = $this->params['alertEmail']['email'] ?? 'faktury@app-universe.cz';
-		$senderName = $this->params['alertEmail']['email'] ?? 'APP Universe';
+		$sender = $this->params['alertEmail']['email'];
+		$senderName = $this->params['alertEmail']['email'];
 		$replyTo = $this->params['alertEmail']['replyTo'] ?? $sender;
 
-		if ($production === false) {
-			$emails = [
-				'info@app-univers.cz',
-			];
-		} else {
-			$emails = $invoice->getEmailList();
-
-			if (is_array($this->params['alertEmail']['copy'])) {
-				foreach ($this->params['alertEmail']['copy'] as $email) {
-					$emails[] = $email;
-				}
+		$emails = $invoice->getEmailList();
+		if (is_array($this->params['alertEmail']['copy'])) {
+			foreach ($this->params['alertEmail']['copy'] as $email) {
+				$emails[] = $email;
 			}
 		}
-
 		if ($numberOfAlert === 3) {
 			$newDueDate = (new \DateTime($invoice->getDueDate()))
 				->modify($this->params['alertEmail']['thirdAlert']['dueDate']);
@@ -171,9 +155,8 @@ class InvoiceAlertCommand extends Command
 			$emailType = InvoiceAlertOneEmail::class;
 		}
 
-		$attachments = [];
-
 		// Upominka
+		$attachments = [];
 		try {
 			$tmp = $this->tempDir . '/' . $name;
 			$this->exportManager->get()->exportInvoiceAlertToPDF(
@@ -196,18 +179,12 @@ class InvoiceAlertCommand extends Command
 			$name = $this->params['export']['invoice']['filename'] . $invoice->getNumber() . '.pdf';
 		}
 
-		try {
-			$tmp = $this->tempDir . '/' . $name;
-			$this->exportManager->get()->exportInvoiceToPdf($invoice, Destination::FILE, $tmp);
-			$attachments[] = [
-				'file' => $tmp,
-				'name' => $name,
-			];
-		} catch (MpdfException | CurrencyException $e) {
-			Debugger::log($e);
-
-			return;
-		}
+		$tmp = $this->tempDir . '/' . $name;
+		$this->exportManager->get()->exportInvoiceToPdf($invoice, Destination::FILE, $tmp);
+		$attachments[] = [
+			'file' => $tmp,
+			'name' => $name,
+		];
 
 		foreach ($emails as $recipient) {
 			$recipient = trim($recipient);

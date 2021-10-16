@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
+use Baraja\Shop\Entity\Currency\Currency;
+
 class PdfPageBreaker
 {
 	private int $pageNumber = 1;

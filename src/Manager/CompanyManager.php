@@ -145,9 +145,6 @@ class CompanyManager
 	}
 
 
-	/**
-	 * @throws CompanyException
-	 */
 	public function removeCompany(Company $company): void
 	{
 		try {
@@ -159,9 +156,6 @@ class CompanyManager
 	}
 
 
-	/**
-	 * @throws CompanyException
-	 */
 	public function removeCompanyStock(CompanyStock $companyStock): void
 	{
 		try {

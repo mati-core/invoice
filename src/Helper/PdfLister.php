@@ -7,15 +7,14 @@ namespace MatiCore\Invoice;
 
 class PdfLister
 {
-	public static string $list = 'abcdefghijklmnopqrstuvwxyz';
+	public const CHARS = 'abcdefghijklmnopqrstuvwxyz';
 
 	private static int $index = 0;
 
 
 	public static function getItem(): string
 	{
-		$item = self::$list[self::$index];
-
+		$item = self::CHARS[self::$index] ?? '?';
 		self::$index++;
 
 		return $item;

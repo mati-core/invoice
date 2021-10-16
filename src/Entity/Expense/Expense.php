@@ -237,13 +237,13 @@ class Expense
 	}
 
 
-	public function getCreateUser(): ?BaseUser
+	public function getCreateUser(): ?int
 	{
 		return $this->createUser;
 	}
 
 
-	public function setCreateUser(?BaseUser $createUser): void
+	public function setCreateUser(?int $createUser): void
 	{
 		$this->createUser = $createUser;
 	}

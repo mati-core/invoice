@@ -18,7 +18,7 @@ use Nette\Utils\ArrayHash;
 #[PublicEndpoint]
 class CmsInvoiceUserEndpoint extends BaseEndpoint
 {
-	private BaseUser|IUser|null $editedUser;
+	private ?int $editedUser = null;
 
 
 	public function __construct(
@@ -33,9 +33,6 @@ class CmsInvoiceUserEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionUpload(string $id): void
 	{
 		try {
@@ -80,7 +77,7 @@ class CmsInvoiceUserEndpoint extends BaseEndpoint
 	}
 
 
-	public function hasSignature(BaseUser $user): bool
+	public function hasSignature(int $user): bool
 	{
 		return $this->signatureManager->hasSignature($user);
 	}

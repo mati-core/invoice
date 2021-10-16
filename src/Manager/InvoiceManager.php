@@ -16,12 +16,13 @@ use MatiCore\Company\Company;
 use MatiCore\Invoice\Email\InvoiceEmail;
 use MatiCore\Invoice\Email\InvoiceFixEmail;
 use MatiCore\Invoice\Email\InvoicePayDocumentEmail;
-use Mpdf\MpdfException;
 use Mpdf\Output\Destination;
 use Nette\Application\LinkGenerator;
 use Nette\Security\User;
+use Nette\Utils\FileSystem;
 use Nette\Utils\Validators;
 use Tracy\Debugger;
+use Tracy\ILogger;
 
 class InvoiceManager
 {
@@ -63,8 +64,7 @@ class InvoiceManager
 	{
 		return $this->entityManager->getRepository(Invoice::class)
 			->createQueryBuilder('i')
-			->andWhere('i.deleted = :false')
-			->setParameter('false', false)
+			->andWhere('i.deleted = FALSE')
 			->orderBy('i.number', 'DESC')
 			->getQuery()
 			->getResult();
@@ -78,8 +78,7 @@ class InvoiceManager
 	{
 		return $this->entityManager->getRepository(Invoice::class)
 			->createQueryBuilder('i')
-			->andWhere('i.deleted = :false')
-			->setParameter('false', false)
+			->andWhere('i.deleted = FALSE')
 			->orderBy('i.number', 'DESC')
 			->setMaxResults($limit)
 			->setFirstResult($offset)
@@ -97,14 +96,13 @@ class InvoiceManager
 			->createQueryBuilder('i')
 			->where('i.taxDate >= :startDate')
 			->andWhere('i.taxDate < :stopDate')
-			->andWhere('i.deleted = :false')
+			->andWhere('i.deleted = FALSE')
 			->andWhere('i.status != :status')
 			->andWhere('i.acceptStatus1 = :status1')
 			->andWhere('i.acceptStatus2 = :status2')
 			->andWhere('i.type IN (:types)')
 			->setParameter('startDate', $startDate->format('Y-m-d'))
 			->setParameter('stopDate', $stopDate->format('Y-m-d'))
-			->setParameter('false', false)
 			->setParameter('status', Invoice::STATUS_CANCELLED)
 			->setParameter('status1', Invoice::STATUS_ACCEPTED)
 			->setParameter('status2', Invoice::STATUS_ACCEPTED)
@@ -131,13 +129,12 @@ class InvoiceManager
 			->createQueryBuilder('i')
 			->where('i.payDate IS NULL')
 			->andWhere('i.status != :status')
-			->andWhere('i.deleted = :false')
+			->andWhere('i.deleted = FALSE')
 			->setParameter('status', Invoice::STATUS_CANCELLED)
 			->andWhere('i.acceptStatus1 = :status1')
 			->setParameter('status1', Invoice::STATUS_ACCEPTED)
 			->andWhere('i.acceptStatus2 = :status2')
 			->setParameter('status2', Invoice::STATUS_ACCEPTED)
-			->setParameter('false', false)
 			->orderBy('i.number', 'DESC')
 			->getQuery()
 			->getResult();
@@ -201,9 +198,6 @@ class InvoiceManager
 	}
 
 
-	/**
-	 * @throws EntityManagerException|InvoiceException
-	 */
 	public function createPayDocumentFromInvoice(Invoice $invoice): Invoice
 	{
 		if (!$invoice->isReady()) {
@@ -231,17 +225,13 @@ class InvoiceManager
 		$pd->setSubInvoice($invoice);
 		$pd->addDepositInvoice($invoice);
 		$invoice->addDepositingInvoice($pd);
-
 		$pd->setCompany($invoice->getCompany());
 
-		/** @var int|null $user */
 		$user = $invoice->getCreatedByUserId();
 		$pd->setCreatedByUserId($user);
 		$pd->setEditedByUserId($user);
 		$pd->setCreateDate(new \DateTime('now'));
 		$pd->setEditDate(new \DateTime('now'));
-
-		//Nastaveni spolecnosti
 		$pd->setCompanyName($invoice->getCompanyName());
 		$pd->setCompanyAddress($invoice->getCompanyAddress());
 		$pd->setCompanyCity($invoice->getCompanyCity());
@@ -250,20 +240,15 @@ class InvoiceManager
 		$pd->setCompanyCin($invoice->getCompanyCin());
 		$pd->setCompanyTin($invoice->getCompanyTin());
 		$pd->setCompanyLogo($invoice->getCompanyLogo());
-
-		//Nastaveni banky
 		$pd->setBankAccount($invoice->getBankAccount());
 		$pd->setBankCode($invoice->getBankCode());
 		$pd->setBankName($invoice->getBankName());
 		$pd->setIban($invoice->getIban());
 		$pd->setSwift($invoice->getSwift());
 		$pd->setVariableSymbol($number);
-
 		$pd->setCurrency($invoice->getCurrency());
 		$pd->setRate($currencyRate);
 		$pd->setRateDate($currencyDate);
-
-		//Nastaveni zakaznika
 		$pd->setCustomerName($invoice->getCustomerName());
 		$pd->setCustomerAddress($invoice->getCustomerAddress());
 		$pd->setCustomerCity($invoice->getCustomerCity());
@@ -271,49 +256,31 @@ class InvoiceManager
 		$pd->setCustomerCountry($invoice->getCustomerCountry());
 		$pd->setCustomerCin($invoice->getCustomerCin());
 		$pd->setCustomerTin($invoice->getCustomerTin());
-
-		//cisla
 		$pd->setOrderNumber($invoice->getOrderNumber());
 		$pd->setRentNumber($invoice->getRentNumber());
 		$pd->setContractNumber($invoice->getContractNumber());
-
-		//Nastaveni celkove ceny
 		$pd->setTotalPrice(0.0);
 		$pd->setTotalTax($invoice->getTotalTax());
-
-		//Data
 		$pd->setDate($invoice->getPayDate());
 		$pd->setDueDate($invoice->getPayDate());
 		$pd->setTaxDate($currencyDate);
 		$pd->setPayDate($invoice->getPayDate());
-
-		//platební metody
 		$pd->setPayMethod($invoice->getPayMethod());
-
-		//Podpis autora faktury
 		$pd->setSignImage($this->signatureManager->getSignatureLink($invoice->getCreatedByUserId()));
 
-		//Poznamky
-		if ($invoice->isTaxEnabled()) {
-			$textBeforeItems = 'Vyúčtování DPH na základě přijetí zálohové platby č.: ' . $invoice->getVariableSymbol();
-		} else {
-			$textBeforeItems = 'Vyúčtování na základě přijetí zálohové platby č.: ' . $invoice->getVariableSymbol();
-		}
-
-		$pd->setTextBeforeItems($textBeforeItems);
+		$pd->setTextBeforeItems(
+			$invoice->isTaxEnabled()
+				? 'Vyúčtování DPH na základě přijetí zálohové platby č.: ' . $invoice->getVariableSymbol()
+				: 'Vyúčtování na základě přijetí zálohové platby č.: ' . $invoice->getVariableSymbol()
+		);
 		$pd->setTextAfterItems($invoice->getTextAfterItems());
-
-		//Stav faktury
 		$pd->setStatus(Invoice::STATUS_CREATED);
 		$pd->setAcceptStatus1(Invoice::STATUS_ACCEPTED);
 		$pd->setAcceptStatus2(Invoice::STATUS_ACCEPTED);
 		$pd->setSubmitted(true);
 		$pd->setClosed(true);
-
-		//Persist
 		$this->entityManager->persist($pd);
 
-		//Přidaní položek
 		foreach ($invoice->getItems() as $invoiceItem) {
 			$item = new InvoiceItem(
 				$pd,
@@ -332,15 +299,15 @@ class InvoiceManager
 			$pd->addItem($item);
 		}
 
-		//DPH
+		// compute tax
 		foreach ($invoice->getTaxList() as $invoiceTax) {
 			$tax = new InvoiceTax($pd, $invoiceTax->getTax(), $invoiceTax->getPrice());
 			$this->entityManager->persist($tax);
 			$pd->addTax($tax);
 		}
 
-		//Záznam do historie
-		$link = '/admin/invoice/show?id=' . $invoice->getId();
+		// add history record
+		$link = Url::get()->getBaseUrl() . '/admin/invoice/show?id=' . $invoice->getId();
 
 		$history = new InvoiceHistory(
 			$pd,
@@ -353,13 +320,14 @@ class InvoiceManager
 
 		$pd->addHistory($history);
 
-		//Faktura
+		// invoice
 		$invoice->setParentInvoice($pd);
-		$link = '/admin/invoice/show?id=' . $pd->getId();
+		$link = Url::get()->getBaseUrl() . '/admin/invoice/show?id=' . $pd->getId();
 
 		$history = new InvoiceHistory(
-			$invoice, 'Vytvořen doklad o přijetí platby č.: <a href="' . $link . '">' . $pd->getNumber(
-			) . '</a> na základě tohoto dokumentu.'
+			$invoice, 'Vytvořen doklad o přijetí platby č.: <a href="' . $link . '">'
+			. $pd->getNumber()
+			. '</a> na základě tohoto dokumentu.'
 		);
 		$history->setUserId($user ?? null);
 		$this->entityManager->persist($history);
@@ -377,13 +345,12 @@ class InvoiceManager
 
 
 	/**
-	 * @return array
-	 * @throws EntityManagerException
+	 * @return array{show: bool, message: string, type: string}
 	 */
 	public function sendEmailToCompany(Invoice $invoice): array
 	{
 		$emails = $this->getInvoiceEmails($invoice);
-		if (count($emails) === 0) {
+		if ($emails === []) {
 			return [
 				'show' => true,
 				'message' => 'Doklad nebyl odeslán. Neexistují žádné kontakty v databázi.',
@@ -407,7 +374,7 @@ class InvoiceManager
 
 
 	/**
-	 * @return array
+	 * @return array<int, string>
 	 */
 	public function getInvoiceEmails(Invoice $invoice): array
 	{
@@ -440,71 +407,43 @@ class InvoiceManager
 
 
 	/**
-	 * @param array $emails
-	 * @throws ConstantException
+	 * @param array<int, string> $emails
 	 */
 	public function sendEmail(Invoice $invoice, array $emails): bool
 	{
-		$production = (bool) ($this->params['invoiceEmail']['production'] ?? false);
-		$sender = $this->params['invoiceEmail']['email'] ?? 'test@app-universe.cz';
-
-		if ($production === false) {
-			$emails = [
-				'test@app-universe.cz',
-			];
-		}
-
+		$sender = $this->params['invoiceEmail']['email'];
 		$userId = $this->user->getId();
 		$status = true;
 		$attachments = [];
 
-		// Faktura do prilohy
+		// get invoice attachment disk path
 		$name = $this->exportManager->get()->getExportInvoiceFileName($invoice);
-
-		try {
-			$tmp = $this->tempDir . '/' . $name;
-			$this->exportManager->get()->exportInvoiceToPdf($invoice, Destination::FILE, $tmp);
-			$attachments[] = [
-				'file' => $tmp,
-				'name' => $name,
-			];
-		} catch (MpdfException | CurrencyException $e) {
-			Debugger::log($e);
-
-			return false;
-		}
+		$tmp = $this->tempDir . '/' . $name;
+		$this->exportManager->get()->exportInvoiceToPdf($invoice, Destination::FILE, $tmp);
+		$attachments[] = [
+			'file' => $tmp,
+			'name' => $name,
+		];
 
 		if ($invoice->getCompany() !== null && $invoice->getCompany()->isSendInvoicesInOneFile()) {
 			$files = [];
 			foreach ($attachments as $file) {
 				$files[] = $file['file'];
 			}
-
 			$name = $this->exportManager->get()->getExportInvoiceFileName($invoice);
-
 			$tmp = $this->tempDir . '/' . $name;
-			try {
-				$this->exportManager->get()->mergePDF($files, Destination::FILE, $tmp);
-				foreach ($attachments as $attachment) {
-					if ($attachment['file'] !== $tmp && is_file($attachment['file'])) {
-						unlink($attachment['file']);
-					}
+			$this->exportManager->get()->mergePdf($files, Destination::FILE, $tmp);
+			foreach ($attachments as $attachment) {
+				if ($attachment['file'] !== $tmp && is_file($attachment['file'])) {
+					unlink($attachment['file']);
 				}
-			} catch (MpdfException $e) {
-				Debugger::log($e);
-
-				return false;
 			}
-
-			$attachments = [
-				[
-					'file' => $tmp,
-					'name' => $name,
-				],
+			$attachments[] = [
+				'file' => $tmp,
+				'name' => $name,
 			];
 		}
 
-		//Zaloha odeslanych dokumentu
 		foreach ($this->params['invoiceEmail']['copy'] as $email) {
 			$emails[] = $email;
 		}
@@ -515,12 +454,11 @@ class InvoiceManager
 		$invoiceData['url'] = $this->params['company']['url'];
 		foreach ($emails as $recipient) {
 			try {
-				$recipient = trim($recipient);
 				if ($invoice->isFix()) {
 					$email = $this->emailer->get()->getEmailServiceByType(
 						InvoiceFixEmail::class,
 						[
-							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
+							'from' => $this->params['invoiceEmail']['name'] . ' <' . $sender . '>',
 							'to' => $recipient,
 							'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 							'subject' => 'Opravný daňový doklad č.: ' . $invoice->getNumber(),
@@ -532,7 +470,7 @@ class InvoiceManager
 					$email = $this->emailer->get()->getEmailServiceByType(
 						InvoicePayDocumentEmail::class,
 						[
-							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
+							'from' => $this->params['invoiceEmail']['name'] . ' <' . $sender . '>',
 							'to' => $recipient,
 							'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 							'subject' => 'Doklad o přijetí platby č.: ' . $invoice->getNumber(),
@@ -544,7 +482,7 @@ class InvoiceManager
 					$email = $this->emailer->get()->getEmailServiceByType(
 						InvoiceEmail::class,
 						[
-							'from' => ($this->params['invoiceEmail']['name'] ?? 'APP Universe') . ' <' . $sender . '>',
+							'from' => $this->params['invoiceEmail']['name'] . ' <' . $sender . '>',
 							'to' => $recipient,
 							'replyTo' => $this->params['invoiceEmail']['replyTo'] ?? $sender,
 							'subject' => 'Faktura č.: ' . $invoice->getNumber(),
@@ -555,9 +493,8 @@ class InvoiceManager
 				}
 
 				foreach ($attachments as $attachment) {
-					$email->getMessage()->addAttachmentPath($attachment['file'], $attachment['name']);
+					$email->getMessage()->addAttachment($attachment['name'], FileSystem::read($attachment['file']));
 				}
-
 				$email->send();
 
 				if (!str_starts_with($recipient, 'backup') && !str_starts_with($recipient, 'zaloha')) {
@@ -569,9 +506,8 @@ class InvoiceManager
 					$invoice->setStatus(Invoice::STATUS_SENT);
 					$invoice->addEmail($recipient);
 				}
-				$this->entityManager->flush();
-			} catch (ConstantException | EntityManagerException | EmailException $e) {
-				Debugger::log($e);
+			} catch (\Throwable $e) {
+				Debugger::log($e, ILogger::CRITICAL);
 				$ih = new InvoiceHistory(
 					$invoice,
 					'<span class="text-danger">Doklad se nepodařilo odeslat emailem na ' . $recipient . '</span>'
@@ -580,11 +516,10 @@ class InvoiceManager
 				$this->entityManager->persist($ih);
 				$invoice->addHistory($ih);
 				$invoice->setStatus(Invoice::STATUS_SENT);
-
-				$this->entityManager->flush();
 				$status = false;
 			}
 		}
+		$this->entityManager->flush();
 
 		foreach ($attachments as $attachment) {
 			if (is_file($attachment['file'])) {
@@ -764,10 +699,10 @@ class InvoiceManager
 		$startDate = $date->modifyClone('-3 months');
 		$stopDate = $date->modifyClone('+1 months');
 
-		/** @var Invoice[] $invoices */
+		/** @var array<int, array{id: int, number: string}> $invoices */
 		$invoices = $this->entityManager->getRepository(Invoice::class)
 			->createQueryBuilder('i')
-			->select('i.number')
+			->select('PARTIAL i.{id, number}')
 			->where('i.taxDate >= :dateStart')
 			->andWhere('i.taxDate < :dateStop')
 			->setParameter('dateStart', $startDate)

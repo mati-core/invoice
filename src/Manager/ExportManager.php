@@ -45,7 +45,6 @@ class ExportManager
 	{
 		FileSystem::createDir($this->tempDir . '/export');
 
-		$files = [];
 		if (is_dir($this->tempDir . '/export')) {
 			$dir = opendir($this->tempDir . '/export');
 			while ($f = readdir($dir)) {
@@ -55,13 +54,14 @@ class ExportManager
 			}
 		}
 
+		$files = [];
 		foreach ($invoices as $invoice) {
 			$tmpFile = $this->tempDir . '/export/' . $invoice->getNumber() . '.pdf';
 			$this->exportInvoiceToPdf($invoice, Destination::FILE, $tmpFile);
 			$files[] = $tmpFile;
 		}
 
-		return $this->mergePDF(
+		return $this->mergePdf(
 			$files,
 			Destination::DOWNLOAD,
 			$this->config['invoice']['filename'] . date('Ymd_His') . '.pdf'
@@ -85,23 +85,19 @@ class ExportManager
 	}
 
 
-	/**
-	 * @throws CurrencyException|MpdfException
-	 */
 	public function exportInvoiceToPdf(
 		Invoice $invoice,
 		string $destination = Destination::DOWNLOAD,
 		?string $file = null
 	): ?string {
 		$name = $this->getExportInvoiceFileName($invoice);
-
-		$params = [];
-		$params['color'] = $this->getColorByInvoiceDocument($invoice);
-		$params['templateData'] = $this->getInvoiceTemplateData($invoice);
-		$params['invoice'] = $invoice;
-		$params['currency'] = $this->currencyManager->getDefaultCurrency();
+		$params = [
+			'color' => $this->getColorByInvoiceDocument($invoice),
+			'templateData' => $this->getInvoiceTemplateData($invoice),
+			'invoice' => $invoice,
+			'currency' => $this->currencyManager->getMainCurrency(),
+		];
 		$pageBreaker = new PdfPageBreaker($invoice->getCurrency(), 23);
-
 		if ($invoice->getCurrency()->getCode() !== 'CZK') {
 			$pageBreaker->increase(3);
 		} else {
@@ -138,8 +134,7 @@ class ExportManager
 			$templateFile = __DIR__ . '/../Templates/Pdf/Invoice/invoice.latte';
 		}
 
-		$html = $this->templateFactory->createTemplate()
-			->renderToString($templateFile, $params);
+		$html = $this->templateFactory->createTemplate()->renderToString($templateFile, $params);
 
 		if ($styleFile === null || $styleFile === '') {
 			$styleFile = __DIR__ . '/../Templates/Pdf/Invoice/invoice.css';
@@ -165,20 +160,20 @@ class ExportManager
 
 
 	/**
-	 * @param array $files
+	 * @param array<int, string> $filePaths
 	 * @throws MpdfException
 	 */
-	public function mergePDF(
-		array $files,
+	public function mergePdf(
+		array $filePaths,
 		string $destination = Destination::DOWNLOAD,
 		string $file = 'attachment.pdf'
 	): ?string {
 		$mpdf = new Mpdf();
 		try {
 			$first = true;
-			foreach ($files as $importedPdf) {
-				if (is_file($importedPdf)) {
-					$pageCount = $mpdf->setSourceFile($importedPdf);
+			foreach ($filePaths as $importedPdfPath) {
+				if (is_file($importedPdfPath)) {
+					$pageCount = $mpdf->setSourceFile($importedPdfPath);
 					for ($i = 1; $i <= $pageCount; $i++) {
 						if ($first) {
 							$first = false;
@@ -189,14 +184,13 @@ class ExportManager
 						$mpdf->UseTemplate($pageId);
 					}
 				} else {
-					throw new MpdfException('Missing imported file: ' . $importedPdf);
+					throw new MpdfException('Missing imported file: ' . $importedPdfPath);
 				}
 			}
 		} catch (CrossReferenceException | PdfParserException | PdfTypeException $e) {
 			Debugger::log($e);
-			throw new \RuntimeException('Error merge PDF: ' . $e->getMessage());
+			throw new \RuntimeException('Error merge PDF: ' . $e->getMessage(), $e->getCode(), $e);
 		}
-
 		if ($destination === Destination::FILE) {
 			$mpdf->Output($file, Destination::FILE);
 
@@ -252,10 +246,13 @@ class ExportManager
 		$pdf->autoPageBreak = false;
 		$pdf->WriteHTML(FileSystem::read($styleFile), HTMLParserMode::HEADER_CSS);
 		$pdf->WriteHTML(
-			(new Engine)->renderToString($templateFile, [
-				'invoice' => $invoice,
-				'newDueDate' => $newDueDate,
-			])
+			(new Engine)->renderToString(
+				$templateFile,
+				[
+					'invoice' => $invoice,
+					'newDueDate' => $newDueDate,
+				]
+			)
 		);
 
 		if ($destination === Destination::FILE) {
@@ -384,16 +381,16 @@ class ExportManager
 
 		/** @var ExpenseInvoice[] $expenseList */
 		$expenseList = $this->entityManager->getRepository(ExpenseInvoice::class)
-				->createQueryBuilder('ei')
-				->join('ei.supplierCountry', 'country')
-				->where('ei.date >= :startDate AND ei.date < :stopDate')
-				->andWhere('country.isoCode != :countryCode')
-				->setParameter('startDate', $startDate->format('Y-m-d'))
-				->setParameter('stopDate', $stopDate->format('Y-m-d'))
-				->setParameter('countryCode', 'CZE')
-				->orderBy('ei.date', 'ASC')
-				->getQuery()
-				->getResult();
+			->createQueryBuilder('ei')
+			->join('ei.supplierCountry', 'country')
+			->where('ei.date >= :startDate AND ei.date < :stopDate')
+			->andWhere('country.isoCode != :countryCode')
+			->setParameter('startDate', $startDate->format('Y-m-d'))
+			->setParameter('stopDate', $stopDate->format('Y-m-d'))
+			->setParameter('countryCode', 'CZE')
+			->orderBy('ei.date', 'ASC')
+			->getQuery()
+			->getResult();
 
 		$spreadsheet = new Spreadsheet();
 

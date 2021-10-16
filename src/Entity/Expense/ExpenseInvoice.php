@@ -6,17 +6,17 @@ namespace MatiCore\Invoice;
 
 
 use Baraja\Country\Entity\Country;
-use Baraja\Shop\Entity\Currency\Currency;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @deprecated
- */
 #[ORM\Entity]
-class ExpenseInvoice extends Expense
+#[ORM\Table(name: 'invoice__expense_invoice')]
+class ExpenseInvoice
 {
+	#[ORM\ManyToOne(targetEntity: Expense::class)]
+	private Expense $expense;
+
 	#[ORM\Column(type: 'string', nullable: true)]
 	private string|null $supplierInvoiceNumber = null;
 
@@ -72,16 +72,18 @@ class ExpenseInvoice extends Expense
 
 
 	public function __construct(
-		string $number,
-		string $description,
-		Currency $currency,
-		float $totalPrice,
-		\DateTime $date,
+		Expense $expense,
 		string $supplierName
 	) {
-		parent::__construct($number, $description, $currency, $totalPrice, $date);
+		$this->expense = $expense;
 		$this->supplierName = $supplierName;
 		$this->items = new ArrayCollection();
+	}
+
+
+	public function getExpense(): Expense
+	{
+		return $this->expense;
 	}
 
 

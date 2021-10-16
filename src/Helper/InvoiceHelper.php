@@ -174,9 +174,6 @@ class InvoiceHelper
 
 	/**
 	 * @return array
-	 * @throws InvoiceException
-	 * @throws UnitException
-	 * @throws CurrencyException
 	 */
 	public function getNewInvoice(): array
 	{
@@ -280,7 +277,6 @@ class InvoiceHelper
 
 	/**
 	 * @return array|null
-	 * @throws UnitException
 	 */
 	public function getFixInvoiceById(string $id): ?array
 	{
@@ -463,12 +459,10 @@ class InvoiceHelper
 	/**
 	 * @param array $invoiceData
 	 * @return array
-	 * @throws InvoiceException
 	 */
 	public function reloadInvoiceNumber(array $invoiceData): array
 	{
 		$invoiceId = $invoiceData['id'];
-
 		if ($invoiceId !== null && $invoiceId !== '') {
 			return $invoiceData;
 		}
@@ -490,9 +484,8 @@ class InvoiceHelper
 	/**
 	 * @param array $invoiceData
 	 * @return array
-	 * @throws CurrencyException|UnitException|UserException
 	 */
-	public function saveInvoice(array $invoiceData, ?BaseUser $user = null): array
+	public function saveInvoice(array $invoiceData, ?int $user = null): array
 	{
 		$invoiceId = $invoiceData['id'];
 		$invoiceType = $invoiceData['type'];
@@ -916,9 +909,6 @@ class InvoiceHelper
 	}
 
 
-	/**
-	 * @throws EntityManagerException
-	 */
 	private function clearInvoiceItems(Invoice $invoice): void
 	{
 		foreach ($invoice->getItems() as $item) {

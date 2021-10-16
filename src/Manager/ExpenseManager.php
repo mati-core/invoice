@@ -66,12 +66,12 @@ class ExpenseManager
 	public function getHistory(Expense $expense): array
 	{
 		return $this->entityManager->getRepository(ExpenseHistory::class)
-				->createQueryBuilder('eh')
-				->where('eh.expense = :id')
-				->setParameter('id', $expense->getId())
-				->orderBy('eh.date', 'DESC')
-				->getQuery()
-				->getResult();
+			->createQueryBuilder('eh')
+			->where('eh.expense = :id')
+			->setParameter('id', $expense->getId())
+			->orderBy('eh.date', 'DESC')
+			->getQuery()
+			->getResult();
 	}
 
 
@@ -322,10 +322,7 @@ class ExpenseManager
 	/**
 	 * @param array $expenseData
 	 * @return array
-	 * @throws CurrencyException
-	 * @throws ExpenseException
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function saveExpense(array $expenseData): array
 	{
@@ -353,27 +350,27 @@ class ExpenseManager
 
 			$expense->setDate($date);
 		} elseif ($expenseData['type'] === 'invoice') {
-			$number = $this->expenseManager->get()->getNextNumber();
-
-			$expense = new ExpenseInvoice(
-				$number,
+			$expense = new Expense(
+				$this->expenseManager->get()->getNextNumber(),
 				$expenseData['description'],
 				$currency,
 				(float) $expenseData['price'],
-				$date,
+				$date
+			);
+			$expenseInvoice = new ExpenseInvoice(
+				$expense,
 				$expenseData['customer']['name']
 			);
 			$expense->setCategory($expenseData['category']);
 			$expense->setCreateUser($userId);
 
 			$this->entityManager->persist($expense);
+			$this->entityManager->persist($expenseInvoice);
 			$isNew = true;
 			$expenseData['id'] = $expense->getId();
 		} else {
-			$number = $this->expenseManager->get()->getNextNumber();
-
 			$expense = new Expense(
-				$number,
+				$this->expenseManager->get()->getNextNumber(),
 				$expenseData['description'],
 				$currency,
 				(float) $expenseData['price'],

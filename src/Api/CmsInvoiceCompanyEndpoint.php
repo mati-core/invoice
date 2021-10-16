@@ -93,9 +93,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionEdit(string $id): void
 	{
 		try {
@@ -109,9 +106,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionEditStock(string $id): void
 	{
 		try {
@@ -127,9 +121,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionDetail(string $id): void
 	{
 		try {
@@ -142,9 +133,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionInvoice(string $id): void
 	{
 		try {
@@ -157,9 +145,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionDetailStock(string $id): void
 	{
 		try {
@@ -174,9 +159,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionCreateStock(string $id): void
 	{
 		try {
@@ -189,9 +171,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionContact(string $companyId, string $companyStockId = null): void
 	{
 		try {
@@ -216,9 +195,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionCreateContact(string $companyId, string $companyStockId = null): void
 	{
 		try {
@@ -237,9 +213,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionEditContact(string $id): void
 	{
 		try {
@@ -258,9 +231,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function actionInvoicedItems(string $id): void
 	{
 		try {
@@ -275,9 +245,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException|EntityManagerException
-	 */
 	public function handleBlackList(string $id): void
 	{
 		try {
@@ -294,9 +261,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleRemove(string $id): void
 	{
 		try {
@@ -314,9 +278,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleRemoveStock(string $id): void
 	{
 		try {
@@ -338,9 +299,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
-	 * @throws CurrencyException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function createComponentCreateForm(): Form
 	{
@@ -441,9 +400,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws CompanyException
-	 */
 	public function createComponentEditForm(): Form
 	{
 		if ($this->editedCompany === null) {
@@ -537,9 +493,7 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 
 
 	/**
-	 * @throws CompanyException
-	 * @throws NoResultException
-	 * @throws NonUniqueResultException
+	 * @throws NoResultException|NonUniqueResultException
 	 */
 	public function createComponentCreateStockForm(): Form
 	{
@@ -607,15 +561,11 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws CompanyException
-	 */
 	public function createComponentEditStockForm(): Form
 	{
 		if ($this->editedCompany === null) {
 			throw new CompanyException('Edited Company is null');
 		}
-
 		if ($this->editedStock === null) {
 			throw new CompanyException('Edited stock is null');
 		}
@@ -856,9 +806,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws AbortException
-	 */
 	public function handleDeleteContact(string $id): void
 	{
 		try {
@@ -946,10 +893,6 @@ class CmsInvoiceCompanyEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @throws CurrencyException
-	 * @throws DataGridException
-	 */
 	public function createComponentInvoiceTable(string $name): MatiDataGrid
 	{
 		$currency = $this->currencyManager->get()->getDefaultCurrency();
