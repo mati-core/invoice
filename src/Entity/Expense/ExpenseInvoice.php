@@ -6,6 +6,7 @@ namespace MatiCore\Invoice;
 
 
 use Baraja\Country\Entity\Country;
+use Baraja\Doctrine\Identifier\IdentifierUnsigned;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,6 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'invoice__expense_invoice')]
 class ExpenseInvoice
 {
+	use IdentifierUnsigned;
+
 	#[ORM\ManyToOne(targetEntity: Expense::class)]
 	private Expense $expense;
 

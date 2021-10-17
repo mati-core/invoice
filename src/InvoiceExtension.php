@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MatiCore\Invoice;
 
 
+use Baraja\Doctrine\ORM\DI\OrmAnnotationsExtension;
+use Baraja\Plugin\PluginComponentExtension;
 use MatiCore\Company\CompanyInvoiceStatisticsControl;
 use MatiCore\Company\CompanyManager;
 use MatiCore\Company\CompanyManagerAccessor;
@@ -17,13 +19,26 @@ use Nette\DI\CompilerExtension;
 
 final class InvoiceExtension extends CompilerExtension
 {
-	// MatiCore\Invoice: %appDir%/../vendor/mati-core/invoice/src/Entity
-	// MatiCore\Company: %appDir%/../vendor/mati-core/invoice/src/Entity/Company
-	// MatiCore\Supplier: %appDir%/../vendor/mati-core/invoice/src/Entity/Supplier
-
 	public function beforeCompile(): void
 	{
 		$builder = $this->getContainerBuilder();
+
+		PluginComponentExtension::defineBasicServices($builder);
+		OrmAnnotationsExtension::addAnnotationPathToManager(
+			$builder,
+			'MatiCore\Invoice',
+			__DIR__ . '/Entity',
+		);
+		OrmAnnotationsExtension::addAnnotationPathToManager(
+			$builder,
+			'MatiCore\Company',
+			__DIR__ . '/Entity',
+		);
+		OrmAnnotationsExtension::addAnnotationPathToManager(
+			$builder,
+			'MatiCore\Supplier',
+			__DIR__ . '/Entity',
+		);
 
 		$builder->addDefinition($this->prefix('invoicePayCheckCommand'))
 			->setFactory(InvoicePayCheckCommand::class)
